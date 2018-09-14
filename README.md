@@ -52,7 +52,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
         }
 ```
 ### 制定HTTP Body转换器
-转器是组件最常用的自定义功能，通过它可以实现不同种类的数据格式，如json,protobuf和msgpack等。以下是一个json转换器的实现
+转换器是组件最常用的自定义功能，通过它可以实现不同种类的数据格式，如json,protobuf和msgpack等。以下是一个json转换器的实现
 ```
     public class JsonBodySerializer : IBodySerializer
     {
