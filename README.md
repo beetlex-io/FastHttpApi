@@ -3,7 +3,7 @@
 是基于dotcore实现的一个高度精简化和高吞吐的HTTP API服务组件，它并没有完全实现HTTP SERVER的所有功能，而是只实现了在APP和WEB中提供数据服务最常用两个指令GET/SET，满足在应用实现JSON,PROTOBUF和MSGPACK等基于HTTP的数据交互功能，虽然是一个精简版本但针对SSL这方面的安全性还是支持。有牺牲就必然有收获，FastHttpApi作出这么大的精简必然在性能上有所收获取，经测试FastHttpApi在GET/POST这些数据交互的场景在性能上最少是Asp.net core集成的Kestrel吞吐能力的2.5倍以上。
 ## 使用便利性
 FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加了它使用的复杂度。FastHttpApi具备asp.net core webapi的便利性；应用人员只需要制定和webapi一样的方法即可，在使用过程中和写普通逻辑方法没有多大的区别。
-##### 定义一个控制品
+##### 定义一个控制器
 ```
     [Controller]
     public class ControllerTest
@@ -51,7 +51,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
             Console.Read();
         }
 ```
-## 制定HTTP Body转换器
+### 制定HTTP Body转换器
 转器是组件最常用的自定义功能，通过它可以实现不同种类的数据格式，如json,protobuf和msgpack等。以下是一个json转换器的实现
 ```
     public class JsonBodySerializer : IBodySerializer
@@ -107,3 +107,4 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
         }
     }
 ```
+## 性能对比测试
