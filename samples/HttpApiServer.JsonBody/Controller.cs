@@ -8,32 +8,32 @@ namespace HttpApiServer.JsonBody
     [Controller]
     public class ControllerTest
     {
-
+        //  /hello?name=
         public string Hello(string name)
         {
             return DateTime.Now + " hello " + name;
-
         }
-
+        // /add?a=&b=
         public string Add(int a, int b)
         {
             return string.Format("{0}+{1}={2}", a, b, a + b);
         }
-
+        // /post?name=
         public object Post(string name, [BodyParameter] UserInfo data)
         {
             return data;
         }
-
+        // /listcustomer?count
         public IList<Customer> ListCustomer(int count)
         {
             return Customer.List(count);
         }
+        // /listemployee?count
         public IList<Employee> ListEmployee(int count)
         {
             return Employee.List(count);
         }
-
+        // post /AddEmployee 
         public Employee AddEmployee([BodyParameter]Employee item)
         {
             return item;
