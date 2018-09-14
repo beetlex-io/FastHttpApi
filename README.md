@@ -138,7 +138,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
         }
 ```
 ##### Kestrel asp.net core GET测试结果
-![](https://github.com/IKende/FastHttpApi/blob/master/images/Kestrel_get.png) 
+![](https://github.com/IKende/FastHttpApi/blob/master/images/Kestrel_mvc_get.png) 
 ##### FastHttpApi GET测试结果
 ![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_get.png) 
 ##### FastHttpApi GET测试结果开启Keep-Alive
@@ -150,3 +150,27 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
 ##### FastHttpApi POST测试结果开启Keep-Alive
 ![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_post_kv.png) 
 
+### 针对Kestrel的对比测试，对比一下在accept connection上的性能差异
+##### Kestrel代码
+```
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            app.Run(context =>
+            {
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(DateTime.Now.ToString());
+                return context.Response.Body.WriteAsync(data, 0, data.Length);
+            });
+        }
+```
+##### FastHttpApi代码
+```
+        //  /hello?name=
+        public string Hello(string name)
+        {
+            return DateTime.Now + " hello " + name;
+        }
+```
+##### Kestrel测试结果
+![](https://github.com/IKende/FastHttpApi/blob/master/images/Kestrel_get.png) 
+##### FastHttpApi测试结果
+![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_get.png) 
