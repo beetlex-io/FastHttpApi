@@ -108,3 +108,33 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
     }
 ```
 ## 性能对比测试
+由于dotnet core下面没有其他简化的http api组件，只能拿Kestrel asp.net core来作对比，虽然对asp.net core不公平，但这样的对比测也只是为了体现简化后的性能回报；测试服务器是阿里云的4核虚拟机，8G内存,测试工具是AB，测试功能主要是针对GET/POST的json数据处理。由于Kestrel asp.net core默认不支持AB的Keep-Alive选项，所以测试结果就并没有针对asp.net core的Keep-Alive测试
+#### asp.net core代码
+```
+        // GET api/values/5
+        [HttpGet("{id}")]
+        public ActionResult Get(int id)
+        {
+            return new JsonResult(Employee.List(id));
+        }
+        // POST api/values
+        [HttpPost]
+        public ActionResult Post([FromBody] Employee value)
+        {
+            return new JsonResult(value);
+        }
+```
+#### fast http api 代码
+```
+        // /listemployee?count
+        public IList<Employee> ListEmployee(int count)
+        {
+            return Employee.List(count);
+        }
+        // post /AddEmployee 
+        public Employee AddEmployee([BodyParameter]Employee item)
+        {
+            return item;
+        }
+```
+
