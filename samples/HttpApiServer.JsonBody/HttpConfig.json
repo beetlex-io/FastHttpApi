@@ -1,0 +1,11 @@
+{
+  "HttpConfig": {
+    "Host": "",
+    "Port": 9090,
+    "SSL": false,
+    "CertificateFile": "",
+    "CertificatePassword": "",
+    "MaxBodyLength": 2097152,
+    "OutputStackTrace": false
+  }
+}

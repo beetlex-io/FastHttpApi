@@ -1,0 +1,9 @@
+.vs/BeetleX.FastHttpApi/v15/Server/sqlite3/
+samples/HttpApiServer.JsonBody/Properties/
+samples/HttpApiServer.JsonBody/bin/
+samples/HttpApiServer.JsonBody/obj/
+samples/HttpApiServer.StringBody/bin/
+samples/HttpApiServer.StringBody/obj/
+src/.vs/BeetleX.FastHttpApi/
+src/bin/
+src/obj/
