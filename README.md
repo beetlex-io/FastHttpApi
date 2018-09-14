@@ -150,7 +150,8 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
 ##### FastHttpApi POST测试结果开启Keep-Alive
 ![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_post_kv.png) 
 
-### 针对Kestrel的对比测试，对比一下在accept connection上的性能差异
+### 针对Kestrel的对比测试
+对比一下两者在accept connection上的性能差异，开启了两个AB实例进行压测
 ##### Kestrel代码
 ```
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
