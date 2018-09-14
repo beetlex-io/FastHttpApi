@@ -109,7 +109,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
 ```
 ## 性能对比测试
 由于dotnet core下面没有其他简化的http api组件，只能拿Kestrel asp.net core来作对比，虽然对asp.net core不公平，但这样的对比测也只是为了体现简化后的性能回报；测试服务器是阿里云的4核虚拟机，8G内存,测试工具是AB，测试功能主要是针对GET/POST的json数据处理。由于Kestrel asp.net core默认不支持AB的Keep-Alive选项，所以测试结果就并没有针对asp.net core的Keep-Alive测试
-#### asp.net core代码
+##### Kestrel asp.net core代码
 ```
         // GET api/values/5
         [HttpGet("{id}")]
@@ -124,7 +124,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
             return new JsonResult(value);
         }
 ```
-#### fast http api 代码
+##### FastHttpApi 代码
 ```
         // /listemployee?count
         public IList<Employee> ListEmployee(int count)
@@ -137,4 +137,16 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
             return item;
         }
 ```
+##### Kestrel asp.net core GET测试结果
+![](https://github.com/IKende/FastHttpApi/blob/master/images/Kestrel_get.png) 
+##### FastHttpApi GET测试结果
+![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_get.png) 
+##### FastHttpApi GET测试结果开启Keep-Alive
+![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_get_kv.png) 
+##### Kestrel asp.net core POST测试结果
+![](https://github.com/IKende/FastHttpApi/blob/master/images/Kestrel_mvc_post.png) 
+##### FastHttpApi POST测试结果
+![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_post.png) 
+##### FastHttpApi POST测试结果开启Keep-Alive
+![](https://github.com/IKende/FastHttpApi/blob/master/images/fasthttp_api_post_kv.png) 
 
