@@ -13,19 +13,24 @@ namespace BeetleX.FastHttpApi
         {
             ContentType = "application/json";
         }
+
         public string ContentType { get; set; }
+
         public object GetInnerError(Exception e, HttpResponse response, bool outputStackTrace)
         {
             return new ErrorResult { url = response.Request.Url, code = 500, error = e.Message, stackTrace = outputStackTrace? e.StackTrace:null };
         }
+
         public object GetNotSupport(HttpResponse response)
         {
             return new ErrorResult { url = response.Request.Url, code = 403, error = response.Request.Method + " method type not support" };
         }
+
         public object GetNotFoundData(HttpResponse response)
         {
             return new ErrorResult { url = response.Request.Url, code = 404 };
         }
+
         public class ErrorResult
         {
             public string url { get; set; }
@@ -33,6 +38,7 @@ namespace BeetleX.FastHttpApi
             public string error { get; set; }
             public string stackTrace { get; set; }
         }
+
         public virtual int Serialize(PipeStream stream, object data)
         {
             int length = stream.CacheLength;
@@ -40,6 +46,7 @@ namespace BeetleX.FastHttpApi
             stream.Write(value);
             return stream.CacheLength - length;
         }
+
         public virtual bool TryDeserialize(PipeStream stream, int length, Type type, out object data)
         {
             data = null;
@@ -48,6 +55,7 @@ namespace BeetleX.FastHttpApi
                 string value = stream.ReadString(length);
                 if (type != null)
                 {
+
                     data = Newtonsoft.Json.JsonConvert.DeserializeObject(value,type);
                 }
                 else
@@ -58,5 +66,7 @@ namespace BeetleX.FastHttpApi
             }
             return false;
         }
+
+
     }
 }

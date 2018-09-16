@@ -40,7 +40,7 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
-                mActionFactory.Register(assemblies);
+                mActionFactory.Register(this.ServerConfig, assemblies);
             }
             catch (Exception e_)
             {
@@ -49,7 +49,7 @@ namespace BeetleX.FastHttpApi
         }
         public void Open()
         {
-          
+
             NetConfig config = new NetConfig();
             config.Host = ServerConfig.Host;
             config.Port = ServerConfig.Port;

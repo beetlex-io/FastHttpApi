@@ -7,3 +7,6 @@ samples/HttpApiServer.StringBody/obj/
 src/.vs/BeetleX.FastHttpApi/
 src/bin/
 src/obj/
+.vs/BeetleX.FastHttpApi/DesignTimeBuild/
+HttpApiServer.Filters/bin/
+HttpApiServer.Filters/obj/

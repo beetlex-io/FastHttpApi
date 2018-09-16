@@ -14,6 +14,7 @@ namespace BeetleX.FastHttpApi
             BodySerializer = new StringSerializer();
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
+            Filters = new List<FilterAttribute>();
         }
 
         public string Host { get; set; }
@@ -33,5 +34,17 @@ namespace BeetleX.FastHttpApi
         public System.Text.Encoding Encoding { get; set; }
 
         public bool OutputStackTrace { get; set; }
+
+        public IList<FilterAttribute> Filters { get; set; }
+
+        public void AddFilter<T>() where T : FilterAttribute, new()
+        {
+            Filters.Add(new T());
+        }
+
+        public void AddFilter(FilterAttribute filter)
+        {
+            Filters.Add(filter);
+        }
     }
 }
