@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\BeetleX.FastHttpApi.csproj" />
+    <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>
