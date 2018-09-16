@@ -138,7 +138,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
         }
 ```
 ##### Kestrel asp.net core GET测试结果
-![](https://i.imgur.com/KYUjJmy.png) 
+![](https://i.imgur.com/xQ6XeF2.png) 
 ##### FastHttpApi GET测试结果
 ![](https://i.imgur.com/ssFiLPp.png) 
 ##### FastHttpApi GET测试结果开启Keep-Alive
