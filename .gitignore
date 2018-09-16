@@ -10,3 +10,5 @@ src/obj/
 .vs/BeetleX.FastHttpApi/DesignTimeBuild/
 HttpApiServer.Filters/bin/
 HttpApiServer.Filters/obj/
+samples/HttpApiServer.Filters/bin/
+samples/HttpApiServer.Filters/obj/
