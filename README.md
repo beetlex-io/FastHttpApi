@@ -4,6 +4,7 @@
 ## 使用便利性
 FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加了它使用的复杂度。FastHttpApi具备asp.net core webapi的便利性；应用人员只需要制定和webapi一样的方法即可，在使用过程中和写普通逻辑方法没有多大的区别。
 ##### 定义一个控制器
+控制器用来定义具体相应URL处理的方法，只需要在类上定义Controller属性即可把类中的Public方法提供给Http访问;方法参数来源于QueryString,当参数标记为BodyParameter的时候参数来源于Http Body.
 ```
     [Controller]
     public class ControllerTest
@@ -41,6 +42,7 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
     }
 ```
 ##### Filter定义
+Filter是Controller处理方法的拦载器，通Filter可以对所有方法进行统一拦载处理，如权限日志等。
 ```
     [Controller]
     [NotFoundFilter]
