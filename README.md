@@ -40,6 +40,55 @@ FastHttpApi虽然在HTTP方面作了大量的精简，但并没有为此增加�
         }
     }
 ```
+##### Filter定义
+```
+    [Controller]
+    [NotFoundFilter]
+    public class ControllerTest
+    {
+        //  /hello?name=
+        [SkipFilter(typeof(NotFoundFilter))]
+        [CustomFilter]
+        public string Hello(string name)
+        {
+            return DateTime.Now + " hello " + name;
+        }
+        // /add?a=&b=
+        public string Add(int a, int b)
+        {
+            return string.Format("{0}+{1}={2}", a, b, a + b);
+        }
+    }
+    public class GlobalFilter : FilterAttribute
+    {
+        public override void Execute(ActionContext context)
+        {
+            Console.WriteLine(DateTime.Now + " globalFilter execting...");
+            context.Execute();
+            Console.WriteLine(DateTime.Now + " globalFilter executed");
+        }
+    }
+
+    public class NotFoundFilter : FilterAttribute
+    {
+        public override void Execute(ActionContext context)
+        {
+            Console.WriteLine(DateTime.Now + " NotFoundFilter execting...");
+            context.Response.NotFound();
+            Console.WriteLine(DateTime.Now + " NotFoundFilter executed");
+        }
+    }
+
+    public class CustomFilter : FilterAttribute
+    {
+        public override void Execute(ActionContext context)
+        {
+            Console.WriteLine(DateTime.Now + " CustomFilter execting...");
+            context.Execute();
+            Console.WriteLine(DateTime.Now + " CustomFilter executed");
+        }
+    }
+```
 ##### 启动服务
 ```
         static void Main(string[] args)
