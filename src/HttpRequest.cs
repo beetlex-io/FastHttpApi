@@ -45,6 +45,10 @@ namespace BeetleX.FastHttpApi
 
         public string HttpVersion { get; set; }
 
+        public string Ext { get; set; }
+
+        public string IfNoneMatch => Header[HeaderType.IF_NONE_MATCH];
+
         public QueryString QueryString => mQueryString;
 
         internal ISession Session { get; private set; }
@@ -71,8 +75,7 @@ namespace BeetleX.FastHttpApi
                     Method = result.Item1;
                     Url = result.Item2;
                     BaseUrl = HttpParse.GetBaseUrl(Url);
-                    if (BaseUrl == null)
-                        BaseUrl = Url;
+                    Ext = HttpParse.GetBaseUrlExt(BaseUrl);
                     HttpVersion = result.Item3;
                     HttpParse.AnalyzeQueryString(Url, mQueryString);
                     mState = LoadedState.Method;
@@ -88,8 +91,8 @@ namespace BeetleX.FastHttpApi
                 if (this.Header.Read(stream))
                 {
                     mState = LoadedState.Header;
-                    int.TryParse(Header[Header.CONTENT_LENGTH], out mLength);
-                    KeepAlive = string.Compare(Header[Header.CONNECTION], "Keep-Alive", true) == 0;
+                    int.TryParse(Header[HeaderType.CONTENT_LENGTH], out mLength);
+                    KeepAlive = string.Compare(Header[HeaderType.CONNECTION], "Keep-Alive", true) == 0;
                 }
             }
         }
@@ -113,7 +116,6 @@ namespace BeetleX.FastHttpApi
         }
 
         private object mBody;
-
 
         public object GetBody(Type type)
         {
@@ -150,8 +152,8 @@ namespace BeetleX.FastHttpApi
             response.HttpVersion = this.HttpVersion;
             response.Request = this;
             if (this.KeepAlive)
-                response.Header[Header.CONNECTION] = "Keep-Alive";
-            response.Header[Header.HOST] = Header[Header.HOST];
+                response.Header[HeaderType.CONNECTION] = "Keep-Alive";
+            response.Header[HeaderType.HOST] = Header[HeaderType.HOST];
             return response;
         }
     }

@@ -94,8 +94,16 @@ namespace BeetleX.FastHttpApi
         private void OnEncode(ISession session, object data, System.IO.Stream stream)
         {
             PipeStream pstream = stream.ToPipeStream();
-            HttpResponse response = (HttpResponse)data;
-            response.Write(pstream);
+            StaticResurce.FileBlock fb = data as StaticResurce.FileBlock;
+            if (fb != null)
+            {
+                fb.Write(pstream);
+            }
+            else
+            {
+                HttpResponse response = (HttpResponse)data;
+                response.Write(pstream);
+            }
 
         }
 

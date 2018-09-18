@@ -26,7 +26,10 @@ namespace BeetleX.FastHttpApi
                 var configuration = builder.Build();
                 ServerConfig = configuration.GetSection("HttpConfig").Get<HttpConfig>();
             }
+            mResourceCenter = new StaticResurce.ResourceCenter(this);
         }
+
+        private StaticResurce.ResourceCenter mResourceCenter;
 
         private IServer mServer;
 
@@ -60,12 +63,14 @@ namespace BeetleX.FastHttpApi
             HttpPacket hp = new HttpPacket(this.ServerConfig.BodySerializer, this.ServerConfig);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             mServer.Open();
+            mResourceCenter.Load();
 
         }
 
 
         public override void Connected(IServer server, ConnectedEventArgs e)
         {
+            e.Session.Tag = new HttpToken();
             e.Session.SocketProcessHandler = this;
 
         }
@@ -79,19 +84,38 @@ namespace BeetleX.FastHttpApi
         {
 
         }
+
         public override void Log(IServer server, ServerLogEventArgs e)
         {
             base.Log(server, e);
         }
+
+        protected virtual void OnProcessResource(HttpRequest request, HttpResponse response)
+        {
+            if (string.Compare(request.Method, "GET", true) == 0)
+            {
+                mResourceCenter.ProcessFile(request, response);
+            }
+            else
+            {
+                response.NotSupport();
+            }
+        }
+
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
+            HttpToken token = (HttpToken)e.Session.Tag;
             HttpRequest request = (HttpRequest)e.Message;
-            if (!request.KeepAlive)
-            {
-                e.Session.Tag = "close";
-            }
             HttpResponse response = request.CreateResponse();
-            mActionFactory.Execute(request, response, this);
+            token.KeepAlive = request.KeepAlive;
+            if (string.IsNullOrEmpty(request.Ext) && request.BaseUrl != "/")
+            {
+                mActionFactory.Execute(request, response, this);
+            }
+            else
+            {
+                OnProcessResource(request, response);
+            }
         }
 
         public virtual void ReceiveCompleted(ISession session, SocketAsyncEventArgs e)
@@ -101,7 +125,17 @@ namespace BeetleX.FastHttpApi
 
         public virtual void SendCompleted(ISession session, SocketAsyncEventArgs e)
         {
-            if (session.SendMessages == 0 && session.Tag != null)
+            HttpToken token = (HttpToken)session.Tag;
+            if (token.File != null)
+            {
+                token.File = token.File.Next();
+                if (token.File != null)
+                {
+                    session.Send(token.File);
+                    return;
+                }
+            }
+            if (session.SendMessages == 0 && !token.KeepAlive)
             {
                 session.Dispose();
             }

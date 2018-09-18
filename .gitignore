@@ -12,3 +12,5 @@ HttpApiServer.Filters/bin/
 HttpApiServer.Filters/obj/
 samples/HttpApiServer.Filters/bin/
 samples/HttpApiServer.Filters/obj/
+samples/HttpApiServer.Web/bin/
+samples/HttpApiServer.Web/obj/

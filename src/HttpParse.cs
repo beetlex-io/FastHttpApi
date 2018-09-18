@@ -6,6 +6,32 @@ namespace BeetleX.FastHttpApi
 {
     public class HttpParse
     {
+        [ThreadStatic]
+        private static char[] mCharCacheBuffer;
+
+        public static char[] GetCharBuffer()
+        {
+            if (mCharCacheBuffer == null)
+                mCharCacheBuffer = new char[1024 * 2];
+            return mCharCacheBuffer;
+        }
+
+        [ThreadStatic]
+        private static byte[] mByteBuffer;
+        public static byte[] GetByteBuffer()
+        {
+            if (mByteBuffer == null)
+                mByteBuffer = new byte[1024 * 4];
+            return mByteBuffer;
+        }
+
+        public static string CharToLower(ReadOnlySpan<char> url)
+        {
+            char[] buffer = GetCharBuffer();
+            for (int i = 0; i < url.Length; i++)
+                buffer[i] = Char.ToLower(url[i]);
+            return new string(buffer, 0, url.Length);
+        }
 
         public static string GetBaseUrl(ReadOnlySpan<char> url)
         {
@@ -16,6 +42,21 @@ namespace BeetleX.FastHttpApi
                     return new string(url.Slice(0, i));
                 }
             }
+            return new string(url);
+        }
+
+        public static string GetBaseUrlExt(ReadOnlySpan<char> url)
+        {
+            int offset = 0;
+            for (int i = 0; i < url.Length; i++)
+            {
+                if (url[i] == '.')
+                {
+                    offset = i + 1;
+                }
+            }
+            if (offset > 0)
+                return CharToLower(url.Slice(offset, url.Length - offset));
             return null;
         }
 

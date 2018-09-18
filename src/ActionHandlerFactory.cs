@@ -100,7 +100,7 @@ namespace BeetleX.FastHttpApi
         private ActionHandler GetAction(string url)
         {
             ActionHandler result = null;
-            mMethods.TryGetValue(url.ToLower(), out result);
+            mMethods.TryGetValue(url, out result);
             return result;
         }
 

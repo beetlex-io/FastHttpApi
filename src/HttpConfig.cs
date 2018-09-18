@@ -15,6 +15,10 @@ namespace BeetleX.FastHttpApi
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
             Filters = new List<FilterAttribute>();
+            StaticResurceType = @"jpg=image/jpeg;jpeg=image/jpeg;gif=image/gif;png=image/png;js=application/x-javascript;html=text/html;htm=text/html;css=text/css;txt=text/plain";
+            StaticResourcePath = System.IO.Directory.GetCurrentDirectory() +
+                System.IO.Path.DirectorySeparatorChar + "views";
+            DefaultPage = "index.html;index.htm";
         }
 
         public string Host { get; set; }
@@ -35,7 +39,11 @@ namespace BeetleX.FastHttpApi
 
         public bool OutputStackTrace { get; set; }
 
+        public string StaticResurceType { get; set; }
+
         public IList<FilterAttribute> Filters { get; set; }
+
+        public string DefaultPage { get; set; }
 
         public void AddFilter<T>() where T : FilterAttribute, new()
         {
@@ -46,5 +54,7 @@ namespace BeetleX.FastHttpApi
         {
             Filters.Add(filter);
         }
+
+        public string StaticResourcePath { get; set; }
     }
 }

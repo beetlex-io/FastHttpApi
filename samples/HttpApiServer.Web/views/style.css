@@ -1,0 +1,296 @@
+/*
+
+	Coffeelike by nodethirtythree + Templated.org
+	http://templated.org/ | @templatedorg
+	Released under the Creative Commons Attribution 3.0 License.
+	
+	Note from the author: These templates take quite a bit of time to conceive,
+	design, and finally code. So please, support our efforts by respecting our
+	license: keep our footer credit links intact so people can find out about us
+	and what we do. It's the right thing to do, and we'll love you for it :)
+	
+*/
+
+* {
+	margin: 0;
+	padding: 0;
+}
+
+a {
+	color: #1495ff;
+	text-decoration: underline;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+body {
+	font-size: 12pt;
+	line-height: 1.75em;
+	font-family: Georgia, serif;
+	background: #ad8667 url('images/bg.jpg');
+	color: #ebe1d9;
+}
+
+br.clear {
+	clear: both;
+}
+
+h1,h2,h3,h4 {
+	text-transform: lowercase;
+	letter-spacing: -1px;
+}
+
+h2,h3,h4 {
+	margin-bottom: 1em;
+	font-family: Arvo, serif;
+	color: #fff;
+}
+
+img.left {
+	float: left;
+	margin: 5px 20px 20px 0;
+}
+
+img.top {
+	margin: 5px 0 20px 0;
+}
+
+p {
+	margin-bottom: 1.5em;
+}
+
+ul {
+	margin-bottom: 1.5em;
+}
+
+.imageList {
+	list-style: none;
+}
+
+.imageList li {
+	clear: both;
+}
+
+#bg {
+	background: url('images/shadow.png') top left repeat-x;
+}
+
+#banner {
+	background: #fff;
+}
+
+#box1 {
+	width: 745px;
+	overflow: hidden;
+	margin: 0 0 35px 0;
+}
+
+#box2 {
+	width: 355px;
+	overflow: hidden;
+	float: left;
+}
+
+#box3 {
+	width: 355px;
+	overflow: hidden;
+	margin: 0 0 0 390px;
+}
+
+#content {
+	width: 745px;
+	margin: 0 0 0 355px;
+	padding: 40px;
+	background: #fff;
+}
+
+#copyright {
+	padding: 0 0 80px 0;
+	text-align: center;
+	color: #D8C2AB;
+}
+
+#copyright a {
+	color: #D8C2AB;
+}
+
+#footer {
+	position: relative;
+	padding: 40px;
+	width: 1100px;
+	color: #e1d2c7;
+}
+
+#footer a {
+	color: #f4eeea;
+}
+
+#footer h2, #footer h3, #footer h4 {
+	color: #f4eeea;
+}
+
+#footer ul {
+	list-style: none;
+}
+
+#footer ul li {
+	padding: 15px 0 15px 0;
+	border-top: dotted 1px #c6aa95;
+}
+
+#footer ul li.first {
+	padding-top: 0;
+	border-top: 0;
+}
+
+#footerContent {
+	width: 745px;
+	margin: 0 0 0 355px;
+}
+
+#footerSidebar {
+	width: 240px;
+	float: left;
+}
+
+#header {
+	position: relative;
+	padding: 40px;
+	height: 120px;
+}
+
+#logo {
+	position: absolute;
+	top: 40px;
+	left: 40px;
+	height: 120px;
+	line-height: 120px;
+}
+
+#logo a {
+	text-decoration: none;
+	color: #fff;
+}
+
+#logo h1 {
+	font-size: 3.5em;
+	font-family: Lobster, cursive;
+	text-shadow: 0 2px 1px #32251B;
+}
+
+#main {
+	position: relative;
+	padding: 0;
+	width: 1180px;
+	color: #5e5e5e;
+}
+
+#main strong {
+	color: #3e3e3e;
+}
+
+#main a {
+	color: #242424;
+}
+
+#main h2, #main h3, #main h4 {
+	color: #242424;
+}
+
+#main ul {
+	list-style: none;
+}
+
+#main ul li {
+	padding: 15px 0 15px 0;
+	border-top: dotted 1px #b3b3b3;
+}
+
+#main ul li.first {
+	padding-top: 0;
+	border-top: 0;
+}
+
+#main ul.imageList li {
+	padding: 15px 0 15px 0;
+}
+
+#nav {
+	position: absolute;
+	right: 40px;
+	height: 53px;
+	line-height: 53px;
+	top: 73px;
+}
+
+#nav a {
+	text-decoration: none;
+	text-transform: lowercase;
+	color: #f4eeea;
+	text-shadow: 0 1px 1px #32251B;
+	font-size: 1.2em;
+}
+
+#nav li {
+	margin: 0 1em 0 1em;
+}
+
+#nav ul {
+	list-style: none;
+}
+
+#nav ul li {
+	float: left;
+}
+
+#outer {
+	position: relative;
+	width: 1180px;
+	margin: 0 auto;
+	padding: 30px;
+}
+
+#search input.button {
+	margin-left: 1em;
+	border: 0;
+	color: #fff;
+	background: #1495ff;
+	padding: 11px;
+}
+
+#search input.text {
+	border: dotted 1px #fff;
+	padding: 10px;
+}
+
+#sidebar {
+	width: 240px;
+	float: left;
+	padding: 40px;
+	background: #32251b;
+	color: #e1d2c7;
+}
+
+#sidebar a {
+	color: #e2e0df;
+}
+
+#sidebar h2, #sidebar h3, #sidebar h4 {
+	color: #fff;
+}
+
+#sidebar ul {
+	list-style: none;
+}
+
+#sidebar ul li {
+	padding: 15px 0 15px 0;
+	border-top: dotted 1px #70665f;
+}
+
+#sidebar ul li.first {
+	padding-top: 0;
+	border-top: 0;
+}
