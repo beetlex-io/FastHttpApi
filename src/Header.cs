@@ -12,6 +12,8 @@ namespace BeetleX.FastHttpApi
             SPACE_BYTES = Encoding.UTF8.GetBytes(" ");
             HEADER_SPLIT = Encoding.UTF8.GetBytes(": ");
             LINE_BYTES = Encoding.UTF8.GetBytes("\r\n");
+            NULL_CONTENT_LENGTH_BYTES = Encoding.UTF8.GetBytes("Content-Length: 0\r\n");
+            CHUNKED_BYTES = Encoding.UTF8.GetBytes("0\r\n\r\n");
             ACCEPT_BYTES = Encoding.UTF8.GetBytes(ACCEPT + ": ");
             ACCEPT_ENCODING_BYTES = Encoding.UTF8.GetBytes(ACCEPT_ENCODING + ": ");
             ACCEPT_LANGUAGE_BYTES = Encoding.UTF8.GetBytes(ACCEPT_LANGUAGE + ": ");
@@ -29,9 +31,7 @@ namespace BeetleX.FastHttpApi
             IF_NONE_MATCH_BYTES = Encoding.UTF8.GetBytes(IF_NONE_MATCH + ": ");
             SERVER_BYTES = Encoding.UTF8.GetBytes(SERVER + ": ");
             SET_COOKIE_BYTES = Encoding.UTF8.GetBytes(SET_COOKIE + ": ");
-
         }
-
 
         public static void Write(string name, PipeStream stream)
         {
@@ -125,6 +125,10 @@ namespace BeetleX.FastHttpApi
 
         }
 
+        public static byte[] NULL_CONTENT_LENGTH_BYTES;
+
+        public static byte[] CHUNKED_BYTES;
+
         public static byte[] LINE_BYTES;
 
         public static byte[] SPACE_BYTES;
@@ -207,30 +211,19 @@ namespace BeetleX.FastHttpApi
     public class Header
     {
 
-        private System.Collections.Specialized.NameValueCollection mItems = new System.Collections.Specialized.NameValueCollection();
-
-        public System.Collections.Specialized.NameValueCollection Items { get { return mItems; } }
+        private Dictionary<string, string> mItems = new Dictionary<string, string>(16);
 
         public void Add(string name, string value)
         {
             mItems[name] = value;
         }
-
-        public void Import(string line)
-        {
-            if (!string.IsNullOrEmpty(line))
-            {
-                Tuple<string, string> result = HttpParse.AnalyzeHeader(line);
-                if (result.Item1 != null)
-                    Add(result.Item1, result.Item2);
-            }
-        }
-
         public string this[string name]
         {
             get
             {
-                return mItems[name];
+                string result = null;
+                mItems.TryGetValue(name, out result);
+                return result;
             }
             set
             {
@@ -238,24 +231,42 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public bool Read(PipeStream stream)
+        public bool Read(PipeStream stream, Cookies cookies)
         {
-            string line = null;
-            while (stream.TryReadLine(out line))
+            IndexOfResult index = stream.IndexOf(HeaderType.LINE_BYTES);
+            while (index.End != null)
             {
-                if (string.IsNullOrEmpty(line))
+                if (index.Length == 2)
+                {
+                    stream.ReadFree(2);
                     return true;
-                Import(line);
+                }
+                else
+                {
+                    ReadOnlySpan<Char> line = HttpParse.ReadCharLine(index);
+                    stream.ReadFree(index.Length);
+                    if (line[0] == 'C' && line[5] == 'e' && line[1] == 'o' && line[2] == 'o' && line[3] == 'k' && line[4] == 'i')
+                    {
+                        HttpParse.AnalyzeCookie(line.Slice(8, line.Length - 8), cookies);
+                    }
+                    else
+                    {
+
+                        Tuple<string, string> result = HttpParse.AnalyzeHeader(line);
+                        Add(result.Item1, result.Item2);
+                    }
+                }
+                index = stream.IndexOf(HeaderType.LINE_BYTES);
             }
             return false;
         }
 
-        public void Write(PipeStream stream)
+        internal void Write(PipeStream stream)
         {
-            foreach (string key in mItems.Keys)
+            foreach (var item in mItems)
             {
-                HeaderType.Write(key, stream);
-                stream.Write(mItems[key]);
+                HeaderType.Write(item.Key, stream);
+                stream.Write(item.Value);
                 stream.Write(HeaderType.LINE_BYTES, 0, 2);
             }
         }
@@ -263,9 +274,9 @@ namespace BeetleX.FastHttpApi
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (string key in Items.Keys)
+            foreach (var item in mItems)
             {
-                sb.AppendFormat("{0}={1}\r\n", key, Items[key]);
+                sb.AppendFormat("{0}={1}\r\n", item.Key, item.Value);
             }
             return sb.ToString();
         }

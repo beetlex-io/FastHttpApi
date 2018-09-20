@@ -29,11 +29,15 @@ namespace BeetleX.FastHttpApi
 
         private QueryString mQueryString = new QueryString();
 
+        private Cookies mCookies = new Cookies();
+
         private PipeStream mStream;
 
         public bool KeepAlive { get; set; }
 
         public Header Header { get; private set; }
+
+        public Cookies Cookies => mCookies;
 
         public int Length => mLength;
 
@@ -64,13 +68,17 @@ namespace BeetleX.FastHttpApi
             return mState;
         }
 
+
+
         private void LoadMethod(PipeStream stream)
         {
-            string line;
             if (mState == LoadedState.None)
             {
-                if (stream.TryReadLine(out line))
+                IndexOfResult index = stream.IndexOf(HeaderType.LINE_BYTES);
+                if (index.End != null)
                 {
+                    ReadOnlySpan<Char> line = HttpParse.ReadCharLine(index);
+                    stream.ReadFree(index.Length);
                     Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line);
                     Method = result.Item1;
                     Url = result.Item2;
@@ -79,8 +87,19 @@ namespace BeetleX.FastHttpApi
                     HttpVersion = result.Item3;
                     HttpParse.AnalyzeQueryString(Url, mQueryString);
                     mState = LoadedState.Method;
-
                 }
+                //if (stream.TryReadLine(out line))
+                //{
+                //    Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line);
+                //    Method = result.Item1;
+                //    Url = result.Item2;
+                //    BaseUrl = HttpParse.GetBaseUrl(Url);
+                //    Ext = HttpParse.GetBaseUrlExt(BaseUrl);
+                //    HttpVersion = result.Item3;
+                //    HttpParse.AnalyzeQueryString(Url, mQueryString);
+                //    mState = LoadedState.Method;
+
+                //}
             }
         }
 
@@ -88,7 +107,7 @@ namespace BeetleX.FastHttpApi
         {
             if (mState == LoadedState.Method)
             {
-                if (this.Header.Read(stream))
+                if (this.Header.Read(stream, mCookies))
                 {
                     mState = LoadedState.Header;
                     int.TryParse(Header[HeaderType.CONTENT_LENGTH], out mLength);

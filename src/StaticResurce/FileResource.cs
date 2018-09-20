@@ -9,11 +9,16 @@ namespace BeetleX.FastHttpApi.StaticResurce
 {
     class FileResource
     {
-        public FileResource(string filename, string urlname)
+        public FileResource(string filename, string urlname, bool innerResource = false)
         {
             FullName = filename;
             UrlName = urlname;
+            mInnerResource = innerResource;
         }
+
+        public System.Reflection.Assembly Assembly { get; set; }
+
+        private bool mInnerResource;
 
         public string UrlName { get; set; }
 
@@ -35,6 +40,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public virtual bool Cached => false;
 
+        public bool InnerResource => mInnerResource;
+
         public virtual ArraySegment<byte> GetBlodk(int offset, int size, out int newOffset)
         {
             int length = Data.Length - offset;
@@ -52,9 +59,18 @@ namespace BeetleX.FastHttpApi.StaticResurce
         protected virtual void LoadFile()
         {
             int length;
-            using (FileStream fstream = System.IO.File.OpenRead(FullName))
+            System.IO.Stream fsstream;
+            if (InnerResource)
             {
-                length = (int)fstream.Length;
+                fsstream = Assembly.GetManifestResourceStream(FullName);
+            }
+            else
+            {
+                fsstream = System.IO.File.OpenRead(FullName);
+            }
+            using (fsstream)
+            {
+                length = (int)fsstream.Length;
                 byte[] buffer = HttpParse.GetByteBuffer();
                 using (System.IO.MemoryStream memory = new MemoryStream())
                 {
@@ -62,7 +78,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     {
                         while (length > 0)
                         {
-                            int len = fstream.Read(buffer, 0, buffer.Length);
+                            int len = fsstream.Read(buffer, 0, buffer.Length);
                             length -= len;
                             gstream.Write(buffer, 0, len);
                             gstream.Flush();
@@ -79,9 +95,19 @@ namespace BeetleX.FastHttpApi.StaticResurce
         {
             Name = System.IO.Path.GetFileName(FullName);
             UrlMD5 = MD5Encrypt(UrlName);
-            FileMD5 = FMD5(FullName);
-            FileInfo fi = new FileInfo(FullName);
-            Length = (int)fi.Length;
+            FileMD5 = FMD5(FullName, this.Assembly);
+            if (!InnerResource)
+            {
+                FileInfo fi = new FileInfo(FullName);
+                Length = (int)fi.Length;
+            }
+            else
+            {
+                using (System.IO.Stream stream = Assembly.GetManifestResourceStream(FullName))
+                {
+                    Length = (int)stream.Length;
+                }
+            }
             LoadFile();
         }
 
@@ -95,11 +121,20 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
         }
 
-        public static string FMD5(string filename)
+        public static string FMD5(string filename, System.Reflection.Assembly assembly)
         {
             using (var md5 = MD5.Create())
             {
-                using (var stream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
+                System.IO.Stream stream;
+                if (assembly != null)
+                {
+                    stream = assembly.GetManifestResourceStream(filename);
+                }
+                else
+                {
+                    stream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                }
+                using (stream)
                 {
                     var hash = md5.ComputeHash(stream);
                     return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
@@ -110,7 +145,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
     class ImageResource : FileResource
     {
-        public ImageResource(string filename, string urlname) : base(filename, urlname) { }
+        public ImageResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource) { }
 
         protected override void LoadFile()
         {
@@ -134,10 +169,19 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
                 buffer = new byte[size];
             }
-            using (System.IO.FileStream fs = System.IO.File.OpenRead(FullName))
+            System.IO.Stream fsstream;
+            if (InnerResource)
             {
-                fs.Seek(offset, SeekOrigin.Begin);
-                int len = fs.Read(buffer, 0, buffer.Length);
+                fsstream = Assembly.GetManifestResourceStream(FullName);
+            }
+            else
+            {
+                fsstream = System.IO.File.OpenRead(FullName);
+            }
+            using (fsstream)
+            {
+                fsstream.Seek(offset, SeekOrigin.Begin);
+                int len = fsstream.Read(buffer, 0, buffer.Length);
                 return new ArraySegment<byte>(buffer, 0, len);
             }
         }

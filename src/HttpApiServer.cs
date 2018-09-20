@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using BeetleX.EventArgs;
-using Microsoft.Extensions.Configuration;
 
 namespace BeetleX.FastHttpApi
 {
@@ -20,11 +19,20 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("HttpConfig.json", false);
-                var configuration = builder.Build();
-                ServerConfig = configuration.GetSection("HttpConfig").Get<HttpConfig>();
+                string configFile = "HttpConfig.json";
+                if (System.IO.File.Exists(configFile))
+                {
+                    using (System.IO.StreamReader reader = new StreamReader(configFile, Encoding.UTF8))
+                    {
+                        string json = reader.ReadToEnd();
+                        Newtonsoft.Json.Linq.JToken toke = (Newtonsoft.Json.Linq.JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                        ServerConfig = toke["HttpConfig"].ToObject<HttpConfig>();
+                    }
+                }
+                else
+                {
+                    ServerConfig = new HttpConfig();
+                }
             }
             mResourceCenter = new StaticResurce.ResourceCenter(this);
         }
@@ -39,8 +47,11 @@ namespace BeetleX.FastHttpApi
 
         public HttpConfig ServerConfig { get; set; }
 
+        private System.Reflection.Assembly[] mAssemblies;
+
         public void Register(params System.Reflection.Assembly[] assemblies)
         {
+            mAssemblies = assemblies;
             try
             {
                 mActionFactory.Register(this.ServerConfig, assemblies);
@@ -64,6 +75,13 @@ namespace BeetleX.FastHttpApi
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             mServer.Open();
             mResourceCenter.Load();
+            if (mAssemblies != null)
+            {
+                foreach (System.Reflection.Assembly assembly in mAssemblies)
+                {
+                    mResourceCenter.LoadManifestResource(assembly);
+                }
+            }
 
         }
 

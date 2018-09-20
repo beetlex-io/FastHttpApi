@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.JsonBody", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.Filters", "samples\HttpApiServer.Filters\HttpApiServer.Filters.csproj", "{92EB6BC1-7680-4684-87ED-FD2034F81F22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.Web", "samples\HttpApiServer.Web\HttpApiServer.Web.csproj", "{9277DD69-CCD4-4A94-B369-193D1664B0D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.Web", "samples\HttpApiServer.Web\HttpApiServer.Web.csproj", "{9277DD69-CCD4-4A94-B369-193D1664B0D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.Cookies", "samples\HttpApiServer.Cookies\HttpApiServer.Cookies.csproj", "{A1BE1465-037F-432C-9AF3-4CB35F982A57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{9277DD69-CCD4-4A94-B369-193D1664B0D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9277DD69-CCD4-4A94-B369-193D1664B0D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9277DD69-CCD4-4A94-B369-193D1664B0D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1BE1465-037F-432C-9AF3-4CB35F982A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1BE1465-037F-432C-9AF3-4CB35F982A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1BE1465-037F-432C-9AF3-4CB35F982A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1BE1465-037F-432C-9AF3-4CB35F982A57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{31720C8E-983C-48E5-8CF7-35C273A1A42B} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{92EB6BC1-7680-4684-87ED-FD2034F81F22} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{9277DD69-CCD4-4A94-B369-193D1664B0D3} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
+		{A1BE1465-037F-432C-9AF3-4CB35F982A57} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {988EEA11-1C48-44A4-9DF0-1C3D08600A4F}

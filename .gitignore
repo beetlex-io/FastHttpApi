@@ -14,3 +14,5 @@ samples/HttpApiServer.Filters/bin/
 samples/HttpApiServer.Filters/obj/
 samples/HttpApiServer.Web/bin/
 samples/HttpApiServer.Web/obj/
+samples/HttpApiServer.Cookies/bin/
+samples/HttpApiServer.Cookies/obj/

@@ -6,21 +6,23 @@ namespace BeetleX.FastHttpApi
 {
     public class QueryString
     {
-        private System.Collections.Specialized.NameValueCollection mItems = new System.Collections.Specialized.NameValueCollection();
+        private Dictionary<string, string> mItems = new Dictionary<string, string>();
 
-        public System.Collections.Specialized.NameValueCollection Items { get { return mItems; } }
+
 
         public string this[string name]
         {
             get
             {
-                return Items[name];
+                return GetValue(name);
             }
         }
 
         private string GetValue(string name)
         {
-            return mItems[name];
+            string result = null;
+            mItems.TryGetValue(name, out result);
+            return result;
         }
 
         internal void Add(string name, string value)
@@ -30,7 +32,7 @@ namespace BeetleX.FastHttpApi
 
         public bool TryGetString(string name, out string value)
         {
-            string result = Items[name];
+            string result = mItems[name];
             if (!string.IsNullOrEmpty(result))
             {
                 value = result;
@@ -102,9 +104,9 @@ namespace BeetleX.FastHttpApi
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (string key in Items.Keys)
+            foreach (var item in mItems)
             {
-                sb.AppendFormat("{0}={1}\r\n", key, Items[key]);
+                sb.AppendFormat("{0}={1}\r\n", item.Key, item.Value);
             }
             return sb.ToString();
         }

@@ -7,16 +7,13 @@
     <Company>henryfan</Company>
     <Description>dotnet core fast http api server
 </Description>
-    <Version>0.6.0</Version>
+    <Version>0.6.5</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.0.1.6" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
+    <PackageReference Include="BeetleX" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

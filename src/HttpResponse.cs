@@ -89,6 +89,11 @@ namespace BeetleX.FastHttpApi
             Completed(data);
         }
 
+        public void Result()
+        {
+            Completed(null);
+        }
+
         private int mCompletedStatus = 0;
 
         private void Completed(object data)
@@ -151,6 +156,7 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
+                stream.Write(HeaderType.NULL_CONTENT_LENGTH_BYTES);
                 stream.Write(HeaderType.LINE_BYTES);
             }
 

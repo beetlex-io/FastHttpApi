@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>FastHttpApi Cookie Sample</title>
+</head>
+<body>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">FastHttpApi Cookie Sample</li>
+        </ol>
+    </nav>
+    <div class="container bs-docs-container">
+        <div class="row">
+            <div class="col-md-9" role="main">
+                <div class="panel panel-default">
+                    <div class="panel-heading"> <h3 class="panel-title">设置Cookie</h3></div>
+                    <div class="panel-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Cookie Name</label>
+                                <input type="text" class="form-control" id="cookieName" aria-describedby="emailHelp" placeholder="cookie name">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Value</label>
+                                <input type="text" class="form-control" id="cookieValue">
+                            </div>
+
+                            <button type="button" onclick="setCookie()" class="btn btn-primary">设置</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">获取Cookie</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Cookie Name</label>
+                                <input type="text" class="form-control" id="getcookieName" aria-describedby="emailHelp" placeholder="cookie name">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Value</label>
+                                <input type="text" class="form-control" id="getcookieValue">
+                            </div>
+
+                            <button type="button" onclick="getCookie()" class="btn btn-primary">获取</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function setCookie() {
+        $.get("/setcookie?name=" + $('#cookieName').val() + "&value=" + $('#cookieValue').val());
+    }
+    function getCookie() {
+        $.get("/getcookie?name=" + $('#getcookieName').val(), function (result) {
+            $('#getcookieValue').val(result);
+        });
+    }
+</script>
+</html>

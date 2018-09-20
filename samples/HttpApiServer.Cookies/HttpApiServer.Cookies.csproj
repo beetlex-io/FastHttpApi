@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="views\css\bootstrap.css" />
+    <None Remove="views\css\bootstrap.min.css" />
+    <None Remove="views\index.html" />
+    <None Remove="views\js\bootstrap.bundle.js" />
+    <None Remove="views\js\bootstrap.bundle.min.js" />
+    <None Remove="views\js\bootstrap.js" />
+    <None Remove="views\js\bootstrap.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="views\css\bootstrap.css" />
+    <EmbeddedResource Include="views\css\bootstrap.min.css" />
+    <EmbeddedResource Include="views\index.html" />
+    <EmbeddedResource Include="views\js\bootstrap.bundle.js" />
+    <EmbeddedResource Include="views\js\bootstrap.bundle.min.js" />
+    <EmbeddedResource Include="views\js\bootstrap.js" />
+    <EmbeddedResource Include="views\js\bootstrap.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
+  </ItemGroup>
+
+</Project>

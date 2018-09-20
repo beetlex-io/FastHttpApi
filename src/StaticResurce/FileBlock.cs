@@ -52,11 +52,12 @@ namespace BeetleX.FastHttpApi.StaticResurce
         public void Write(BeetleX.Buffers.PipeStream stream)
         {
             int len = Data.Count;
-            stream.Write(len.ToString("X") + "\r\n");
+            stream.Write(len.ToString("X"));
+            stream.Write(HeaderType.LINE_BYTES);
             stream.Write(Data.Array, Data.Offset, Data.Count);
             stream.WriteLine("");
             if (Offset == mFileResource.Length)
-                stream.Write("0\r\n\r\n");
+                stream.Write(HeaderType.CHUNKED_BYTES);
         }
     }
 }

@@ -37,6 +37,81 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public string Path { get; private set; }
 
+
+        private string GetResourceUrl(string name)
+        {
+            char[] charname = name.ToCharArray();
+            List<int> indexs = new List<int>();
+            for (int i = 0; i < charname.Length; i++)
+            {
+                if (charname[i] == '.')
+                    indexs.Add(i);
+            }
+            for (int i = 0; i < indexs.Count - 1; i++)
+            {
+                charname[indexs[i]] = '/';
+            }
+            return new string(charname);
+        }
+
+
+        private void SaveTempFile(System.Reflection.Assembly assembly, string recname, string filename)
+        {
+            using (System.IO.Stream stream = assembly.GetManifestResourceStream(recname))
+            {
+                byte[] buffer = HttpParse.GetByteBuffer();
+                int length = (int)stream.Length;
+                using (System.IO.FileStream fs = System.IO.File.Create(filename))
+                {
+                    while (length > 0)
+                    {
+                        int len = stream.Read(buffer, 0, buffer.Length);
+                        fs.Write(buffer, 0, len);
+                        fs.Flush();
+                        length -= len;
+                    }
+                }
+            }
+        }
+
+        public void LoadManifestResource(System.Reflection.Assembly assembly)
+        {
+            string[] files = assembly.GetManifestResourceNames();
+            string tmpFolder = "_tempview";
+            if (!System.IO.Directory.Exists(tmpFolder))
+            {
+                Directory.CreateDirectory(tmpFolder);
+            }
+            foreach (string item in files)
+            {
+                int offset = item.IndexOf(".views");
+                if (offset > 0)
+                {
+                    string url = GetResourceUrl(item.Substring(offset + 6, item.Length - offset - 6));
+                    string ext = System.IO.Path.GetExtension(item).ToLower();
+                    ext = ext.Substring(1, ext.Length - 1);
+                    if (mExts.ContainsKey(ext))
+                    {
+                        string urlname = url;
+                        string filename = tmpFolder + System.IO.Path.DirectorySeparatorChar + item;
+                        SaveTempFile(assembly, item, filename);
+                        FileResource fr;
+                        if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                        {
+                            fr = new ImageResource(filename, urlname);
+                        }
+                        else
+                        {
+                            fr = new FileResource(filename, urlname);
+                        }
+                        mResources[urlname] = fr;
+                        fr.CreateTime = Server.BaseServer.GetRunTime();
+                        fr.Load();
+                    }
+                }
+            }
+        }
+
         public void Load()
         {
             if (System.IO.Directory.Exists(Path))
@@ -58,6 +133,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
             }
+
 
         }
 

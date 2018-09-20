@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.Buffers;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,7 +13,7 @@ namespace BeetleX.FastHttpApi
         public static char[] GetCharBuffer()
         {
             if (mCharCacheBuffer == null)
-                mCharCacheBuffer = new char[1024 * 2];
+                mCharCacheBuffer = new char[1024 * 4];
             return mCharCacheBuffer;
         }
 
@@ -23,6 +24,45 @@ namespace BeetleX.FastHttpApi
             if (mByteBuffer == null)
                 mByteBuffer = new byte[1024 * 4];
             return mByteBuffer;
+        }
+
+        public static ReadOnlySpan<char> ReadCharLine(IndexOfResult result)
+        {
+            int offset = 0;
+            char[] data = HttpParse.GetCharBuffer();
+            IMemoryBlock memory = result.Start;
+            for (int i = result.StartPostion; i < memory.Bytes.Length; i++)
+            {
+                data[offset] = (char)result.Start.Bytes[i];
+                offset++;
+                if (offset == result.Length)
+                    break;
+            }
+            if (offset < result.Length)
+            {
+                Next:
+                memory = result.Start.NextMemory;
+                int count;
+                if (memory.ID == result.End.ID)
+                {
+                    count = result.EndPostion + 1;
+                }
+                else
+                {
+                    count = memory.Bytes.Length;
+                }
+                for (int i = 0; i < count; i++)
+                {
+                    data[offset] = (char)memory.Bytes[i];
+                    offset++;
+                    if (offset == result.Length)
+                        break;
+                }
+                if (offset < result.Length)
+                    goto Next;
+            }
+            return new ReadOnlySpan<char>(data, 0, result.Length - 2);
+
         }
 
         public static string CharToLower(ReadOnlySpan<char> url)
@@ -39,10 +79,10 @@ namespace BeetleX.FastHttpApi
             {
                 if (url[i] == '?')
                 {
-                    return new string(url.Slice(0, i));
+                    return CharToLower(url.Slice(0, i));
                 }
             }
-            return new string(url);
+            return CharToLower(url);
         }
 
         public static string GetBaseUrlExt(ReadOnlySpan<char> url)
@@ -58,6 +98,36 @@ namespace BeetleX.FastHttpApi
             if (offset > 0)
                 return CharToLower(url.Slice(offset, url.Length - offset));
             return null;
+        }
+
+        public static void AnalyzeCookie(ReadOnlySpan<char> cookieData, Cookies cookies)
+        {
+            int offset = 0;
+            string name = null, value = null;
+            for (int i = 0; i < cookieData.Length; i++)
+            {
+                if (cookieData[i] == '=')
+                {
+                    if (cookieData[offset] == ' ')
+                        offset++;
+                    name = new string(cookieData.Slice(offset, i - offset));
+                    offset = i + 1;
+                }
+                if (name != null && cookieData[i] == ';')
+                {
+                    value = new string(cookieData.Slice(offset, i - offset));
+                    offset = i + 1;
+                    cookies.Add(name, value);
+                    name = null;
+
+                }
+
+            }
+            if (name != null)
+            {
+                value = new string(cookieData.Slice(offset, cookieData.Length - offset));
+                cookies.Add(name, value);
+            }
         }
 
         public static void AnalyzeQueryString(ReadOnlySpan<char> url, QueryString qs)
