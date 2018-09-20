@@ -3,6 +3,8 @@
 ## 简介
 是dotNet core下基于[Beetlex](https://github.com/IKende/BeetleX)实现的一个高度精简化和高吞吐的HTTP API服务组件，它并没有完全实现HTTP SERVER的所有功能，而是只实现了在APP和WEB中提供数据服务最常用两个指令GET/SET，满足在应用实现JSON,PROTOBUF和MSGPACK等基于HTTP的数据交互功能，虽然是一个精简版本但针对SSL这方面的安全性还是支持。有牺牲就必然有收获，FastHttpApi作出这么大的精简必然在性能上有所收获取，经测试FastHttpApi在GET/POST这些数据交互的场景下性能和吞吐能力是Asp.net core集成的Kestrel的2倍以上。
 ## 更新日志
+#### 2018-9-20 支持静态资源嵌入到程序中，支持Cookies。
+可以把静态资源打包到程序中，组件支持URL直接访问嵌入的静态资源，实现对Cookies的读写。
 #### 2018-9-18 增加了对静态资源的支持，优化了Header写入的性能。
 对Image类静态资源加入本地缓存标记；对HTML,CSS,JS资源加入了缓存修改标签，方便文件变更后刷新缓存；对HTML,CSS,JS等文件使用GZIP输出。
 ## 稳定性测试
