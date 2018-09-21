@@ -25,7 +25,7 @@ namespace BeetleX.FastHttpApi
 
         public HttpRequest Request { get; private set; }
 
-        internal Object Result { get; set; }
+        public Object Result { get; set; }
 
         public void Execute()
         {

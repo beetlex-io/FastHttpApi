@@ -23,6 +23,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 mExts[fct.Ext] = fct;
             }
             mDefaultPages.AddRange(Server.ServerConfig.DefaultPage.Split(";"));
+
         }
 
         private ConcurrentDictionary<string, FileResource> mResources = new ConcurrentDictionary<string, FileResource>();
@@ -35,8 +36,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public HttpApiServer Server { get; private set; }
 
-        public string Path { get; private set; }
+        public string Path { get; internal set; }
 
+        public bool Debug { get; set; }
 
         private string GetResourceUrl(string name)
         {
@@ -51,9 +53,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
                 charname[indexs[i]] = '/';
             }
-            return new string(charname);
+            return HttpParse.CharToLower(charname);
         }
-
 
         private void SaveTempFile(System.Reflection.Assembly assembly, string recname, string filename)
         {
@@ -96,17 +97,24 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         string filename = tmpFolder + System.IO.Path.DirectorySeparatorChar + item;
                         SaveTempFile(assembly, item, filename);
                         FileResource fr;
-                        if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                        if (Debug)
                         {
-                            fr = new ImageResource(filename, urlname);
+                            fr = new NoGzipResource(filename, urlname);
                         }
                         else
                         {
-                            fr = new FileResource(filename, urlname);
+                            if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                            {
+                                fr = new NoGzipResource(filename, urlname);
+                            }
+                            else
+                            {
+                                fr = new FileResource(filename, urlname);
+                            }
                         }
                         mResources[urlname] = fr;
-                        fr.CreateTime = Server.BaseServer.GetRunTime();
                         fr.Load();
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
                     }
                 }
             }
@@ -139,22 +147,29 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         private void OutputFileResource(FileContentType fct, FileResource fr, HttpResponse response)
         {
-            if (response.Request.IfNoneMatch == fr.FileMD5)
+            if (!Debug)
             {
-                response.NoModify();
-                return;
+                if (response.Request.IfNoneMatch == fr.FileMD5)
+                {
+                    response.NoModify();
+                    return;
+                }
             }
+
             if (fr.GZIP)
             {
                 SetGZIP(response);
             }
-            if (fr.Cached)
+            if (!Debug)
             {
-                response.Header.Add(HeaderType.CACHE_CONTROL, "private, max-age=31536000");
-            }
-            else
-            {
-                response.Header.Add(HeaderType.ETAG, fr.FileMD5);
+                if (fr.Cached)
+                {
+                    response.Header.Add(HeaderType.CACHE_CONTROL, "private, max-age=31536000");
+                }
+                else
+                {
+                    response.Header.Add(HeaderType.ETAG, fr.FileMD5);
+                }
             }
             SetChunked(response);
             HttpToken token = (HttpToken)response.Session.Tag;
@@ -294,22 +309,33 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 {
                     string urlname = GetUrl(file);
                     FileResource fr;
-                    if (mResources.TryGetValue(urlname, out fr))
+                    if (!Debug)
                     {
-                        if (Server.BaseServer.GetRunTime() - fr.CreateTime < 2000)
-                            return fr;
+                        if (mResources.TryGetValue(urlname, out fr))
+                        {
+                            if (Server.BaseServer.GetRunTime() - fr.CreateTime < 2000)
+                                return fr;
+                        }
                     }
-                    if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                    if (Debug)
                     {
-                        fr = new ImageResource(file, urlname);
+                        fr = new NoGzipResource(file, urlname);
                     }
                     else
                     {
-                        fr = new FileResource(file, urlname);
+                        if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                        {
+                            fr = new NoGzipResource(file, urlname);
+                        }
+                        else
+                        {
+                            fr = new FileResource(file, urlname);
+                        }
                     }
                     mResources[urlname] = fr;
                     fr.CreateTime = Server.BaseServer.GetRunTime();
                     fr.Load();
+                    Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
                     return fr;
                 }
             }

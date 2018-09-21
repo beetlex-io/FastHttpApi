@@ -147,16 +147,22 @@ namespace BeetleX.FastHttpApi
                 }
                 if (name != null && url[i] == '&')
                 {
-                    value = new string(url.Slice(offset, i - offset));
-                    offset = i + 1;
-                    qs.Add(name, value);
+                    if (i > offset)
+                    {
+                        value = new string(url.Slice(offset, i - offset));
+                        qs.Add(name, value);
+                    }
                     name = null;
+                    offset = i + 1;
                 }
             }
             if (name != null)
             {
-                value = new string(url.Slice(offset, url.Length - offset));
-                qs.Add(name, value);
+                if (url.Length > offset)
+                {
+                    value = new string(url.Slice(offset, url.Length - offset));
+                    qs.Add(name, value);
+                }
             }
 
         }

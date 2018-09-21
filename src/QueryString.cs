@@ -27,12 +27,12 @@ namespace BeetleX.FastHttpApi
 
         internal void Add(string name, string value)
         {
-            mItems.Add(name, System.Web.HttpUtility.UrlDecode(value));
+            mItems[name] = System.Web.HttpUtility.UrlDecode(value);
         }
 
         public bool TryGetString(string name, out string value)
         {
-            string result = mItems[name];
+            string result = GetValue(name);
             if (!string.IsNullOrEmpty(result))
             {
                 value = result;

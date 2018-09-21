@@ -143,9 +143,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
         }
     }
 
-    class ImageResource : FileResource
+    class NoGzipResource : FileResource
     {
-        public ImageResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource) { }
+        public NoGzipResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource) { }
 
         protected override void LoadFile()
         {

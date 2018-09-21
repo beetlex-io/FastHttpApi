@@ -88,18 +88,6 @@ namespace BeetleX.FastHttpApi
                     HttpParse.AnalyzeQueryString(Url, mQueryString);
                     mState = LoadedState.Method;
                 }
-                //if (stream.TryReadLine(out line))
-                //{
-                //    Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line);
-                //    Method = result.Item1;
-                //    Url = result.Item2;
-                //    BaseUrl = HttpParse.GetBaseUrl(Url);
-                //    Ext = HttpParse.GetBaseUrlExt(BaseUrl);
-                //    HttpVersion = result.Item3;
-                //    HttpParse.AnalyzeQueryString(Url, mQueryString);
-                //    mState = LoadedState.Method;
-
-                //}
             }
         }
 

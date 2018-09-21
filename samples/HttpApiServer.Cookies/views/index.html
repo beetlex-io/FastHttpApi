@@ -60,9 +60,15 @@
 </body>
 <script>
     function setCookie() {
-        $.get("/setcookie?name=" + $('#cookieName').val() + "&value=" + $('#cookieValue').val());
+        $.get("/setcookie?name=" + $('#cookieName').val() + "&value=" + $('#cookieValue').val(),
+            function (result) {
+                if (result == true) {
+                    alert('设置成功!')
+                }
+            });
     }
     function getCookie() {
+        $('#getcookieValue').val('');
         $.get("/getcookie?name=" + $('#getcookieName').val(), function (result) {
             $('#getcookieValue').val(result);
         });

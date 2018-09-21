@@ -19,9 +19,12 @@ namespace BeetleX.FastHttpApi
             StaticResourcePath = System.IO.Directory.GetCurrentDirectory() +
                 System.IO.Path.DirectorySeparatorChar + "views";
             DefaultPage = "index.html;index.htm";
+            Debug = false;
         }
 
         public string Host { get; set; }
+
+        public bool Debug { get; set; }
 
         public int Port { get; set; }
 

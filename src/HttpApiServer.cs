@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -61,6 +62,23 @@ namespace BeetleX.FastHttpApi
                 Log(null, new ServerLogEventArgs(" http api server load controller error " + e_.Message, LogType.Error));
             }
         }
+
+        [Conditional("DEBUG")]
+        public void Debug(string viewpath = null)
+        {
+            ServerConfig.Debug = true;
+            if (string.IsNullOrEmpty(viewpath))
+            {
+                string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+                path += @"views";
+                ServerConfig.StaticResourcePath = path;
+            }
+            else
+            {
+                ServerConfig.StaticResourcePath = viewpath;
+            }
+        }
+
         public void Open()
         {
 
@@ -74,7 +92,6 @@ namespace BeetleX.FastHttpApi
             HttpPacket hp = new HttpPacket(this.ServerConfig.BodySerializer, this.ServerConfig);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             mServer.Open();
-            mResourceCenter.Load();
             if (mAssemblies != null)
             {
                 foreach (System.Reflection.Assembly assembly in mAssemblies)
@@ -82,7 +99,9 @@ namespace BeetleX.FastHttpApi
                     mResourceCenter.LoadManifestResource(assembly);
                 }
             }
-
+            mResourceCenter.Path = ServerConfig.StaticResourcePath;
+            mResourceCenter.Debug = ServerConfig.Debug;
+            mResourceCenter.Load();
         }
 
 
