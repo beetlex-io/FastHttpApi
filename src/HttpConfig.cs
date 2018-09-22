@@ -15,7 +15,7 @@ namespace BeetleX.FastHttpApi
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
             Filters = new List<FilterAttribute>();
-            StaticResurceType = @"jpg=image/jpeg;jpeg=image/jpeg;gif=image/gif;png=image/png;js=application/x-javascript;html=text/html;htm=text/html;css=text/css;txt=text/plain";
+            StaticResurceType = @"jpg=image/jpeg;jpeg=image/jpeg;gif=image/gif;png=image/png;js=application/x-javascript;html=text/html;htm=text/html;css=text/css;txt=text/plain;ico=application/x-ico";
             StaticResourcePath = System.IO.Directory.GetCurrentDirectory() +
                 System.IO.Path.DirectorySeparatorChar + "views";
             DefaultPage = "index.html;index.htm";

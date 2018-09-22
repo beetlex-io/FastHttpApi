@@ -25,6 +25,8 @@ namespace BeetleX.FastHttpApi
 
         internal void Add(string name, string value)
         {
+            name = System.Web.HttpUtility.UrlDecode(name);
+            value = System.Web.HttpUtility.UrlDecode(value);
             mItems.Add(name, value);
         }
     }

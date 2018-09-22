@@ -55,7 +55,6 @@ namespace BeetleX.FastHttpApi
                 string value = stream.ReadString(length);
                 if (type != null)
                 {
-
                     data = Newtonsoft.Json.JsonConvert.DeserializeObject(value,type);
                 }
                 else

@@ -1,7 +1,8 @@
 ﻿using BeetleX.FastHttpApi;
 using System;
+using System.Threading.Tasks;
 
-namespace HttpApiServer.Cookies
+namespace HttpApiServer.AsyncResult
 {
     class Program
     {
@@ -22,16 +23,20 @@ namespace HttpApiServer.Cookies
     [Controller]
     public class Test
     {
-        public bool setCookie(string name, string value, HttpResponse response)
+        public string hello(string name)
         {
-            response.SetCookie(name, value);
-            return true;
+            return string.Format("[{0}] hello {1}", DateTime.Now, name);
         }
 
-        public string getCookie(string name, HttpRequest request, HttpResponse response)
+        public void asyncHello(string name, HttpResponse response)
         {
-            string value = request.Cookies[name];
-            return value;
+            response.Async();
+            Task.Run(() =>
+            {
+                Console.WriteLine("sleep ...");
+                System.Threading.Thread.Sleep(5000);
+                response.Result(string.Format("[{0}] hello {1}", DateTime.Now, name));
+            });
         }
     }
 }

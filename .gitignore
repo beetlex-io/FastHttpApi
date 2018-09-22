@@ -19,3 +19,5 @@ samples/HttpApiServer.Cookies/obj/
 samples/HttpApiServer.WebApplication/Properties/PublishProfiles/
 samples/HttpApiServer.WebApplication/bin/
 samples/HttpApiServer.WebApplication/obj/
+HttpApiServer.AsyncResult/bin/
+HttpApiServer.AsyncResult/obj/

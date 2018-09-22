@@ -10,7 +10,7 @@ namespace HttpApiServer.Filters
     public class ControllerTest
     {
         //  /hello?name=
-        [SkipFilter(typeof(NotFoundFilter))]
+        [SkipFilter(typeof(GlobalFilter))]
         [CustomFilter]
         public string Hello(string name)
         {
@@ -50,7 +50,6 @@ namespace HttpApiServer.Filters
             Console.WriteLine(DateTime.Now + " globalFilter execting...");
             context.Execute();
             Console.WriteLine(DateTime.Now + " globalFilter executed");
-
         }
     }
 

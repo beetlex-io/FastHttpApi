@@ -200,6 +200,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
                 response.NotFound();
+                Server.BaseServer.Log(EventArgs.LogType.Warring, reqeust.Session, "{0} not found", reqeust.BaseUrl);
                 return;
             }
 
@@ -225,12 +226,14 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     else
                     {
                         response.NotFound();
+                        Server.BaseServer.Log(EventArgs.LogType.Warring, reqeust.Session, "{0} not found", reqeust.BaseUrl);
                     }
                 }
             }
             else
             {
                 response.NotSupport();
+                Server.BaseServer.Log(EventArgs.LogType.Warring, reqeust.Session, "{0} not support", reqeust.BaseUrl);
             }
         }
 
@@ -323,7 +326,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                     else
                     {
-                        if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                        if ("jpg;jpeg;png;gif;png;ico".IndexOf(ext) >= 0)
                         {
                             fr = new NoGzipResource(file, urlname);
                         }

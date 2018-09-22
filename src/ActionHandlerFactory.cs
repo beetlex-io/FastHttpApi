@@ -118,9 +118,11 @@ namespace BeetleX.FastHttpApi
                 {
                     ActionContext context = new ActionContext(handler, request, response);
                     context.Execute();
-                    object result = context.Result;
-                    if (result != null)
+                    if (!response.AsyncResult)
+                    {
+                        object result = context.Result;
                         response.Result(result);
+                    }
                 }
                 catch (Exception e_)
                 {

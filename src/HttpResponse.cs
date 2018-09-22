@@ -14,6 +14,7 @@ namespace BeetleX.FastHttpApi
             Header[HeaderType.SERVER] = "BeetleX-Fast-HttpServer";
             Header[HeaderType.CONTENT_TYPE] = formater.ContentType;
             Serializer = formater;
+            AsyncResult = false;
 
         }
 
@@ -37,6 +38,13 @@ namespace BeetleX.FastHttpApi
 
         public HttpRequest Request { get; internal set; }
 
+        internal bool AsyncResult { get; set; }
+
+        public void Async()
+        {
+            AsyncResult = true;
+        }
+
         public void InnerError(Exception e, bool outputStackTrace)
         {
             mCode = "500";
@@ -52,6 +60,10 @@ namespace BeetleX.FastHttpApi
         public void SetCookie(string name, string value, string path, DateTime? expires = null)
         {
             string cookie;
+            if (string.IsNullOrEmpty(name))
+                return;
+            name = System.Web.HttpUtility.UrlEncode(name);
+            value = System.Web.HttpUtility.UrlEncode(value);
             if (expires == null)
             {
                 cookie = string.Format("{0}={1};path={2}", name, value, path);
