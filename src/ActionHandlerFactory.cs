@@ -14,7 +14,7 @@ namespace BeetleX.FastHttpApi
 
         private System.Collections.Concurrent.ConcurrentDictionary<string, ActionHandler> mMethods = new System.Collections.Concurrent.ConcurrentDictionary<string, ActionHandler>();
 
-        public void Register(HttpConfig config, params Assembly[] assemblies)
+        public void Register(HttpConfig config, HttpApiServer server, params Assembly[] assemblies)
         {
             foreach (Assembly item in assemblies)
             {
@@ -23,7 +23,7 @@ namespace BeetleX.FastHttpApi
                     ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
                     if (ca != null)
                     {
-                        Register(config, type, ca.BaseUrl);
+                        Register(config, type, ca.BaseUrl, server);
                     }
                 }
             }
@@ -48,7 +48,7 @@ namespace BeetleX.FastHttpApi
         }
 
 
-        private void Register(HttpConfig config, Type controller, string rooturl)
+        private void Register(HttpConfig config, Type controller, string rooturl, HttpApiServer server)
         {
             if (string.IsNullOrEmpty(rooturl))
                 rooturl = "/";
@@ -81,7 +81,10 @@ namespace BeetleX.FastHttpApi
                 ActionHandler handler = GetAction(url);
                 if (handler != null)
                 {
-                    throw new BXException(url + " already exists! {0}@{1} duplicate definition!", controller, mi.Name);
+
+                    server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controller.Name,
+                        mi.Name);
+                    continue;
                 }
                 handler = new ActionHandler(obj, mi);
                 handler.Filters.AddRange(filters);
@@ -93,6 +96,7 @@ namespace BeetleX.FastHttpApi
                     RemoveFilter(handler.Filters, item.Types);
                 }
                 mMethods[url] = handler;
+                server.Log(EventArgs.LogType.Info, "register {0}.{1} to {2}", controller.Name, mi.Name, url);
             }
 
         }

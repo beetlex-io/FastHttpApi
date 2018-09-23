@@ -55,11 +55,11 @@ namespace BeetleX.FastHttpApi
             mAssemblies = assemblies;
             try
             {
-                mActionFactory.Register(this.ServerConfig, assemblies);
+                mActionFactory.Register(this.ServerConfig, this, assemblies);
             }
             catch (Exception e_)
             {
-                Log(null, new ServerLogEventArgs(" http api server load controller error " + e_.Message, LogType.Error));
+                Log(LogType.Error, " http api server load controller error " + e_.Message);
             }
         }
 
@@ -115,6 +115,20 @@ namespace BeetleX.FastHttpApi
         public override void Disconnect(IServer server, SessionEventArgs e)
         {
 
+        }
+
+        internal void Log(LogType type, string message, params object[] parameters)
+        {
+            Log(type, string.Format(message, parameters));
+        }
+
+        internal void Log(LogType type, string message)
+        {
+            try
+            {
+                Log(null, new ServerLogEventArgs(message, type));
+            }
+            catch { }
         }
 
         public override void Connecting(IServer server, ConnectingEventArgs e)
