@@ -2,6 +2,15 @@
 
 ## 简介
 是dotNet core下基于[Beetlex](https://github.com/IKende/BeetleX)实现的一个高度精简化和高吞吐支持双协议的组件，组件在同一端口服务下同时支持http和WebSocket协议；通过组件定义的web api同样支持http和websocket调用。组件除了支持HTTP/Websocket还提供静态网页资源输出，从而可以在组件的基础上直接构建网站应用.在安全性方面组件支持SSL，只需要简单配置证书文件即可让服务支持https的安全性访问。 在性能上经测试FastHttpApi在GET/POST这些数据交互的场景下性能和吞吐能力是Asp.net core集成的Kestrel的2倍以上。
+
+1. 支持以函数的方式来制定HTTP请求逻辑
+2. 支持使用者处理异步响应
+3. 同一端口下同时支持http/websocket协议
+4. 支持Filter功能，以便更好地控制请求方法的处理
+5. 支持自定义Http Body解释器，方便制定基于json,xml,protobuf,msgpack等数据格式的传输
+6. 支持QueryString参数和Cookies
+7. 支持外置或内嵌到DLL的静态资源输出（默认对html,js,css资源进行GZIP处理）
+8. 支持SSL和Https
  
  **[功能介绍和使用](https://github.com/IKende/FastHttpApi/wiki/%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8)**
 
