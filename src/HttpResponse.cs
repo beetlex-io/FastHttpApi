@@ -1,6 +1,7 @@
 ﻿using BeetleX.Buffers;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -12,8 +13,11 @@ namespace BeetleX.FastHttpApi
         {
             Header = new Header();
             Header[HeaderType.SERVER] = "BeetleX-Fast-HttpServer";
-            Header[HeaderType.CONTENT_TYPE] = formater.ContentType;
-            Serializer = formater;
+            if (formater != null)
+            {
+                Header[HeaderType.CONTENT_TYPE] = formater.ContentType;
+                Serializer = formater;
+            }
             AsyncResult = false;
 
         }
@@ -96,9 +100,36 @@ namespace BeetleX.FastHttpApi
             Completed(Serializer.GetNotSupport(this));
         }
 
+        public void ConnectionUpgradeWebsocket(string websocketkey)
+        {
+            mCode = "101";
+            mCodeMsg = "Switching Protocols";
+            Header.Add(HeaderType.CONNECTION, "Upgrade");
+            Header.Add(HeaderType.UPGRADE, "websocket");
+            Header.Add(HeaderType.SEC_WEBSOCKET_VERSION, "13");
+            SHA1 sha1 = new SHA1CryptoServiceProvider();
+            byte[] bytes_sha1_in = Encoding.UTF8.GetBytes(websocketkey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+            byte[] bytes_sha1_out = sha1.ComputeHash(bytes_sha1_in);
+            string str_sha1_out = Convert.ToBase64String(bytes_sha1_out);
+            Header.Add(HeaderType.SEC_WEBSOCKT_ACCEPT, str_sha1_out);
+        }
         public void Result(object data)
         {
-            Completed(data);
+            if (data is StaticResurce.FileBlock)
+            {
+                Completed(data);
+            }
+            else
+            {
+                ActionResult result = data as ActionResult;
+                if (result == null)
+                {
+                    result = new ActionResult();
+                    result.Data = data;
+                }
+                result.Url = this.Request.BaseUrl;
+                Completed(result);
+            }
         }
 
         public void Result()

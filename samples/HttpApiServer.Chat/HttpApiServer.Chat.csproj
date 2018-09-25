@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="views\Chat.html" />
+    <None Remove="views\css\bootstrap-theme.css" />
+    <None Remove="views\css\bootstrap-theme.min.css" />
+    <None Remove="views\css\bootstrap.css" />
+    <None Remove="views\css\bootstrap.min.css" />
+    <None Remove="views\index.html" />
+    <None Remove="views\js\bootstrap.bundle.js" />
+    <None Remove="views\js\bootstrap.bundle.min.js" />
+    <None Remove="views\js\bootstrap.js" />
+    <None Remove="views\js\bootstrap.min.js" />
+    <None Remove="views\js\jquery_2_1_min.js" />
+    <None Remove="views\js\npm.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="views\Chat.html" />
+    <EmbeddedResource Include="views\css\bootstrap-theme.css" />
+    <EmbeddedResource Include="views\css\bootstrap-theme.min.css" />
+    <EmbeddedResource Include="views\css\bootstrap.css" />
+    <EmbeddedResource Include="views\css\bootstrap.min.css" />
+    <EmbeddedResource Include="views\index.html" />
+    <EmbeddedResource Include="views\js\bootstrap.bundle.js" />
+    <EmbeddedResource Include="views\js\bootstrap.bundle.min.js" />
+    <EmbeddedResource Include="views\js\bootstrap.js" />
+    <EmbeddedResource Include="views\js\bootstrap.min.js" />
+    <EmbeddedResource Include="views\js\jquery_2_1_min.js" />
+    <EmbeddedResource Include="views\js\npm.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
+  </ItemGroup>
+
+</Project>

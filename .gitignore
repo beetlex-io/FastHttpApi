@@ -23,3 +23,7 @@ HttpApiServer.AsyncResult/bin/
 HttpApiServer.AsyncResult/obj/
 samples/HttpApiServer.AsyncResult/bin/
 samples/HttpApiServer.AsyncResult/obj/
+samples/HttpApiServer.Chat/bin/
+samples/HttpApiServer.Chat/obj/
+samples/HttpApiServer.HttpAndWebsocketApi/bin/
+samples/HttpApiServer.HttpAndWebsocketApi/obj/

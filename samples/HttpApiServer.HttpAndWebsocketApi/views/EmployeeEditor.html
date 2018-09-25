@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>
+    </title>
+</head>
+<body>
+    <div class="container bs-docs-container">
+        <div class="row">
+            <br />
+            <div class="col-md-9" role="main">
+                <nav class="navbar navbar-default">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">FastHttpApi http and websocket api</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+
+                    </div><!-- /.container-fluid -->
+                </nav>
+                <ul class="nav nav-tabs">
+                    <li role="presentation"><a href="/">Orders</a></li>
+                    <li role="presentation" class="active"><a href="/Employees.html">Employees</a></li>
+                </ul>
+                <div id="connectStatus" style="display:flex;padding-bottom:10px;"> </div>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <form id="empInfo">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">First Name</label>
+                                <input type="text" readonly class="form-control" id="FirstName" name="FirstName" placeholder="First Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Last Name</label>
+                                <input type="text" readonly class="form-control" id="LastName" name="LastName" placeholder="Last Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Title</label>
+                                <input type="text" class="form-control" id="Title" name="Title" placeholder="Title">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Address</label>
+                                <input type="text" class="form-control" id="Address" name="Address" placeholder="Address">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">City</label>
+                                <input type="text" class="form-control" id="City" name="City" placeholder="City">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">HomePhone</label>
+                                <input type="text" class="form-control" id="HomePhone" name="HomePhone" placeholder="HomePhone">
+                            </div>
+                            <button type="button" onclick="HttpModify()" class="btn btn-default">Http Submit</button>
+                            <button type="button" onclick="WebsocketEdit()" class="btn btn-default">WebSocket Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var websocket;
+    $(document).ready(function () {
+
+        $('#talk').hide();
+        websocket = new WebSocket("ws://" + window.location.host);
+        websocket.onopen = function (evt) { onOpen(evt) };
+        websocket.onclose = function (evt) { onClose(evt) };
+        websocket.onmessage = function (evt) { onMessage(evt) };
+        websocket.onerror = function (evt) { onError(evt) };
+        employeeID = getUrlVars()["id"];
+        $.get("GetEmployee?id=" + employeeID, function (item) {
+            $('#nameTitle').text(item.Data.FirstName + ' ' + item.Data.LastName);
+            $('#FirstName').val(item.Data.FirstName);
+            $('#LastName').val(item.Data.LastName);
+            $('#Title').val(item.Data.Title);
+            $('#Address').val(item.Data.Address);
+            $('#City').val(item.Data.City);
+            $('#HomePhone').val(item.Data.HomePhone);
+        });
+    });
+    function onOpen(evt) {
+        $('#connectStatus').empty();
+        $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
+    }
+    function onClose(evt) {
+        $('#connectStatus').empty();
+        $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
+    }
+    function onMessage(evt) {
+        var msg = JSON.parse(evt.data);
+        if (msg.Code = 200) {
+            window.location.href = "employees.html";
+        }
+
+    }
+
+    function onError(evt) {
+        $('#connectStatus').empty();
+        $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
+
+    }
+
+
+    function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+    function objectifyForm(formArray) {
+
+        var returnArray = {};
+        for (var i = 0; i < formArray.length; i++) {
+            returnArray[formArray[i]['name']] = formArray[i]['value'];
+        }
+        return returnArray;
+    }
+    var employeeID;
+
+    function WebsocketEdit() {
+        var body = objectifyForm($("#empInfo").serializeArray());
+        var data = {
+            url: "/EditEmployee",
+            params: { id: employeeID, body: body }
+        };
+        websocket.send(JSON.stringify(data));
+
+    }
+
+    function HttpModify() {
+        var url = "EditEmployee?id=" + employeeID;
+        var data = objectifyForm($("#empInfo").serializeArray());
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(data),
+            dataType: "json",
+            success: function (message) {
+                if (message.Code == 200) {
+                    window.location.href = "employees.html";
+                }
+            }
+        });
+    }
+
+</script>
+</html>

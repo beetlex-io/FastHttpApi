@@ -4,10 +4,21 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    class HttpToken
+    public class HttpToken
     {
+        public HttpToken()
+        {
+            FirstRequest = true;
+        }
+
         public bool KeepAlive { get; set; }
 
-        public StaticResurce.FileBlock File { get; set; }
+        internal StaticResurce.FileBlock File { get; set; }
+
+        public bool WebSocket { get; set; }
+
+        public HttpRequest WebSocketRequest { get; set; }
+
+        public bool FirstRequest { get; set; }
     }
 }

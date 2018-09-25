@@ -18,17 +18,17 @@ namespace BeetleX.FastHttpApi
 
         public object GetInnerError(Exception e, HttpResponse response, bool outputStackTrace)
         {
-            return new ErrorResult { url = response.Request.Url, code = 500, error = e.Message, stackTrace = outputStackTrace? e.StackTrace:null };
+            return new ActionResult { Url = response.Request.BaseUrl, Code = 500, Error = e.Message, StackTrace = outputStackTrace ? e.StackTrace : null };
         }
 
         public object GetNotSupport(HttpResponse response)
         {
-            return new ErrorResult { url = response.Request.Url, code = 403, error = response.Request.Method + " method type not support" };
+            return new ActionResult { Url = response.Request.BaseUrl, Code = 403, Error = response.Request.Method + " method type not support" };
         }
 
         public object GetNotFoundData(HttpResponse response)
         {
-            return new ErrorResult { url = response.Request.Url, code = 404 };
+            return new ActionResult { Url = response.Request.BaseUrl, Code = 404 };
         }
 
         public class ErrorResult
@@ -41,6 +41,7 @@ namespace BeetleX.FastHttpApi
 
         public virtual int Serialize(PipeStream stream, object data)
         {
+
             int length = stream.CacheLength;
             string value = Newtonsoft.Json.JsonConvert.SerializeObject(data);
             stream.Write(value);
@@ -55,7 +56,7 @@ namespace BeetleX.FastHttpApi
                 string value = stream.ReadString(length);
                 if (type != null)
                 {
-                    data = Newtonsoft.Json.JsonConvert.DeserializeObject(value,type);
+                    data = Newtonsoft.Json.JsonConvert.DeserializeObject(value, type);
                 }
                 else
                 {

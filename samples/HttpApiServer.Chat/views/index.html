@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/bootstrap-theme.css" rel="stylesheet" />
+
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>FastHttpApi WebSocket</title>
+</head>
+<body>
+
+    <div class="container bs-docs-container">
+        <div class="row">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">FastHttpApi WebSocket sample</a>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+
+                </div><!-- /.container-fluid -->
+            </nav>
+            <ul class="nav nav-tabs">
+                <li role="presentation" class="active"><a href="/">Onlines</a></li>
+                <li role="presentation"><a href="/chat.html">Chat Room</a></li>
+            </ul>
+            <div class="col-md-9" role="main">
+                <br />
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="exampleInputName2"></label>
+                        <input type="text" class="form-control" id="msg" placeholder="message">
+                    </div>
+
+                    <button type="button" onclick="sendMessage()" class="btn btn-default">Talk</button>
+                </form>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>SessionID</th>
+                            <th>Name</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lstbody"></tbody>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+
+        search();
+    });
+
+    function sendMessage() {
+
+        if (!$('#msg').val()) {
+            alert("enter talk message!")
+            return;
+        }
+        var url = "SendMessage?sessionid=&message=" + $('#msg').val();
+        $.get(url);
+    }
+    function search() {
+        $.get('/Onlines', function (result) {
+            var a = new Array();
+            a = result.Data;
+            $("#lstbody").empty();
+            a.forEach(function (v, i) {
+                $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.ID + '</td><td>' + v.Name + '</td></tr>')
+            });
+        });
+    }
+</script>
+</html>

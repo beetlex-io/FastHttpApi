@@ -77,13 +77,13 @@
     $(document).ready(function () {
         employeeID = getUrlVars()["id"];
         $.get("GetEmployee?id=" + employeeID, function (item) {
-            $('#nameTitle').text(item.FirstName + ' ' + item.LastName);
-            $('#FirstName').val(item.FirstName);
-            $('#LastName').val(item.LastName);
-            $('#Title').val(item.Title);
-            $('#Address').val(item.Address);
-            $('#City').val(item.City);
-            $('#HomePhone').val(item.HomePhone);
+            $('#nameTitle').text(item.Data.FirstName + ' ' + item.Data.LastName);
+            $('#FirstName').val(item.Data.FirstName);
+            $('#LastName').val(item.Data.LastName);
+            $('#Title').val(item.Data.Title);
+            $('#Address').val(item.Data.Address);
+            $('#City').val(item.Data.City);
+            $('#HomePhone').val(item.Data.HomePhone);
         });
     });
 
@@ -97,7 +97,7 @@
             data: JSON.stringify(objectifyForm(data)),
             dataType: "json",
             success: function (message) {
-                if (message == true) {
+                if (message.Code == 200) {
                     window.location.href = "employees.html";
                 }
             }

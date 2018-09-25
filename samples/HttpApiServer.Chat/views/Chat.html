@@ -1,0 +1,140 @@
+﻿<html>
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/bootstrap-theme.css" rel="stylesheet" />
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>FastHttpApi WebSocket</title>
+</head>
+<body>
+
+    <div class="container bs-docs-container">
+        <div class="row">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">FastHttpApi WebSocket sample</a>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+
+                </div><!-- /.container-fluid -->
+            </nav>
+            <ul class="nav nav-tabs">
+                <li role="presentation"><a href="/">Onlines</a></li>
+                <li role="presentation" class="active"><a href="/chat.html">Chat Room</a></li>
+            </ul>
+            <div class="col-md-9" role="main">
+
+                <br />
+                <form class="form-inline" id="connectcmd">
+                    <div class="form-group">
+                        <label for="exampleInputEmail2">Name</label>
+                        <input type="email" class="form-control" id="name" placeholder="nick name">
+                    </div>
+                    <button type="button" onclick="Connect()" class="btn btn-default">Login</button>
+                </form>
+                <div id="connectStatus" style="display:flex;padding-bottom:10px;"> </div>
+                <form class="form-inline" id="talk">
+                    <div class="form-group" style="width:60%;">
+                        <label for="exampleInputName2"></label>
+                        <input type="text" class="form-control" id="msg" style="width:100%" placeholder="message">
+                    </div>
+
+                    <button type="button" onclick="sendMessage()" class="btn btn-default">Talk</button>
+
+                    <hr />
+                </form>
+                <div id="talkContent">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        var websocket;
+
+        $(document).ready(function () {
+
+            $('#talk').hide();
+            websocket = new WebSocket("ws://" + window.location.host);
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
+        });
+        function Connect() {
+            if (!$('#name').val()) {
+                alert('enter you name!');
+                return;
+            }
+            doSend({ Name: $('#name').val(), Type: 'Login', Message: '' });
+            $('#talk').show();
+            $('#connectcmd').hide();
+        }
+
+        function sendMessage() {
+            if (!$('#msg').val()) {
+                alert('enter talk message');
+                return;
+            }
+            doSend({ Name: $('#name').val(), Type: 'Talk', Message: $('#msg').val() })
+            $('#msg').val('');
+        }
+
+        function onOpen(evt) {
+            $('#connectStatus').empty();
+            $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
+
+
+        }
+
+        function onClose(evt) {
+            $('#talk').hide();
+            $('#connectcmd').show();
+            $('#connectStatus').empty();
+            $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
+        }
+
+        function onMessage(evt) {
+            var msg = JSON.parse(evt.data);
+            var message;
+            switch (msg.Type) {
+                case "Login":
+                    message = "login";
+                    break;
+                case "Quit":
+                    message = "quit"
+                    break;
+                case "Talk":
+                    message = msg.Message;
+                    break;
+
+            }
+            $('#talkContent').append('<div style="padding:10px"><mark>(' + new Date().toDateString() + ') ' + msg.Name + ':</mark> ' + message + '</div>')
+        }
+
+        function onError(evt) {
+            $('#connectStatus').empty();
+            $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
+
+        }
+
+        function doSend(message) {
+
+            websocket.send(JSON.stringify(message));
+        }
+
+    </script>
+</body>
+
+</html>

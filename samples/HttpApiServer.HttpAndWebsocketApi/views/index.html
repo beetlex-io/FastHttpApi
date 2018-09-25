@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/bootstrap-theme.css" rel="stylesheet" />
+
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>FastHttpApi WebApplication</title>
+</head>
+<body>
+
+    <div class="container bs-docs-container">
+
+
+        <div class="row">
+            <div class="col-md-9" role="main">
+                <nav class="navbar navbar-default">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">FastHttpApi http and websocket api</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+
+                    </div><!-- /.container-fluid -->
+                </nav>
+                <ul class="nav nav-tabs">
+                    <li role="presentation" class="active"><a href="/">Orders</a></li>
+                    <li role="presentation"><a href="/Employees.html">Employees</a></li>
+                </ul>
+                <div id="connectStatus" style="display:flex;padding-bottom:10px;"> </div>
+                <div class="panel panel-default">
+
+                    <div class="panel-body">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <label for="exampleInputName2">Employee:</label>
+                                <select id="lstEmployees" style="margin:5px;">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail2">Customer:</label>
+                                <select id="lstCustomers" style="margin:5px;">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <br />
+                            <button type="button" onclick="HttpSearch()" class="btn btn-default">Http Search</button>
+                            <button type="button" onclick="WebSocketSearch()" class="btn btn-default">WebSocket Search</button>
+                        </form>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>OrderID</th>
+                                    <th>ShipName</th>
+                                    <th>ShipAddress</th>
+                                    <th>City</th>
+                                    <th>OrderDate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lstbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var websocket;
+    $(document).ready(function () {
+
+      
+    });
+   
+    function onOpen(evt) {
+        $('#connectStatus').empty();
+        $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
+
+    }
+
+    function onClose(evt) {
+        $('#connectStatus').empty();
+        $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
+    }
+    function onMessage(evt) {
+        var msg = JSON.parse(evt.data);
+        var message;
+        bindOrders(msg.Data);
+
+    }
+
+    function onError(evt) {
+        $('#connectStatus').empty();
+        $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
+
+    }
+
+
+    function HttpSearch() {
+        $.get('/listorders?employeeid=' + $('#lstEmployees').val() + "&customerid=" + $('#lstCustomers').val(), function (result) {
+            bindOrders(result.Data);
+        });
+    }
+
+    function WebSocketSearch() {
+        var searchInfo = {
+            url: '/listorders', params: { employeeid: $('#lstEmployees').val(), customerid: $('#lstCustomers').val() }
+        };
+        websocket.send(JSON.stringify(searchInfo));
+    }
+
+    $(document).ready(function () {
+        $.get("/GetEmployeesName", function (result) {
+            var a = new Array();
+            a = result.Data;
+            a.forEach(function (v, i) {
+                $('#lstEmployees').append(' <option value="' + v.ID + '">' + v.Name + '</option>')
+            });
+        });
+        $.get("/GetCustomersName", function (result) {
+            var a = new Array();
+            a = result.Data;
+            a.forEach(function (v, i) {
+                $('#lstCustomers').append(' <option value="' + v.ID + '">' + v.Name + '</option>')
+            });
+        });
+        $('#talk').hide();
+        websocket = new WebSocket("ws://" + window.location.host);
+        websocket.onopen = function (evt) { onOpen(evt) };
+        websocket.onclose = function (evt) { onClose(evt) };
+        websocket.onmessage = function (evt) { onMessage(evt) };
+        websocket.onerror = function (evt) { onError(evt) };
+        HttpSearch();
+    });
+
+    function bindOrders(items) {
+        $("#lstbody").empty();
+        items.forEach(function (v, i) {
+            $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.OrderID + '</td><td>' + v.ShipName + '</td><td>' + v.ShipAddress + '</td><td>' + v.ShipCity + '</td><td>' + v.OrderDate + '</td></tr>')
+        });
+    }
+
+
+</script>
+</html>

@@ -31,6 +31,16 @@ namespace BeetleX.FastHttpApi
             IF_NONE_MATCH_BYTES = Encoding.UTF8.GetBytes(IF_NONE_MATCH + ": ");
             SERVER_BYTES = Encoding.UTF8.GetBytes(SERVER + ": ");
             SET_COOKIE_BYTES = Encoding.UTF8.GetBytes(SET_COOKIE + ": ");
+            UPGRADE_BYTES = Encoding.UTF8.GetBytes(UPGRADE + ": ");
+            ACCESS_CONTROL_ALLOW_CREDENTIALS_BYTES = Encoding.UTF8.GetBytes(ACCESS_CONTROL_ALLOW_CREDENTIALS + ": ");
+            ACCESS_CONTROL_ALLOW_HEADERS_BYTES = Encoding.UTF8.GetBytes(ACCESS_CONTROL_ALLOW_HEADERS + ": ");
+            ACCESS_CONTROL_ALLOW_ORIGIN_BYTES = Encoding.UTF8.GetBytes(ACCESS_CONTROL_ALLOW_ORIGIN + ": ");
+            DATE_BYTES = Encoding.UTF8.GetBytes(DATE + ": ");
+            ORIGIN_BYTES = Encoding.UTF8.GetBytes(ORIGIN + ": ");
+            SEC_WEBSOCKET_EXTENSIONS_BYTES = Encoding.UTF8.GetBytes(SEC_WEBSOCKET_EXTENSIONS + ": ");
+            SEC_WEBSOCKET_KEY_BYTES = Encoding.UTF8.GetBytes(SEC_WEBSOCKET_KEY + ": ");
+            SEC_WEBSOCKET_VERSION_BYTES = Encoding.UTF8.GetBytes(SEC_WEBSOCKET_VERSION + ": ");
+            SEC_WEBSOCKT_ACCEPT_BYTES = Encoding.UTF8.GetBytes(SEC_WEBSOCKT_ACCEPT + ": ");
         }
 
         public static void Write(string name, PipeStream stream)
@@ -47,6 +57,15 @@ namespace BeetleX.FastHttpApi
                         break;
                     case ACCEPT_LANGUAGE:
                         stream.Write(ACCEPT_LANGUAGE_BYTES, 0, ACCEPT_LANGUAGE_BYTES.Length);
+                        break;
+                    case ACCESS_CONTROL_ALLOW_CREDENTIALS:
+                        stream.Write(ACCESS_CONTROL_ALLOW_CREDENTIALS_BYTES, 0, ACCESS_CONTROL_ALLOW_CREDENTIALS_BYTES.Length);
+                        break;
+                    case ACCESS_CONTROL_ALLOW_HEADERS:
+                        stream.Write(ACCESS_CONTROL_ALLOW_HEADERS_BYTES, 0, ACCESS_CONTROL_ALLOW_HEADERS_BYTES.Length);
+                        break;
+                    case ACCESS_CONTROL_ALLOW_ORIGIN:
+                        stream.Write(ACCESS_CONTROL_ALLOW_ORIGIN_BYTES, 0, ACCESS_CONTROL_ALLOW_ORIGIN_BYTES.Length);
                         break;
                     default:
                         stream.Write(name + ": ");
@@ -80,6 +99,66 @@ namespace BeetleX.FastHttpApi
                         break;
                 }
             }
+            else if (name[0] == 'D')
+            {
+                switch (name)
+                {
+                    case DATE:
+                        stream.Write(DATE_BYTES, 0, DATE_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
+            else if (name[0] == 'E')
+            {
+                switch (name)
+                {
+                    case ETAG:
+                        stream.Write(ETAG_BYTES, 0, ETAG_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
+            else if (name[0] == 'I')
+            {
+                switch (name)
+                {
+                    case IF_NONE_MATCH:
+                        stream.Write(IF_NONE_MATCH_BYTES, 0, IF_NONE_MATCH_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
+            else if (name[0] == 'O')
+            {
+                switch (name)
+                {
+                    case ORIGIN:
+                        stream.Write(ORIGIN_BYTES, 0, ORIGIN_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
+            else if (name[0] == 'R')
+            {
+                switch (name)
+                {
+                    case REFERER:
+                        stream.Write(REFERER_BYTES, 0, REFERER_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
             else if (name[0] == 'S')
             {
                 switch (name)
@@ -93,6 +172,45 @@ namespace BeetleX.FastHttpApi
                     case SET_COOKIE:
                         stream.Write(SET_COOKIE_BYTES, 0, SET_COOKIE_BYTES.Length);
                         break;
+                    case SEC_WEBSOCKET_EXTENSIONS:
+                        stream.Write(SEC_WEBSOCKET_EXTENSIONS_BYTES, 0, SEC_WEBSOCKET_EXTENSIONS_BYTES.Length);
+                        break;
+                    case SEC_WEBSOCKET_KEY:
+                        stream.Write(SEC_WEBSOCKET_KEY_BYTES, 0, SEC_WEBSOCKET_KEY_BYTES.Length);
+                        break;
+                    case SEC_WEBSOCKET_VERSION:
+                        stream.Write(SEC_WEBSOCKET_VERSION_BYTES, 0, SEC_WEBSOCKET_VERSION_BYTES.Length);
+                        break;
+                    case SEC_WEBSOCKT_ACCEPT:
+                        stream.Write(SEC_WEBSOCKT_ACCEPT_BYTES, 0, SEC_WEBSOCKT_ACCEPT_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
+            else if (name[0] == 'T')
+            {
+                switch (name)
+                {
+                    case TRANSFER_ENCODING:
+                        stream.Write(TRANSFER_ENCODING_BYTES, 0, TRANSFER_ENCODING_BYTES.Length);
+                        break;
+                    default:
+                        stream.Write(name + ": ");
+                        break;
+                }
+            }
+            else if (name[0] == 'U')
+            {
+                switch (name)
+                {
+                    case UPGRADE:
+                        stream.Write(UPGRADE_BYTES, 0, UPGRADE_BYTES.Length);
+                        break;
+                    case USER_AGENT:
+                        stream.Write(USER_AGENT_BYTES, 0, USER_AGENT_BYTES.Length);
+                        break;
                     default:
                         stream.Write(name + ": ");
                         break;
@@ -100,30 +218,50 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                switch (name)
-                {
-                    case REFERER:
-                        stream.Write(REFERER_BYTES, 0, REFERER_BYTES.Length);
-                        break;
-                    case USER_AGENT:
-                        stream.Write(USER_AGENT_BYTES, 0, USER_AGENT_BYTES.Length);
-                        break;
-                    case ETAG:
-                        stream.Write(ETAG_BYTES, 0, ETAG_BYTES.Length);
-                        break;
-                    case TRANSFER_ENCODING:
-                        stream.Write(TRANSFER_ENCODING_BYTES, 0, TRANSFER_ENCODING_BYTES.Length);
-                        break;
-                    case IF_NONE_MATCH:
-                        stream.Write(IF_NONE_MATCH_BYTES, 0, IF_NONE_MATCH_BYTES.Length);
-                        break;
-                    default:
-                        stream.Write(name + ": ");
-                        break;
-                }
+                stream.Write(name + ": ");
             }
 
         }
+
+        public const string ORIGIN = "Origin";
+
+        public static Byte[] ORIGIN_BYTES;
+
+        public const string DATE = "DATE";
+
+        public static Byte[] DATE_BYTES;
+
+        public const string SEC_WEBSOCKT_ACCEPT = "Sec-WebSocket-Accept";
+
+        public static byte[] SEC_WEBSOCKT_ACCEPT_BYTES;
+
+        public const string SEC_WEBSOCKET_VERSION = "Sec_WebSocket_Version";
+
+        public static byte[] SEC_WEBSOCKET_VERSION_BYTES;
+
+        public const string SEC_WEBSOCKET_EXTENSIONS = "Sec-WebSocket-Extensions";
+
+        public static Byte[] SEC_WEBSOCKET_EXTENSIONS_BYTES;
+
+        public const string SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
+
+        public static Byte[] SEC_WEBSOCKET_KEY_BYTES;
+
+        public const string ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+
+        public static Byte[] ACCESS_CONTROL_ALLOW_ORIGIN_BYTES;
+
+        public const string ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+
+        public static byte[] ACCESS_CONTROL_ALLOW_HEADERS_BYTES;
+
+        public const string ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+
+        public static byte[] ACCESS_CONTROL_ALLOW_CREDENTIALS_BYTES;
+
+        public const string UPGRADE = "Upgrade";
+
+        public static Byte[] UPGRADE_BYTES;
 
         public static byte[] NULL_CONTENT_LENGTH_BYTES;
 

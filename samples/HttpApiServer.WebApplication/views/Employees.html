@@ -44,7 +44,7 @@
     $(document).ready(function () {
         $.get("/ListEmployees", function (e) {
             var items = new Array();
-            items = e;
+            items = e.Data;
             $('#lstbody').empty();
             items.forEach(function (v, i) {
                 $('#lstbody').append('<tr><td>' + i + '</td><td><a href="EmployeeEditor.html?id=' + v.EmployeeID + '">'

@@ -58,16 +58,16 @@
 </body>
 <script>
     $(document).ready(function () {
-        $.get("/GetEmployeesName", function (items) {
+        $.get("/GetEmployeesName", function (e) {
             var a = new Array();
-            a = items;
+            a = e.Data;
             a.forEach(function (v, i) {
                 $('#lstEmployees').append(' <option value="' + v.ID + '">' + v.Name + '</option>')
             });
         });
-        $.get("/GetCustomersName", function (items) {
+        $.get("/GetCustomersName", function (e) {
             var a = new Array();
-            a = items;
+            a = e.Data;
             a.forEach(function (v, i) {
                 $('#lstCustomers').append(' <option value="' + v.ID + '">' + v.Name + '</option>')
             });
@@ -75,9 +75,9 @@
         search();
     });
     function search() {
-        $.get('/listorders?employeeid=' + $('#lstEmployees').val() + "&customerid=" + $('#lstCustomers').val(), function (items) {
+        $.get('/listorders?employeeid=' + $('#lstEmployees').val() + "&customerid=" + $('#lstCustomers').val(), function (e) {
             var a = new Array();
-            a = items;
+            a = e.Data;
             $("#lstbody").empty();
             a.forEach(function (v, i) {
                 $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.OrderID + '</td><td>' + v.ShipName + '</td><td>' + v.ShipAddress + '</td><td>' + v.ShipCity + '</td><td>' + v.OrderDate + '</td></tr>')

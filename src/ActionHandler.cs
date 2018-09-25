@@ -85,6 +85,14 @@ namespace BeetleX.FastHttpApi
                 {
                     pb = new RequestParameter();
                 }
+                else if (pi.ParameterType == typeof(IDataContext))
+                {
+                    pb = new ParameterContext();
+                }
+                else if (pi.ParameterType == typeof(HttpApiServer) || pi.ParameterType.BaseType == typeof(HttpApiServer))
+                {
+                    pb = new HttpServerParameter();
+                }
                 else if (pi.ParameterType == typeof(HttpResponse))
                 {
                     pb = new ResponseParameter();
@@ -110,20 +118,21 @@ namespace BeetleX.FastHttpApi
 
         public List<ParameterBinder> Parameters { get; set; }
 
-        private object[] GetValues(HttpRequest request, HttpResponse response)
+        private object[] GetValues(IDataContext context)
         {
+
             object[] parameters = new object[Parameters.Count];
             for (int i = 0; i < parameters.Length; i++)
             {
-                parameters[i] = Parameters[i].GetValue(request, response);
+                parameters[i] = Parameters[i].GetValue(context);
 
             }
             return parameters;
         }
 
-        public object Invoke(HttpRequest request, HttpResponse response)
+        public object Invoke(IDataContext context)
         {
-            object[] parameters = GetValues(request, response);
+            object[] parameters = GetValues(context);
             return mMethodHandler.Execute(Controller, parameters);
         }
     }
@@ -135,132 +144,132 @@ namespace BeetleX.FastHttpApi
 
         public string Name { get; internal set; }
 
-        public abstract object GetValue(HttpRequest request, HttpResponse response);
+        public abstract object GetValue(IDataContext context);
     }
 
     class IntParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             int result;
-            request.QueryString.TryGetInt(this.Name, out result);
+            context.TryGetInt(this.Name, out result);
             return result;
         }
     }
 
     class ShortParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             short result;
-            request.QueryString.TryGetShort(this.Name, out result);
+            context.TryGetShort(this.Name, out result);
             return result;
         }
     }
 
     class LongParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             long result;
-            request.QueryString.TryGetLong(this.Name, out result);
+            context.TryGetLong(this.Name, out result);
             return result;
         }
     }
 
     class UIntParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             uint result;
-            request.QueryString.TryGetUInt(this.Name, out result);
+            context.TryGetUInt(this.Name, out result);
             return result;
         }
     }
 
     class UShortParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             ushort result;
-            request.QueryString.TryGetUShort(this.Name, out result);
+            context.TryGetUShort(this.Name, out result);
             return result;
         }
     }
 
     class ULongParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             ulong result;
-            request.QueryString.TryGetULong(this.Name, out result);
+            context.TryGetULong(this.Name, out result);
             return result;
         }
     }
 
     class FloatParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             float result;
-            request.QueryString.TryGetFloat(this.Name, out result);
+            context.TryGetFloat(this.Name, out result);
             return result;
         }
     }
 
     class DoubleParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             double result;
-            request.QueryString.TryGetDouble(this.Name, out result);
+            context.TryGetDouble(this.Name, out result);
             return result;
         }
     }
 
     class StringParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             string result;
-            request.QueryString.TryGetString(this.Name, out result);
+            context.TryGetString(this.Name, out result);
             return result;
         }
     }
 
     class DecimalParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             Decimal result;
-            request.QueryString.TryGetDecimal(this.Name, out result);
+            context.TryGetDecimal(this.Name, out result);
             return result;
         }
     }
 
     class DateTimeParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
             DateTime result;
-            request.QueryString.TryGetDateTime(this.Name, out result);
+            context.TryGetDateTime(this.Name, out result);
             return result;
         }
     }
 
     public class BodyParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
-            return request.GetBody(this.Type);
+            return context.GetBody(this.Type);
         }
     }
 
     class RequestParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
-            return request;
+            return context.Request;
         }
     }
 
@@ -268,17 +277,35 @@ namespace BeetleX.FastHttpApi
 
     class ResponseParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
-            return response;
+            return context.Response;
+        }
+    }
+
+    class HttpServerParameter : ParameterBinder
+    {
+        public override object GetValue(IDataContext context)
+        {
+            return context.Server;
+        }
+    }
+
+    public class ParameterContext : ParameterBinder
+    {
+        public override object GetValue(IDataContext context)
+        {
+            return context;
         }
     }
 
     class DefaultParameter : ParameterBinder
     {
-        public override object GetValue(HttpRequest request, HttpResponse response)
+        public override object GetValue(IDataContext context)
         {
-            return null;
+
+            return context.GetObject(this.Name, this.Type);
+
         }
     }
 

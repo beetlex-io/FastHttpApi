@@ -13,4 +13,9 @@ namespace BeetleX.FastHttpApi
         public string BaseUrl { get; set; }
     }
     public interface IBodyFlag { }
+
+    public interface IController
+    {
+        void Init(HttpApiServer server);
+    }
 }

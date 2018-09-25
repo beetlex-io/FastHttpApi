@@ -51,6 +51,8 @@ namespace BeetleX.FastHttpApi
 
         public string Ext { get; set; }
 
+        public HttpApiServer Server { get; set; }
+
         public string IfNoneMatch => Header[HeaderType.IF_NONE_MATCH];
 
         public QueryString QueryString => mQueryString;

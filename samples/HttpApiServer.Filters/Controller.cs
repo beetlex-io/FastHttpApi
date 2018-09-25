@@ -58,7 +58,7 @@ namespace HttpApiServer.Filters
         public override void Execute(ActionContext context)
         {
             Console.WriteLine(DateTime.Now + " NotFoundFilter execting...");
-            context.Response.NotFound();
+            context.DataContext.Response.NotFound();
             Console.WriteLine(DateTime.Now + " NotFoundFilter executed");
         }
     }

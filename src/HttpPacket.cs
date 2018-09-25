@@ -4,23 +4,25 @@ using System.IO;
 using System.Text;
 using BeetleX.Buffers;
 using BeetleX.EventArgs;
+using BeetleX.FastHttpApi.WebSockets;
 
 namespace BeetleX.FastHttpApi
 {
     public class HttpPacket : IPacket
     {
 
-        public HttpPacket(IBodySerializer bodySerializer, HttpConfig serverConfig)
+        public HttpPacket(IBodySerializer bodySerializer, HttpConfig serverConfig, IDataFrameSerializer dataPacketSerializer)
         {
             Serializer = bodySerializer;
             mServerConfig = serverConfig;
+            mDataPacketSerializer = dataPacketSerializer;
         }
 
         public EventHandler<PacketDecodeCompletedEventArgs> Completed { get; set; }
 
         public IPacket Clone()
         {
-            return new HttpPacket(this.Serializer, mServerConfig);
+            return new HttpPacket(this.Serializer, mServerConfig, this.mDataPacketSerializer);
         }
 
         private HttpConfig mServerConfig;
@@ -29,17 +31,14 @@ namespace BeetleX.FastHttpApi
 
         private HttpRequest mRequest;
 
+        private DataFrame mDataPacket;
+
+        private WebSockets.IDataFrameSerializer mDataPacketSerializer;
+
         public IBodySerializer Serializer { get; set; }
 
-        public void Decode(ISession session, Stream stream)
+        private void OnHttpDecode(ISession session, PipeStream pstream)
         {
-            PipeStream pstream = stream.ToPipeStream();
-            if (pstream.Length > mServerConfig.MaxBodyLength)
-            {
-                session.Server.Log(LogType.Error, session, "http body to long!");
-                session.Dispose();
-                return;
-            }
             START:
             if (mRequest == null)
             {
@@ -77,7 +76,43 @@ namespace BeetleX.FastHttpApi
                 }
                 return;
             }
+        }
+        private void OnWebSocketDecode(ISession session, PipeStream pstream)
+        {
+            START:
+            if (mDataPacket == null)
+            {
+                mDataPacket = new DataFrame();
+                mDataPacket.DataPacketSerializer = this.mDataPacketSerializer;
+            }
+            if (mDataPacket.Read(pstream) == DataPacketLoadStep.Completed)
+            {
+                DataFrame data = mDataPacket;
+                mDataPacket = null;
+                Completed?.Invoke(this, mCompletedArgs.SetInfo(session, data));
+                if (pstream.Length > 0)
+                    goto START;
+            }
+        }
 
+        public void Decode(ISession session, Stream stream)
+        {
+            HttpToken token = (HttpToken)session.Tag;
+            PipeStream pstream = stream.ToPipeStream();
+            if (pstream.Length > mServerConfig.MaxBodyLength)
+            {
+                session.Server.Log(LogType.Error, session, "http body too long!");
+                session.Dispose();
+                return;
+            }
+            if (!token.WebSocket)
+            {
+                OnHttpDecode(session, pstream);
+            }
+            else
+            {
+                OnWebSocketDecode(session, pstream);
+            }
 
         }
 
@@ -101,8 +136,16 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                HttpResponse response = (HttpResponse)data;
-                response.Write(pstream);
+                WebSockets.DataFrame dataPacket = data as WebSockets.DataFrame;
+                if (dataPacket != null)
+                {
+                    dataPacket.Write(pstream);
+                }
+                else
+                {
+                    HttpResponse response = (HttpResponse)data;
+                    response.Write(pstream);
+                }
             }
 
         }

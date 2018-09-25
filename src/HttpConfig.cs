@@ -4,13 +4,13 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    public class HttpConfig
+    public class HttpConfig : ICloneable
     {
         public HttpConfig()
         {
             Port = 9090;
             SSL = false;
-            MaxBodyLength = 1024 * 1024 * 2;
+            MaxBodyLength = 1024 * 1024;
             BodySerializer = new StringSerializer();
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
@@ -20,7 +20,11 @@ namespace BeetleX.FastHttpApi
                 System.IO.Path.DirectorySeparatorChar + "views";
             DefaultPage = "index.html;index.htm";
             Debug = false;
+
+
         }
+
+       
 
         public string Host { get; set; }
 
@@ -56,6 +60,27 @@ namespace BeetleX.FastHttpApi
         public void AddFilter(FilterAttribute filter)
         {
             Filters.Add(filter);
+        }
+
+        public object Clone()
+        {
+            HttpConfig config = new HttpConfig();
+            config.BodySerializer = this.BodySerializer;
+            config.CertificateFile = this.CertificateFile;
+            config.CertificatePassword = this.CertificatePassword;
+            config.Debug = this.Debug;
+            config.DefaultPage = this.DefaultPage;
+            config.Encoding = this.Encoding;
+            config.Filters = this.Filters;
+            config.Host = this.Host;
+            config.MaxBodyLength = this.MaxBodyLength;
+            config.OutputStackTrace = this.OutputStackTrace;
+            config.Port = this.Port;
+            config.SSL = this.SSL;
+            config.StaticResourcePath = this.StaticResourcePath;
+            config.StaticResurceType = this.StaticResurceType;
+           
+            return config;
         }
 
         public string StaticResourcePath { get; set; }

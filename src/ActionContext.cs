@@ -7,23 +7,21 @@ namespace BeetleX.FastHttpApi
     public class ActionContext
     {
 
-        internal ActionContext(ActionHandler handler, HttpRequest request, HttpResponse response)
+        internal ActionContext(ActionHandler handler, IDataContext context)
         {
             mHandler = handler;
             mFilters = handler.Filters;
-            Request = request;
-            Response = response;
+            DataContext = context;
+
         }
 
         private int mIndex = -1;
 
         private List<FilterAttribute> mFilters;
 
+        public IDataContext DataContext { get; internal set; }
+
         private ActionHandler mHandler;
-
-        public HttpResponse Response { get; private set; }
-
-        public HttpRequest Request { get; private set; }
 
         public Object Result { get; set; }
 
@@ -32,7 +30,7 @@ namespace BeetleX.FastHttpApi
             mIndex++;
             if (mIndex == mFilters.Count)
             {
-                Result = mHandler.Invoke(this.Request, this.Response);
+                Result = mHandler.Invoke(DataContext);
             }
             else
             {

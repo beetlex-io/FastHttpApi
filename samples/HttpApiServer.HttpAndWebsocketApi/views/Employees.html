@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>
+    </title>
+</head>
+<body>
+    <div class="container bs-docs-container">
+        <div class="row">
+
+            <div class="col-md-9" role="main">
+                <nav class="navbar navbar-default">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">FastHttpApi http and websocket api</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+
+                    </div><!-- /.container-fluid -->
+                </nav>
+                <ul class="nav nav-tabs">
+                    <li role="presentation"><a href="/">Orders</a></li>
+                    <li role="presentation" class="active"><a href="/Employees.html">Employees</a></li>
+                </ul>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>FirstName</th>
+                                    <th>LastName</th>
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>HomePhone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lstbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+        $.get("/ListEmployees", function (e) {
+            var items = new Array();
+            items = e.Data;
+            $('#lstbody').empty();
+            items.forEach(function (v, i) {
+                $('#lstbody').append('<tr><td>' + i + '</td><td><a href="EmployeeEditor.html?id=' + v.EmployeeID + '">'
+                    + v.FirstName + '</a></td><td>' + v.LastName + '</td><td>' + v.Address + '</td><td>' + v.City + '</td><td>'
+                    + v.HomePhone + '</td></tr>');
+            });
+        });
+    });
+
+
+
+</script>
+</html>

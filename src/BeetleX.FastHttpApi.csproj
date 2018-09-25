@@ -5,15 +5,15 @@
     <Copyright>Copyright © henryfan 2018 email:henryfan@msn.com</Copyright>
     <Authors>henryfan</Authors>
     <Company>henryfan</Company>
-    <Description>dotnet core fast http api server
+    <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>0.6.8</Version>
+    <Version>0.8.0</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.0.2" />
+    <PackageReference Include="BeetleX" Version="1.0.2.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
