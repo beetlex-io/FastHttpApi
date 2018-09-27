@@ -15,6 +15,8 @@
  **[功能介绍和使用](https://github.com/IKende/FastHttpApi/wiki/%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8)**
 
 ## 更新日志
+#### 2018-9-27 优化控制器上下文处理，集成API查询页面
+优化后action无缝支持HTTP和WebSocket协议，内嵌 api查询页通过/_info/api.html 查询所有api信息包括在http和websocket下的数据格式
 #### 2018-9-25 添加对websocket协议的支持
 在同一端口服务中默认支持HTTP和WebSocket协议，所定义的控制器方法同时支持两种协议方式调用
 #### 2018-9-21 增加Debug方式
