@@ -10,7 +10,6 @@ namespace HttpApiServer.HttpAndWebsocketApi
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.BodySerializer = new BeetleX.FastHttpApi.JsonBodySerializer();
             mApiServer.Register(typeof(Program).Assembly);
             //config.SSL = true;
             //mApiServer.ServerConfig.CertificateFile = @"c:\ssltest.pfx";

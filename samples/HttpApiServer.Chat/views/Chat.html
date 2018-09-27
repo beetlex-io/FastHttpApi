@@ -77,7 +77,7 @@
                 alert('enter you name!');
                 return;
             }
-            doSend({ Name: $('#name').val(), Type: 'Login', Message: '' });
+            doSend({ url: 'Login', params: { name: $('#name').val() } });
             $('#talk').show();
             $('#connectcmd').hide();
         }
@@ -87,7 +87,7 @@
                 alert('enter talk message');
                 return;
             }
-            doSend({ Name: $('#name').val(), Type: 'Talk', Message: $('#msg').val() })
+            doSend({ url: 'SendMessage', params: { message: $('#msg').val() } })
             $('#msg').val('');
         }
 
@@ -106,8 +106,8 @@
         }
 
         function onMessage(evt) {
-            var msg = JSON.parse(evt.data);
-            var message;
+            var result = JSON.parse(evt.data);
+            var msg = result.Data;
             switch (msg.Type) {
                 case "Login":
                     message = "login";

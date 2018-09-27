@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using BeetleX.FastHttpApi.ApiViews;
 
 namespace BeetleX.FastHttpApi
 {
-    class ActionHandler
+    class ActionHandler : IComparable
     {
         public ActionHandler(object controller, System.Reflection.MethodInfo method)
         {
@@ -25,6 +26,8 @@ namespace BeetleX.FastHttpApi
         private System.Reflection.MethodInfo mMethod;
 
         public object Controller { get; set; }
+
+        public string SourceUrl { get; set; }
 
         private void LoadParameter()
         {
@@ -85,13 +88,17 @@ namespace BeetleX.FastHttpApi
                 {
                     pb = new RequestParameter();
                 }
+                else if (pi.ParameterType == typeof(IHttpContext))
+                {
+                    pb = new HttpContextParameter();
+                }
                 else if (pi.ParameterType == typeof(IDataContext))
                 {
-                    pb = new ParameterContext();
+                    pb = new DataContextParameter();
                 }
-                else if (pi.ParameterType == typeof(HttpApiServer) || pi.ParameterType.BaseType == typeof(HttpApiServer))
+                else if (pi.ParameterType == typeof(HttpApiServer))
                 {
-                    pb = new HttpServerParameter();
+                    pb = new HttpApiServerParameter();
                 }
                 else if (pi.ParameterType == typeof(HttpResponse))
                 {
@@ -116,9 +123,9 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public List<ParameterBinder> Parameters { get; set; }
+        public List<ParameterBinder> Parameters { get; private set; }
 
-        private object[] GetValues(IDataContext context)
+        private object[] GetValues(IHttpContext context)
         {
 
             object[] parameters = new object[Parameters.Count];
@@ -130,10 +137,15 @@ namespace BeetleX.FastHttpApi
             return parameters;
         }
 
-        public object Invoke(IDataContext context)
+        public object Invoke(IHttpContext context)
         {
             object[] parameters = GetValues(context);
             return mMethodHandler.Execute(Controller, parameters);
+        }
+
+        public int CompareTo(object obj)
+        {
+            return this.SourceUrl.CompareTo(((ActionHandler)obj).SourceUrl);
         }
     }
 
@@ -144,168 +156,264 @@ namespace BeetleX.FastHttpApi
 
         public string Name { get; internal set; }
 
-        public abstract object GetValue(IDataContext context);
+        public virtual bool DataParameter => true;
+
+        public abstract object GetValue(IHttpContext context);
+
+        public abstract ApiViews.ParameterInfo GetInfo();
     }
 
     class IntParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             int result;
-            context.TryGetInt(this.Name, out result);
+            context.Data.TryGetInt(this.Name, out result);
             return result;
+        }
+
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class ShortParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             short result;
-            context.TryGetShort(this.Name, out result);
+            context.Data.TryGetShort(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class LongParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             long result;
-            context.TryGetLong(this.Name, out result);
+            context.Data.TryGetLong(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class UIntParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             uint result;
-            context.TryGetUInt(this.Name, out result);
+            context.Data.TryGetUInt(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class UShortParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             ushort result;
-            context.TryGetUShort(this.Name, out result);
+            context.Data.TryGetUShort(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class ULongParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             ulong result;
-            context.TryGetULong(this.Name, out result);
+            context.Data.TryGetULong(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class FloatParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             float result;
-            context.TryGetFloat(this.Name, out result);
+            context.Data.TryGetFloat(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class DoubleParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             double result;
-            context.TryGetDouble(this.Name, out result);
+            context.Data.TryGetDouble(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class StringParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             string result;
-            context.TryGetString(this.Name, out result);
+            context.Data.TryGetString(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = "" };
         }
     }
 
     class DecimalParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             Decimal result;
-            context.TryGetDecimal(this.Name, out result);
+            context.Data.TryGetDecimal(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
     class DateTimeParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             DateTime result;
-            context.TryGetDateTime(this.Name, out result);
+            context.Data.TryGetDateTime(this.Name, out result);
             return result;
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = DateTime.Now };
         }
     }
 
     public class BodyParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
-            return context.GetBody(this.Type);
+            return context.Data.GetBody(this.Type);
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { IsBody = true, Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
     class RequestParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             return context.Request;
         }
+
+        public override bool DataParameter => false;
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+        }
     }
 
+
+    class HttpApiServerParameter : ParameterBinder
+    {
+        public override object GetValue(IHttpContext context)
+        {
+            return context.Server;
+        }
+
+        public override bool DataParameter => false;
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+        }
+    }
 
 
     class ResponseParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             return context.Response;
         }
-    }
 
-    class HttpServerParameter : ParameterBinder
-    {
-        public override object GetValue(IDataContext context)
+        public override bool DataParameter => false;
+        public override ApiViews.ParameterInfo GetInfo()
         {
-            return context.Server;
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
-    public class ParameterContext : ParameterBinder
+
+
+    class HttpContextParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
             return context;
+        }
+
+        public override bool DataParameter => false;
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+        }
+    }
+
+    public class DataContextParameter : ParameterBinder
+    {
+        public override object GetValue(IHttpContext context)
+        {
+            return context.Data;
+        }
+
+        public override bool DataParameter => false;
+
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
     class DefaultParameter : ParameterBinder
     {
-        public override object GetValue(IDataContext context)
+        public override object GetValue(IHttpContext context)
         {
-
-            return context.GetObject(this.Name, this.Type);
-
+            return context.Data.GetObject(this.Name, this.Type);
+        }
+        public override ApiViews.ParameterInfo GetInfo()
+        {
+            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -368,7 +476,7 @@ namespace BeetleX.FastHttpApi
         {
             DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
             ILGenerator il = dynamicMethod.GetILGenerator();
-            ParameterInfo[] ps = methodInfo.GetParameters();
+            System.Reflection.ParameterInfo[] ps = methodInfo.GetParameters();
             Type[] paramTypes = new Type[ps.Length];
             for (int i = 0; i < paramTypes.Length; i++)
             {

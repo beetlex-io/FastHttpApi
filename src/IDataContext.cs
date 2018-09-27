@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using BeetleX.FastHttpApi.WebSockets;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,30 +31,18 @@ namespace BeetleX.FastHttpApi
 
         bool TryGetShort(string name, out short value);
 
-        bool WebSocket { get; }
-
         object GetBody(Type type);
 
         object GetObject(string name, Type type);
 
-        HttpRequest Request { get; }
 
-        HttpResponse Response { get; }
-
-        HttpApiServer Server { get; }
-
-        object Tag { get; }
-
-        void Result(object data);
-
-        void Async();
 
 
     }
 
-    class WebsocketJsonDataContext : IDataContext
+    class WebsocketContext : IHttpContext, IDataContext
     {
-        public WebsocketJsonDataContext(HttpApiServer server, HttpRequest request, Newtonsoft.Json.Linq.JToken parameterData)
+        public WebsocketContext(HttpApiServer server, HttpRequest request, Newtonsoft.Json.Linq.JToken parameterData)
         {
             Server = server;
             Request = request;
@@ -88,18 +77,19 @@ namespace BeetleX.FastHttpApi
             return null;
         }
 
+
+
         public void Result(object data)
         {
             WebSockets.DataFrame frame = data as WebSockets.DataFrame;
-            if (frame != null)
+            if (frame == null)
             {
-                Request.Session.Send(frame);
+                ActionResult result = data as ActionResult;
+                if (result == null)
+                    result.Data = data;
+                frame = Server.CreateDataFrame(result);
             }
-            else
-            {
-                frame = Server.CreateDataFrame(data);
-                Request.Session.Send(frame);
-            }
+            Request.Session.Send(frame);
         }
 
         public bool TryGetDateTime(string name, out DateTime value)
@@ -243,16 +233,51 @@ namespace BeetleX.FastHttpApi
 
         public bool WebSocket => true;
 
+        public IDataContext Data => this;
+
+        public ISession Session => Request.Session;
+
+        public object this[string name] { get => Session[name]; set => Session[name] = value; }
+
         public void Async()
         {
             AsyncResult = true;
         }
+
+        private WebSockets.DataFrame CreateFrame(object data)
+        {
+            DataFrame frame = data as WebSockets.DataFrame;
+            if (frame == null)
+            {
+                ActionResult result = data as ActionResult;
+                if (result == null)
+                    result = new ActionResult { Data = data };
+                else
+                    result.Data = data;
+                frame = Server.CreateDataFrame(result);
+            }
+            return frame;
+        }
+
+        public void ResultToWebSocket(object data, HttpRequest request)
+        {
+
+            DataFrame frame = CreateFrame(data);
+            Server.SendToWebSocket(frame, request);
+
+        }
+
+        public void ResultToWebSocket(object data, Func<ISession, HttpRequest, bool> filter = null)
+        {
+            DataFrame frame = CreateFrame(data);
+            Server.SendToWebSocket(frame, filter);
+        }
     }
 
-    class HttpDataContext : IDataContext
+    class HttpContext : IHttpContext, IDataContext
     {
 
-        public HttpDataContext(HttpApiServer server, HttpRequest request, HttpResponse response)
+        public HttpContext(HttpApiServer server, HttpRequest request, HttpResponse response)
         {
             Request = request;
             Response = response;
@@ -268,6 +293,12 @@ namespace BeetleX.FastHttpApi
         public object Tag { get; set; }
 
         public bool WebSocket => false;
+
+        public IDataContext Data => this;
+
+        public ISession Session => Request.Session;
+
+        public object this[string name] { get => Session[name]; set => Session[name] = value; }
 
         public object GetBody(Type type)
         {
@@ -342,6 +373,36 @@ namespace BeetleX.FastHttpApi
         public void Async()
         {
             Response.Async();
+        }
+
+
+        private WebSockets.DataFrame CreateFrame(object data)
+        {
+            DataFrame frame = data as WebSockets.DataFrame;
+            if (frame == null)
+            {
+                ActionResult result = data as ActionResult;
+                if (result == null)
+                    result = new ActionResult { Data = data };
+                else
+                    result.Data = data;
+                frame = Server.CreateDataFrame(result);
+            }
+            return frame;
+        }
+
+        public void ResultToWebSocket(object data, HttpRequest request)
+        {
+
+            DataFrame frame = CreateFrame(data);
+            Server.SendToWebSocket(frame, request);
+
+        }
+
+        public void ResultToWebSocket(object data, Func<ISession, HttpRequest, bool> filter = null)
+        {
+            DataFrame frame = CreateFrame(data);
+            Server.SendToWebSocket(frame, filter);
         }
     }
 }

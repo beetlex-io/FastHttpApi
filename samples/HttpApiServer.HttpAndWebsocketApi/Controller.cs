@@ -30,7 +30,7 @@ namespace HttpApiServer.HttpAndWebsocketApi
                 result = new Employee();
             return result;
         }
-        public bool EditEmployee(int id, [BodyParameter]Employee emp, BeetleX.FastHttpApi.HttpResponse response)
+        public bool EditEmployee(int id, [BodyParameter]Employee emp, IHttpContext context)
         {
             Employee record = mEmployees.Find(e => e.EmployeeID == id);
             if (record != null)
@@ -55,30 +55,17 @@ namespace HttpApiServer.HttpAndWebsocketApi
         {
             return from c in mCustomers select new { ID = c.CustomerID, Name = c.CompanyName };
         }
-        public object ListOrders(int employeeid, string customerid, IDataContext context)
+        public object ListOrders(int employeeid, string customerid, IHttpContext context)
         {
             return mOrders.Where(o =>
             (employeeid == 0 || o.EmployeeID == employeeid)
             &&
             (string.IsNullOrEmpty(customerid) || o.CustomerID == customerid));
         }
-
-        private void OnWebSocketReceive(object sender, WebSocketReceiveArgs e)
-        {
-            ActionResult result = mServer.ExecuteWS(e.Request, e.Frame);
-            if (result.Code == 403)
-            {
-                mServer.BaseServer.Log(LogType.Error, e.Sesson, string.Format("{0} error {1}", result.Url, result.Error));
-            }
-        }
-
+        [NotAction]
         public void Init(BeetleX.FastHttpApi.HttpApiServer server)
         {
             mServer = server;
-            if (server.WebSocketReceive == null)
-            {
-                server.WebSocketReceive = OnWebSocketReceive;
-            }
         }
     }
 }

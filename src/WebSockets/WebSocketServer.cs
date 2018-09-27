@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using BeetleX.Buffers;
 using BeetleX.EventArgs;
+using System.Linq;
 
 namespace BeetleX.FastHttpApi.WebSockets
 {
@@ -123,39 +124,34 @@ namespace BeetleX.FastHttpApi.WebSockets
                 args.Sesson = request.Session;
                 args.Server = this;
                 args.Request = request;
-                WebSocketReceive?.Invoke(this, args);  
+                WebSocketReceive?.Invoke(this, args);
             }
         }
 
 
-        public void SendDataFrame(DataFrame data)
+        public void SendToWebSocket(DataFrame data, Func<ISession, HttpRequest, bool> filter = null)
         {
-            foreach (ISession item in BaseServer.GetOnlines())
+            foreach (HttpRequest item in GetWebSockets())
             {
-                SendDataFrame(data, item);
+
+                if ((filter == null || filter(item.Session, item)))
+                    SendToWebSocket(data, item);
             }
         }
 
-        public void SendDataFrame(DataFrame data, params long[] sessionid)
+        public void SendToWebSocket(DataFrame data, params HttpRequest[] request)
         {
-            if (sessionid != null)
-            {
-                foreach (var item in sessionid)
+            if (request != null)
+                foreach (HttpRequest item in request)
                 {
-                    SendDataFrame(data, BaseServer.GetSession(item));
+                    OnSendToWebSocket(data, item);
                 }
-            }
         }
 
-        public void SendDataFrame(DataFrame data, ISession session)
+        private void OnSendToWebSocket(DataFrame data, HttpRequest request)
         {
-            if (session == null)
-                return;
-            HttpToken toke = (HttpToken)session.Tag;
-            if (toke.WebSocket)
-            {
-                session.Send(data);
-            }
+            request.Session.Send(data);
+
         }
 
         #endregion
@@ -233,5 +229,21 @@ namespace BeetleX.FastHttpApi.WebSockets
         }
 
 
+        private long mVersion;
+
+        private IEnumerable<HttpRequest> mOnlines = new HttpRequest[0];
+
+        public IEnumerable<HttpRequest> GetWebSockets()
+        {
+            if (mVersion != BaseServer.Version)
+            {
+                mVersion = BaseServer.Version;
+                ISession[] items = BaseServer.GetOnlines();
+                mOnlines = from s in items
+                           where ((HttpToken)s.Tag).WebSocket
+                           select ((HttpToken)s.Tag).WebSocketRequest;
+            }
+            return mOnlines;
+        }
     }
 }

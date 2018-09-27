@@ -25,11 +25,22 @@ namespace BeetleX.FastHttpApi
                     ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
                     if (ca != null)
                     {
-                        Register(config, type, ca.BaseUrl, server);
+                        Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server);
                     }
                 }
             }
         }
+
+        public void Register(HttpConfig config, HttpApiServer server, object controller)
+        {
+            Type type = controller.GetType();
+            ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
+            if (ca != null)
+            {
+                Register(config, type, controller, ca.BaseUrl, server);
+            }
+        }
+
 
         public static void RemoveFilter(List<FilterAttribute> filters, Type[] types)
         {
@@ -50,7 +61,7 @@ namespace BeetleX.FastHttpApi
         }
 
 
-        private void Register(HttpConfig config, Type controller, string rooturl, HttpApiServer server)
+        private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server)
         {
             if (string.IsNullOrEmpty(rooturl))
                 rooturl = "/";
@@ -63,36 +74,38 @@ namespace BeetleX.FastHttpApi
             }
             List<FilterAttribute> filters = new List<FilterAttribute>();
             filters.AddRange(config.Filters);
-            IEnumerable<FilterAttribute> fas = controller.GetCustomAttributes<FilterAttribute>(false);
+            IEnumerable<FilterAttribute> fas = controllerType.GetCustomAttributes<FilterAttribute>(false);
             filters.AddRange(fas);
-            IEnumerable<SkipFilterAttribute> skipfilters = controller.GetCustomAttributes<SkipFilterAttribute>(false);
+            IEnumerable<SkipFilterAttribute> skipfilters = controllerType.GetCustomAttributes<SkipFilterAttribute>(false);
             foreach (SkipFilterAttribute item in skipfilters)
             {
                 RemoveFilter(filters, item.Types);
             }
-            object obj = Activator.CreateInstance(controller);
+            object obj = controller;
             if (obj is IController)
             {
                 ((IController)obj).Init(server);
             }
-            foreach (MethodInfo mi in controller.GetMethods(BindingFlags.Instance | BindingFlags.Public))
+            foreach (MethodInfo mi in controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (string.Compare("Equals", mi.Name, true) == 0
                     || string.Compare("GetHashCode", mi.Name, true) == 0
                     || string.Compare("GetType", mi.Name, true) == 0
                     || string.Compare("ToString", mi.Name, true) == 0)
                     continue;
-                string url = rooturl + mi.Name;
-                url = url.ToLower();
+                if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
+                    continue;
+                string sourceUrl = rooturl + mi.Name;
+                string url = sourceUrl.ToLower();
                 ActionHandler handler = GetAction(url);
                 if (handler != null)
                 {
-
-                    server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controller.Name,
+                    server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controllerType.Name,
                         mi.Name);
                     continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.SourceUrl = sourceUrl;
                 handler.Filters.AddRange(filters);
                 fas = mi.GetCustomAttributes<FilterAttribute>(false);
                 handler.Filters.AddRange(fas);
@@ -102,10 +115,27 @@ namespace BeetleX.FastHttpApi
                     RemoveFilter(handler.Filters, item.Types);
                 }
                 mMethods[url] = handler;
-                server.Log(EventArgs.LogType.Info, "register {0}.{1} to {2}", controller.Name, mi.Name, url);
+                server.Log(EventArgs.LogType.Info, "register {0}.{1} to {2}", controllerType.Name, mi.Name, url);
             }
 
         }
+
+        private List<ApiViews.UrlInfo> mUrlsInfo;
+
+        internal List<ApiViews.UrlInfo> GetUrlInfos()
+        {
+            if (mUrlsInfo == null)
+            {
+                mUrlsInfo = new List<ApiViews.UrlInfo>();
+                foreach (ActionHandler handler in mMethods.Values)
+                {
+                    mUrlsInfo.Add(new ApiViews.UrlInfo(handler));
+                }
+                mUrlsInfo.Sort();
+            }
+            return mUrlsInfo;
+        }
+
 
         private ActionHandler GetAction(string url)
         {
@@ -123,11 +153,14 @@ namespace BeetleX.FastHttpApi
             if (url == null)
             {
                 result.Code = 403;
-                result.Error = "not fupport url info notfound!";
+                result.Error = "not support url info notfound!";
+                request.Session.Send(dataFrame);
                 return result;
             }
             result.Url = url.Value<string>();
             string baseurl = HttpParse.CharToLower(result.Url);
+            if (baseurl[0] != '/')
+                baseurl = "/" + baseurl;
             ActionHandler handler = GetAction(baseurl);
             if (handler == null)
             {
@@ -143,7 +176,7 @@ namespace BeetleX.FastHttpApi
                     JToken data = token["params"];
                     if (data == null)
                         data = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject("{}");
-                    WebsocketJsonDataContext dc = new WebsocketJsonDataContext(server, request, data);
+                    WebsocketContext dc = new WebsocketContext(server, request, data);
                     ActionContext context = new ActionContext(handler, dc);
                     context.Execute();
                     if (!dc.AsyncResult)
@@ -180,7 +213,7 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    HttpDataContext pc = new HttpDataContext(server, request, response);
+                    HttpContext pc = new HttpContext(server, request, response);
                     ActionContext context = new ActionContext(handler, pc);
                     context.Execute();
                     if (!response.AsyncResult)

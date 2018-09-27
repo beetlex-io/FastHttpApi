@@ -11,7 +11,7 @@ namespace BeetleX.FastHttpApi
             Port = 9090;
             SSL = false;
             MaxBodyLength = 1024 * 1024;
-            BodySerializer = new StringSerializer();
+            BodySerializer = new JsonBodySerializer();
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
             Filters = new List<FilterAttribute>();
@@ -24,7 +24,7 @@ namespace BeetleX.FastHttpApi
 
         }
 
-       
+
 
         public string Host { get; set; }
 
@@ -79,7 +79,7 @@ namespace BeetleX.FastHttpApi
             config.SSL = this.SSL;
             config.StaticResourcePath = this.StaticResourcePath;
             config.StaticResurceType = this.StaticResurceType;
-           
+
             return config;
         }
 

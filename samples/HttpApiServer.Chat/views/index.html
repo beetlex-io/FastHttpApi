@@ -52,7 +52,7 @@
                             <th>#</th>
                             <th>SessionID</th>
                             <th>Name</th>
-                            <th></th>
+                            <th>IPAddress</th>
                         </tr>
                     </thead>
                     <tbody id="lstbody"></tbody>
@@ -84,7 +84,7 @@
             a = result.Data;
             $("#lstbody").empty();
             a.forEach(function (v, i) {
-                $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.ID + '</td><td>' + v.Name + '</td></tr>')
+                $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.ID + '</td><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>')
             });
         });
     }

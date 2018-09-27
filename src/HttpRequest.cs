@@ -1,6 +1,7 @@
 ﻿using BeetleX.Buffers;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -21,7 +22,13 @@ namespace BeetleX.FastHttpApi
             this.Session = session;
             mState = LoadedState.None;
             Serializer = formater;
+            RemoteEndPoint = session.RemoteEndPoint;
+            WebSocket = false;
         }
+
+        public bool WebSocket { get; set; }
+
+        public EndPoint RemoteEndPoint { get; set; }
 
         private LoadedState mState;
 
@@ -57,7 +64,7 @@ namespace BeetleX.FastHttpApi
 
         public QueryString QueryString => mQueryString;
 
-        internal ISession Session { get; private set; }
+        public ISession Session { get; private set; }
 
         public IBodySerializer Serializer { get; set; }
 
@@ -84,7 +91,7 @@ namespace BeetleX.FastHttpApi
                     Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line);
                     Method = result.Item1;
                     Url = result.Item2;
-                    BaseUrl = HttpParse.GetBaseUrl(Url);
+                    BaseUrl = HttpParse.GetBaseUrlToLower(Url);
                     Ext = HttpParse.GetBaseUrlExt(BaseUrl);
                     HttpVersion = result.Item3;
                     HttpParse.AnalyzeQueryString(Url, mQueryString);

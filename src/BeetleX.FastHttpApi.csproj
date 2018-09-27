@@ -7,10 +7,26 @@
     <Company>henryfan</Company>
     <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>0.8.0</Version>
+    <Version>0.8.8</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="views\_info\api.html" />
+    <None Remove="views\_info\bootstrap-theme.css" />
+    <None Remove="views\_info\bootstrap.css" />
+    <None Remove="views\_info\bootstrap.js" />
+    <None Remove="views\_info\jquery.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="views\_info\api.html" />
+    <EmbeddedResource Include="views\_info\bootstrap-theme.css" />
+    <EmbeddedResource Include="views\_info\bootstrap.css" />
+    <EmbeddedResource Include="views\_info\bootstrap.js" />
+    <EmbeddedResource Include="views\_info\jquery.js" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BeetleX" Version="1.0.2.2" />

@@ -79,6 +79,18 @@ namespace BeetleX.FastHttpApi
             {
                 if (url[i] == '?')
                 {
+                    return new string(url.Slice(0, i));
+                }
+            }
+            return new string(url);
+        }
+
+        public static string GetBaseUrlToLower(ReadOnlySpan<char> url)
+        {
+            for (int i = 0; i < url.Length; i++)
+            {
+                if (url[i] == '?')
+                {
                     return CharToLower(url.Slice(0, i));
                 }
             }

@@ -18,4 +18,10 @@ namespace BeetleX.FastHttpApi
     {
         void Init(HttpApiServer server);
     }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class NotActionAttribute : Attribute
+    {
+
+    }
 }

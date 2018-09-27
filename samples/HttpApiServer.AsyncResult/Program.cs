@@ -11,7 +11,6 @@ namespace HttpApiServer.AsyncResult
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.BodySerializer = new JsonBodySerializer();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Debug();
             mApiServer.Open();
@@ -28,14 +27,14 @@ namespace HttpApiServer.AsyncResult
             return string.Format("[{0}] hello {1}", DateTime.Now, name);
         }
 
-        public void asyncHello(string name, HttpResponse response)
+        public void asyncHello(string name, IHttpContext context)
         {
-            response.Async();
+            context.Async();
             Task.Run(() =>
             {
                 Console.WriteLine("sleep ...");
                 System.Threading.Thread.Sleep(5000);
-                response.Result(string.Format("[{0}] hello {1}", DateTime.Now, name));
+                context.Result(string.Format("[{0}] hello {1}", DateTime.Now, name));
             });
         }
     }

@@ -8,6 +8,7 @@ using BeetleX.Buffers;
 using BeetleX.EventArgs;
 using BeetleX.FastHttpApi.WebSockets;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace BeetleX.FastHttpApi
 {
@@ -121,7 +122,10 @@ namespace BeetleX.FastHttpApi
             config.LittleEndian = false;
             HttpPacket hp = new HttpPacket(this.ServerConfig.BodySerializer, this.ServerConfig, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
-            mServer.Open();
+            mServer.Name = "FastHttpApi Http Server";
+            ApiViews.ApiInfoController aic = new ApiViews.ApiInfoController();
+            aic.HandleFactory = mActionFactory;
+            mActionFactory.Register(ServerConfig, this, aic);
             if (mAssemblies != null)
             {
                 foreach (System.Reflection.Assembly assembly in mAssemblies)
@@ -129,41 +133,39 @@ namespace BeetleX.FastHttpApi
                     mResourceCenter.LoadManifestResource(assembly);
                 }
             }
+            mResourceCenter.LoadManifestResource(typeof(HttpApiServer).Assembly);
             mResourceCenter.Path = ServerConfig.StaticResourcePath;
             mResourceCenter.Debug = ServerConfig.Debug;
             mResourceCenter.Load();
-            mServer.Name = "FastHttpApi Http Server";
-
+           
+            mServer.Open();         
         }
 
-        public void SendDataFrame(DataFrame data)
+
+
+        public void SendToWebSocket(DataFrame data, Func<ISession, HttpRequest, bool> filter = null)
         {
-            foreach (ISession item in BaseServer.GetOnlines())
+            foreach (HttpRequest item in GetWebSockets())
             {
-                SendDataFrame(data, item);
+                if ((filter == null || filter(item.Session, item)))
+                    SendToWebSocket(data, item);
             }
         }
 
-        public void SendDataFrame(DataFrame data, params long[] sessionid)
+        public void SendToWebSocket(DataFrame data, params HttpRequest[] request)
         {
-            if (sessionid != null)
-            {
-                foreach (var item in sessionid)
+            if (request != null)
+                foreach (HttpRequest item in request)
                 {
-                    SendDataFrame(data, BaseServer.GetSession(item));
+                    OnSendToWebSocket(data, item);
                 }
-            }
         }
 
-        public void SendDataFrame(DataFrame data, ISession session)
+        private void OnSendToWebSocket(DataFrame data, HttpRequest request)
         {
-            if (session == null)
-                return;
-            HttpToken toke = (HttpToken)session.Tag;
-            if (toke.WebSocket)
-            {
-                session.Send(data);
-            }
+            if (request.WebSocket)
+                request.Session.Send(data);
+
         }
 
         public override void Connected(IServer server, ConnectedEventArgs e)
@@ -232,6 +234,7 @@ namespace BeetleX.FastHttpApi
             token.KeepAlive = true;
             token.WebSocketRequest = request;
             token.WebSocket = true;
+            request.WebSocket = true;
             ConnectionUpgradeWebsocket(request, response);
 
         }
@@ -274,12 +277,22 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                var args = new WebSocketReceiveArgs();
-                args.Frame = data;
-                args.Sesson = session;
-                args.Server = this;
-                args.Request = token.WebSocketRequest;
-                WebSocketReceive?.Invoke(this, args);
+
+                if (WebSocketReceive == null)
+                {
+                    ActionResult result = ExecuteWS(token.WebSocketRequest, data);
+
+                }
+                else
+                {
+                    var args = new WebSocketReceiveArgs();
+                    args.Frame = data;
+                    args.Sesson = session;
+                    args.Server = this;
+                    args.Request = token.WebSocketRequest;
+                    WebSocketReceive?.Invoke(this, args);
+                }
+
             }
         }
 
@@ -362,6 +375,23 @@ namespace BeetleX.FastHttpApi
             {
                 session.Dispose();
             }
+        }
+
+        private long mVersion;
+
+        private IEnumerable<HttpRequest> mOnlines = new HttpRequest[0];
+
+        public IEnumerable<HttpRequest> GetWebSockets()
+        {
+            if (mVersion != BaseServer.Version)
+            {
+                mVersion = BaseServer.Version;
+                ISession[] items = BaseServer.GetOnlines();
+                mOnlines = from s in items
+                           where ((HttpToken)s.Tag).WebSocket
+                           select ((HttpToken)s.Tag).WebSocketRequest;
+            }
+            return mOnlines;
         }
     }
 }

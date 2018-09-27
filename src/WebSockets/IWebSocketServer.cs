@@ -10,10 +10,12 @@ namespace BeetleX.FastHttpApi.WebSockets
 
         DataFrame CreateDataFrame(object body = null);
 
-        void SendDataFrame(DataFrame data);
+        void SendToWebSocket(DataFrame data, Func<ISession, HttpRequest, bool> filter = null);
 
-        void SendDataFrame(DataFrame data, params long[] sessionid);
+        void SendToWebSocket(DataFrame data, params HttpRequest[] request);
 
-        void SendDataFrame(DataFrame data, ISession session);
+        IEnumerable<HttpRequest> GetWebSockets();
     }
+
+   
 }

@@ -10,62 +10,58 @@ namespace HttpApiServer.Chat
     [ControllerAttribute]
     public class Controller : IController
     {
-        public object Onlines(BeetleX.FastHttpApi.HttpApiServer server)
+        public object Onlines(IHttpContext context)
         {
-            BeetleX.ISession[] sessions = server.BaseServer.GetOnlines();
-            return from a in sessions
-                   where ((HttpToken)a.Tag).WebSocket
-                   select new { a.ID, a.Name };
+            return from i in context.Server.GetWebSockets()
+                   select new { i.Session.ID, i.Session.Name, IPAddress = i.Session.RemoteEndPoint.ToString() };
+
         }
 
         private BeetleX.FastHttpApi.HttpApiServer mServer;
 
-        public void SendMessage(int sessionid, string message, BeetleX.FastHttpApi.HttpApiServer server)
+        public void Login(string name, IHttpContext context)
         {
-            var msg = new Command { Name = "Admin", Type = "Talk", Message = message };
-            var frame = server.CreateDataFrame(msg);
-            if (sessionid > 0)
+            context.Session.Name = name;
+            Command cmd = new Command { Name = name, Type = "Login", Message = "" };
+            context.ResultToWebSocket(cmd);
+        }
+
+        public void SendMessage(string message, IHttpContext context)
+        {
+            string name;
+            if (context.WebSocket)
             {
-                server.SendDataFrame(frame, sessionid);
+                name = context.Session.Name;
             }
             else
             {
-                server.SendDataFrame(frame);
+                name = "http user";
             }
-        }
-
-        private void OnWebSocketReceive(object sender, WebSocketReceiveArgs e)
-        {
-            var item = Newtonsoft.Json.JsonConvert.DeserializeObject<Command>((string)e.Frame.Body);
-            if (item.Type == "Login")
-            {
-                e.Sesson.Name = item.Name;
-            }
-            var login = mServer.CreateDataFrame(item);
-            mServer.SendDataFrame(login);
+            var msg = new Command { Name = name, Type = "Talk", Message = message };
+            context.ResultToWebSocket(msg, (c, r) => c.Name != null);
         }
 
         private void OnHttpDisconnect(object sender, BeetleX.EventArgs.SessionEventArgs e)
         {
-            Command cmd = new Command { Name = e.Session.Name, Type = "Quit", Message = "" };
-            var quit = mServer.CreateDataFrame(cmd);
-            mServer.SendDataFrame(quit);
-
+            if (e.Session.Name != null)
+            {
+                Command cmd = new Command { Name = e.Session.Name, Type = "Quit", Message = "" };
+                DataFrame frame = mServer.CreateDataFrame(new ActionResult { Data = cmd });
+                mServer.SendToWebSocket(frame, (s, r) => s.Name != null);
+            }
         }
 
         private void OnHttpConnected(object sender, BeetleX.EventArgs.ConnectedEventArgs e)
         {
 
         }
-
+        [NotAction]
         public void Init(BeetleX.FastHttpApi.HttpApiServer server)
         {
             server.HttpConnected = OnHttpConnected;
             server.HttpDisconnect = OnHttpDisconnect;
-            server.WebSocketReceive = OnWebSocketReceive;
             mServer = server;
         }
-
         public class Command
         {
             public string Name { get; set; }
@@ -74,5 +70,6 @@ namespace HttpApiServer.Chat
 
             public string Message { get; set; }
         }
+
     }
 }
