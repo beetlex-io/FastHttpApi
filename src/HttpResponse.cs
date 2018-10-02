@@ -42,6 +42,8 @@ namespace BeetleX.FastHttpApi
 
         public HttpRequest Request { get; internal set; }
 
+        public string RequestID { get; set; }
+
         internal bool AsyncResult { get; set; }
 
         public void Async()
@@ -113,6 +115,7 @@ namespace BeetleX.FastHttpApi
             string str_sha1_out = Convert.ToBase64String(bytes_sha1_out);
             Header.Add(HeaderType.SEC_WEBSOCKT_ACCEPT, str_sha1_out);
         }
+
         public void Result(object data)
         {
             if (data is StaticResurce.FileBlock)
@@ -126,8 +129,9 @@ namespace BeetleX.FastHttpApi
                 {
                     result = new ActionResult();
                     result.Data = data;
-                }
+                }    
                 result.Url = this.Request.BaseUrl;
+                result.ID = RequestID;
                 Completed(result);
             }
         }

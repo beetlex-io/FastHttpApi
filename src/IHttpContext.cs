@@ -20,14 +20,20 @@ namespace BeetleX.FastHttpApi
 
         void Result(object data);
 
-        void ResultToWebSocket(object data, HttpRequest request);
+        void SendToWebSocket(ActionResult data, HttpRequest request);
 
-        void ResultToWebSocket(object data, Func<ISession, HttpRequest, bool> filter = null);
+        void SendToWebSocket(ActionResult data, Func<ISession, HttpRequest, bool> filter = null);
+
+        void SendToWebSocket(WebSockets.DataFrame data, HttpRequest request);
+
+        void SendToWebSocket(WebSockets.DataFrame data, Func<ISession, HttpRequest, bool> filter = null);
 
         void Async();
 
         bool WebSocket { get; }
 
         IDataContext Data { get; }
+
+        string ActionUrl { get; }
     }
 }

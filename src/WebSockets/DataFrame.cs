@@ -237,5 +237,12 @@ namespace BeetleX.FastHttpApi.WebSockets
                 stream.Write(header, 0, 2);
             }
         }
+
+        public void Send(ISession session)
+        {
+            HttpToken token = (HttpToken)session.Tag;
+            if (token != null && token.WebSocket)
+                session.Send(this);
+        }
     }
 }

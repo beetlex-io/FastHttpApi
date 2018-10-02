@@ -7,30 +7,61 @@
     <Company>henryfan</Company>
     <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>0.8.8</Version>
+    <Version>0.9.4</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="views\_info\api.html" />
-    <None Remove="views\_info\bootstrap-theme.css" />
-    <None Remove="views\_info\bootstrap.css" />
-    <None Remove="views\_info\bootstrap.js" />
-    <None Remove="views\_info\jquery.js" />
+    <Compile Remove="WebSockets\WebSocketPacket.cs" />
+    <Compile Remove="WebSockets\WebSocketServer.cs" />
+    <Compile Remove="WebSockets\WebSocketToken.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="views\_info\api.html" />
-    <EmbeddedResource Include="views\_info\bootstrap-theme.css" />
-    <EmbeddedResource Include="views\_info\bootstrap.css" />
-    <EmbeddedResource Include="views\_info\bootstrap.js" />
-    <EmbeddedResource Include="views\_info\jquery.js" />
+    <None Remove="views\_admin\api.html" />
+    <None Remove="views\_admin\apiscript.html" />
+    <None Remove="views\_admin\bootstrap-theme.css" />
+    <None Remove="views\_admin\bootstrap.css" />
+    <None Remove="views\_admin\bootstrap.js" />
+    <None Remove="views\_admin\Connections.html" />
+    <None Remove="views\_admin\index.html" />
+    <None Remove="views\_admin\jquery.js" />
+    <None Remove="views\_admin\Login.html" />
+    <None Remove="views\_admin\md5.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.0.2.2" />
+    <EmbeddedResource Include="views\_admin\api.html" />
+    <EmbeddedResource Include="views\_admin\apiscript.html" />
+    <EmbeddedResource Include="views\_admin\bootstrap-theme.css" />
+    <EmbeddedResource Include="views\_admin\bootstrap.css" />
+    <EmbeddedResource Include="views\_admin\bootstrap.js" />
+    <EmbeddedResource Include="views\_admin\Connections.html" />
+    <EmbeddedResource Include="views\_admin\index.html" />
+    <EmbeddedResource Include="views\_admin\jquery.js" />
+    <EmbeddedResource Include="views\_admin\Login.html" />
+    <EmbeddedResource Include="views\_admin\md5.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BeetleX" Version="1.0.2.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="RES.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RES.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="RES.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>RES.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

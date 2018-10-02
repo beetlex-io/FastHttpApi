@@ -9,16 +9,19 @@ namespace BeetleX.FastHttpApi
         public HttpToken()
         {
             FirstRequest = true;
+            CreateTime = DateTime.Now;
         }
 
-        public bool KeepAlive { get; set; }
+        public bool KeepAlive { get; internal set; }
 
         internal StaticResurce.FileBlock File { get; set; }
 
-        public bool WebSocket { get; set; }
+        public bool WebSocket { get; internal set; }
 
-        public HttpRequest WebSocketRequest { get; set; }
+        public HttpRequest WebSocketRequest { get; internal set; }
 
-        public bool FirstRequest { get; set; }
+        internal bool FirstRequest { get; set; }
+
+        public DateTime CreateTime { get; internal set; }
     }
 }

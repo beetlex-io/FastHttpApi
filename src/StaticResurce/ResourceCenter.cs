@@ -155,6 +155,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     return;
                 }
             }
+            else
+            {
+                fr.Load();
+            }
 
             if (fr.GZIP)
             {
@@ -178,9 +182,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
             response.Result(token.File);
         }
 
-        public void ProcessFile(HttpRequest reqeust, HttpResponse response)
+        public void ProcessFile(HttpRequest request, HttpResponse response)
         {
-            string url = HttpParse.CharToLower(reqeust.BaseUrl);
+            string url = HttpParse.CharToLower(request.BaseUrl);
             if (url == "/")
             {
                 for (int i = 0; i < mDefaultPages.Count; i++)
@@ -193,6 +197,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         continue;
                     }
                     FileResource fr = GetFileResource(defaultpage);
+
                     if (fr != null)
                     {
                         OutputFileResource(fct, fr, response);
@@ -200,13 +205,13 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
                 response.NotFound();
-                Server.BaseServer.Log(EventArgs.LogType.Warring, reqeust.Session, "{0} not found", reqeust.BaseUrl);
+                Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {1} {0} not found", request.BaseUrl, request.ClientIPAddress);
                 return;
             }
 
-            if (ExtSupport(reqeust.Ext))
+            if (ExtSupport(request.Ext))
             {
-                FileContentType fct = mExts[reqeust.Ext];
+                FileContentType fct = mExts[request.Ext];
                 FileResource fr = GetFileResource(url);
                 if (fr != null)
                 {
@@ -214,7 +219,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 }
                 else
                 {
-                    if (ExistsFile(reqeust.BaseUrl))
+                    if (ExistsFile(request.BaseUrl))
                     {
                         string file = GetFile(url);
                         fr = CreateResource(file);
@@ -226,14 +231,14 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     else
                     {
                         response.NotFound();
-                        Server.BaseServer.Log(EventArgs.LogType.Warring, reqeust.Session, "{0} not found", reqeust.BaseUrl);
+                        Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {1} {0} not found", request.BaseUrl, request.ClientIPAddress);
                     }
                 }
             }
             else
             {
                 response.NotSupport();
-                Server.BaseServer.Log(EventArgs.LogType.Warring, reqeust.Session, "{0} not support", reqeust.BaseUrl);
+                Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {1} {0} not support", request.BaseUrl, request.ClientIPAddress);
             }
         }
 

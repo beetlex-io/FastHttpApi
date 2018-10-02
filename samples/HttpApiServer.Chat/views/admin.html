@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/bootstrap-theme.css" rel="stylesheet" />
+
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/apis.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>FastHttpApi WebSocket</title>
+</head>
+<body>
+    <div class="container bs-docs-container">
+        <div class="row">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">FastHttpApi Chat room sample</a>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+
+                </div><!-- /.container-fluid -->
+            </nav>
+            <ul class="nav nav-tabs">
+
+                <li role="presentation"><a href="index.html">聊天室</a></li>
+                <li role="presentation" class="active"><a href="#">管理</a></li>
+                <li role="presentation"><a href="/_admin/index.html" target="_blank">服务后台</a></li>
+            </ul>
+            <br />
+            <div class="col-md-3" role="main">
+                <div class="panel panel-default">
+                    <div class="panel-heading">房间</div>
+                    <div class="panel-body">
+
+                        <table class="table">
+                            <thead>
+
+                            </thead>
+                            <tbody id="lstRoom"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5" role="main">
+                <div class="panel panel-default">
+                    <div class="panel-heading" id="roomTitle">聊天记录</div>
+                    <div class="panel-body">
+                        <div id="lstTalk" style="height:500px;overflow: auto; overflow-x:hidden;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" role="main">
+                <div class="panel panel-default">
+                    <div class="panel-heading">房间用户</div>
+                    <div class="panel-body">
+                        <form class="bs-example" data-example-id="btn-tags" style="padding:4px;">
+                            <button type="button" class="btn btn-danger" onclick="closeSession()">关闭连接</button>
+                            <span id="connections" class="badge"></span>
+                        </form>
+                        <table class="table">
+                            <thead>
+                                <tr>
+
+                                    <th style="width:40px;"><input type="checkbox" onclick="selectAll(this)" /></th>
+                                    <th>Name</th>
+                                    <th>IPAddress</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lstbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            var activeRoom;
+
+            function selectAll(e) {
+                var checkedOfAll = $(e).prop("checked");
+                $("input[type='checkbox']").prop("checked", checkedOfAll);
+            }
+
+            function getSelectItems() {
+                var items = new Array();
+                $("input[type='checkbox']").each(function () {
+                    if ($(this).prop("checked") == true && $(this).prop("id"))
+                        items.push($(this).attr('id'));
+                });
+                return items;
+            }
+
+            async function closeSession() {
+                var items = getSelectItems();
+                if (items.length > 0) {
+                    if (confirm('是否要清除告诉的连接?')) {
+                        var result = await $CloseSession(items);
+                    }
+                }
+            }
+            async function selectRoom(name) {
+
+                activeRoom = name;
+
+                listRoomUsers();
+
+            }
+
+            async function listRoomUsers() {
+
+                var result = await $GetRoomOnlines(activeRoom);
+                $('#lstbody').empty();
+                result.Data.forEach(function (v, i) {
+                    $('#lstbody').append('<tr><td><input id="' + v.ID + '" type="checkbox" /></td><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>');
+                });
+
+            }
+
+            async function listRoom() {
+                var result = await $ListRooms();
+                $('#lstRoom').empty();
+                result.Data.forEach(function (v, i) {
+                    addRoom(v.Name);
+                });
+            }
+            async function closeRoom(name) {
+                if (confirm('是否要关闭房间?')) {
+                    var result = await $CloseRoom(name);
+                    if (result.Code == 200) {
+                        listRoom();
+                    }
+                    else {
+                        alert(result.Error);
+                    }
+                }
+            }
+            function addRoom(name) {
+                $('#lstRoom').append('<tr><td style="width:160px;"><a  class="btn btn-default" style="width:100%" href="javascript:void(0)" onclick="selectRoom(\'' + name + '\')" >' + name + '</a></td> \
+                                                                    <td> <button type="button" onclick="closeRoom(\''+ name + '\')" class="btn btn-danger" >删除</button></td ></tr > ');
+            }
+            api_connect(async function () {
+                listRoom();
+                $('#lstbody').empty();
+                await $Login('admin');
+            });
+            function GetTime() {
+                var now = new Date();
+                return now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+            }
+            api_receive(function (result) {
+                console.log(JSON.stringify(result));
+                switch (result.Data.Type) {
+                    case "Talk":
+                        $('#lstTalk').append('<p><span class="label label-default">(' + result.Data.Room + ')房间</span>[' + GetTime() + "] " + result.Data.Name + ' 说:' + result.Data.Message + '</p>');
+                        break;
+                    case "CheckIn":
+                        $('#lstTalk').append('<p><span class="label label-default">(' + result.Data.Room + ')房间</span>[' + GetTime() + "] " + result.Data.Name + ' 进入</p>');
+                        listRoomUsers();
+                        break;
+                    case "CheckOut":
+                        $('#lstTalk').append('<p><span class="label label-default">(' + result.Data.Room + ')房间</span>[' + GetTime() + "] " + result.Data.Name + ' 退出</p>');
+                        listRoomUsers();
+                        break;
+                    case "Delete":
+                        alert('房间已关闭！');
+                        $('#talkBar').hide();
+                        listRoom();
+                        activeRoom = null;
+                        break;
+                    case "CreateRoom":
+                        addRoom(result.Data.Name);
+                        break;
+                }
+                var objDiv = document.getElementById("lstTalk");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            });
+            $(document).ready(function () {
+                listRoom();
+            });
+
+        </script>
+</body>
+
+</html>

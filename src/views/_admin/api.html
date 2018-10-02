@@ -7,7 +7,7 @@
     <link href="bootstrap-theme.css" rel="stylesheet" />
     <script src="jquery.js"></script>
     <script src="bootstrap.js"></script>
-    <title>FastHttpApi</title>
+    <title>FastHttpApi api info </title>
     <style>
         pre {
             padding: 5px;
@@ -49,7 +49,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="#">FastHttpApi</a>
+                        <a class="navbar-brand" href="/_info/index.html">FastHttpApi 服务信息</a>
                     </div>
                     <ul class="nav nav-tabs" style="float:right; border:none;padding-top:5px;">
                         <li role="presentation"><a href="http://github/ikende/fasthttpapi">Copyright © henryfan 2018 email:henryfan@msn.com</a></li>
@@ -60,9 +60,16 @@
                 </div><!-- /.container-fluid -->
             </nav>
 
+            <ul class="nav nav-tabs">
+                <li role="presentation"><a href="index.html">服务基础信息</a></li>
+                <li role="presentation"><a href="Connections.html">在线连接</a></li>
 
+                <li role="presentation" class="active"><a href="#">API信息</a></li>
+                <li role="presentation" ><a href="apiscript.html">API Script</a></li>
+            </ul>
             <div id="apis" class="list-group">
             </div>
+        </div>
         </div>
         <script>
             var _lastitem;
@@ -75,21 +82,25 @@
             }
             $(document).ready(function () {
                 var i = 0;
-                $.get("/_info/listapi", function (result) {
+                $.get("/_admin/listapi", function (result) {
+                    if (result.Code == 408) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
                     result.Data.forEach(function (v, i) {
-                        var html = '<a href="javascript:void(0)" onclick="showItem(\'#api' + i + '\')" class="list-group-item"><b>' + v.Url + '</b></a>';
+                        var html = '<a href="javascript:void(0)" onclick="showItem(\'#api' + i + '\')" class="list-group-item"><b>' + v.Url + '</b>   '+v.Remark+'</a>';
                         html += '<div id="api' + i + '" style="display:none;padding-left:20px;">'
 
                             + '<div class="bs-callout bs-callout-warning" id="callout-inputgroup-container-body"> \
-                                                             <h4>http请求</h4 > \
+                                                                                     <h4>http请求</h4 > \
 <span class="label label-default">Url:</span> \
-                                                                                                                                   <pre>'+ v.Http.Url + '</pre>  \
-                                                                                                                              <span class="label label-default">Post:</span> \
-                                                                                                                                                          <pre>'+ (v.Http.Body ? v.Http.Body : '无') + '</pre> \
-                                                                                                                                                                  <h4>WebSocket请求</h4 > \
-                                                                                                                                                                     <span class="label label-default">Send:</span> \
-                                                                                                                                                                    <pre>'+ v.WebSocket.Body + '</pre> \
-                                                                                                                                                      </div > '
+                                                    <pre>'+ v.Http.Url + '</pre>  \
+                                                      <span class="label label-default">Post:</span> \
+<pre>'+ (v.Http.Body ? v.Http.Body : '无') + '</pre> \
+<h4>WebSocket请求</h4 > \
+<span class="label label-default">Send:</span> \
+<pre>'+ v.WebSocket.Body + '</pre> \
+                                                                                                                                                                              </div > '
                             + '</div >';
 
                         i++;
@@ -105,7 +116,7 @@
 
             function syntaxHighlight(json) {
                 if (typeof json != 'string') {
-                    json = JSON.stringify(json, undefined, 2);
+                    json = JSON.stringify(json);
                 }
                 json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 

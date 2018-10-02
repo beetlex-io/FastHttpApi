@@ -10,6 +10,17 @@ namespace BeetleX.FastHttpApi
         {
             Code = 200;
         }
+        public ActionResult(object data)
+        {
+            Code = 200;
+            Data = data;
+        }
+
+        public ActionResult(int code, string error)
+        {
+            Code = code;
+            Error = error;
+        }
 
         public string Url { get; set; }
 
@@ -20,6 +31,8 @@ namespace BeetleX.FastHttpApi
         public string StackTrace { get; set; }
 
         public object Data { get; set; }
+
+        public string ID { get; set; }
 
     }
 }

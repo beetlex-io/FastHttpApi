@@ -20,11 +20,21 @@ namespace BeetleX.FastHttpApi
                 System.IO.Path.DirectorySeparatorChar + "views";
             DefaultPage = "index.html;index.htm";
             Debug = false;
-
+            Manager = "admin";
+            ManagerPWD = "123456";
+            WriteLog = false;
+            MaxConnections = 2000;
 
         }
 
 
+        public int MaxConnections { get; set; }
+
+        public string Manager { get; set; }
+
+        public string ManagerPWD { get; set; }
+
+        public bool WriteLog { get; set; }
 
         public string Host { get; set; }
 

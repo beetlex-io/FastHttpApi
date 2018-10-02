@@ -9,6 +9,7 @@ using BeetleX.EventArgs;
 using BeetleX.FastHttpApi.WebSockets;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Net;
 
 namespace BeetleX.FastHttpApi
 {
@@ -16,7 +17,10 @@ namespace BeetleX.FastHttpApi
     {
 
         public HttpApiServer() : this(null)
-        { }
+        {
+            mFileLog = new FileLog();
+            FrameSerializer = this;
+        }
 
         public HttpApiServer(HttpConfig serverConfig)
         {
@@ -49,6 +53,10 @@ namespace BeetleX.FastHttpApi
 
         private IServer mServer;
 
+        private FileLog mFileLog;
+
+        private long mRequests;
+
         private ActionHandlerFactory mActionFactory;
 
         private System.Collections.Concurrent.ConcurrentDictionary<string, object> mProperties = new System.Collections.Concurrent.ConcurrentDictionary<string, object>();
@@ -58,6 +66,8 @@ namespace BeetleX.FastHttpApi
         public IServer BaseServer => mServer;
 
         public HttpConfig ServerConfig { get; set; }
+
+        public IDataFrameSerializer FrameSerializer { get; set; }
 
         public object this[string name]
         {
@@ -73,11 +83,17 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        public DateTime StartTime { get; set; }
+
+        public long Request => mRequests;
+
         public EventHandler<WebSocketReceiveArgs> WebSocketReceive { get; set; }
 
         public EventHandler<ConnectedEventArgs> HttpConnected { get; set; }
 
         public EventHandler<SessionEventArgs> HttpDisconnect { get; set; }
+
+        public EventHandler<WebSocketConnectArgs> WebSocketConnect { get; set; }
 
         private System.Reflection.Assembly[] mAssemblies;
 
@@ -122,9 +138,10 @@ namespace BeetleX.FastHttpApi
             config.LittleEndian = false;
             HttpPacket hp = new HttpPacket(this.ServerConfig.BodySerializer, this.ServerConfig, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
-            mServer.Name = "FastHttpApi Http Server";
-            ApiViews.ApiInfoController aic = new ApiViews.ApiInfoController();
+            Name = "FastHttpApi Http Server";
+            Admin.AdminController aic = new Admin.AdminController();
             aic.HandleFactory = mActionFactory;
+            aic.Server = this;
             mActionFactory.Register(ServerConfig, this, aic);
             if (mAssemblies != null)
             {
@@ -137,9 +154,11 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Path = ServerConfig.StaticResourcePath;
             mResourceCenter.Debug = ServerConfig.Debug;
             mResourceCenter.Load();
-           
-            mServer.Open();         
+            StartTime = DateTime.Now;
+            mServer.Open();
         }
+
+        public string Name { get { return mServer.Name; } set { mServer.Name = value; } }
 
 
 
@@ -163,8 +182,7 @@ namespace BeetleX.FastHttpApi
 
         private void OnSendToWebSocket(DataFrame data, HttpRequest request)
         {
-            if (request.WebSocket)
-                request.Session.Send(data);
+            data.Send(request.Session);
 
         }
 
@@ -173,11 +191,20 @@ namespace BeetleX.FastHttpApi
             e.Session.Tag = new HttpToken();
             e.Session.SocketProcessHandler = this;
             HttpConnected?.Invoke(server, e);
+            base.Connected(server, e);
         }
 
         public override void Disconnect(IServer server, SessionEventArgs e)
         {
-            HttpDisconnect?.Invoke(server, e);
+            try
+            {
+                HttpDisconnect?.Invoke(server, e);
+                base.Disconnect(server, e);
+            }
+            finally
+            {
+                e.Session.Tag = null;
+            }
         }
 
         public void Log(LogType type, string message, params object[] parameters)
@@ -196,18 +223,21 @@ namespace BeetleX.FastHttpApi
 
         public override void Connecting(IServer server, ConnectingEventArgs e)
         {
-
+            if (server.Count > ServerConfig.MaxConnections)
+            {
+                e.Cancel = true;
+            }
         }
 
         #region websocket
-        public object FrameDeserialize(DataFrame data, PipeStream stream)
+        public virtual object FrameDeserialize(DataFrame data, PipeStream stream)
         {
             return stream.ReadString((int)data.Length);
         }
 
         private System.Collections.Concurrent.ConcurrentQueue<byte[]> mBuffers = new System.Collections.Concurrent.ConcurrentQueue<byte[]>();
 
-        public ArraySegment<byte> FrameSerialize(DataFrame data, object body)
+        public virtual ArraySegment<byte> FrameSerialize(DataFrame data, object body)
         {
             byte[] result;
             if (!mBuffers.TryDequeue(out result))
@@ -223,13 +253,14 @@ namespace BeetleX.FastHttpApi
             return new ArraySegment<byte>(result, 0, length);
         }
 
-        public void FrameRecovery(byte[] buffer)
+        public virtual void FrameRecovery(byte[] buffer)
         {
             mBuffers.Enqueue(buffer);
         }
 
         private void OnWebSocketConnect(HttpRequest request, HttpResponse response)
         {
+
             HttpToken token = (HttpToken)request.Session.Tag;
             token.KeepAlive = true;
             token.WebSocketRequest = request;
@@ -241,8 +272,18 @@ namespace BeetleX.FastHttpApi
 
         protected virtual void ConnectionUpgradeWebsocket(HttpRequest request, HttpResponse response)
         {
-            response.ConnectionUpgradeWebsocket(request.Header[HeaderType.SEC_WEBSOCKET_KEY]);
-            request.Session.Send(response);
+            WebSocketConnectArgs wsca = new WebSocketConnectArgs(request);
+            wsca.Request = request;
+            WebSocketConnect?.Invoke(this, wsca);
+            if (wsca.Cancel)
+            {
+                response.Session.Dispose();
+            }
+            else
+            {
+                response.ConnectionUpgradeWebsocket(request.Header[HeaderType.SEC_WEBSOCKET_KEY]);
+                request.Session.Send(response);
+            }
         }
 
 
@@ -256,7 +297,7 @@ namespace BeetleX.FastHttpApi
         public DataFrame CreateDataFrame(object body = null)
         {
             DataFrame dp = new DataFrame();
-            dp.DataPacketSerializer = this;
+            dp.DataPacketSerializer = this.FrameSerializer;
             dp.Body = body;
             return dp;
         }
@@ -280,7 +321,10 @@ namespace BeetleX.FastHttpApi
 
                 if (WebSocketReceive == null)
                 {
-                    ActionResult result = ExecuteWS(token.WebSocketRequest, data);
+                    if (data.Type == DataPacketType.text)
+                    {
+                        ActionResult result = ExecuteWS(token.WebSocketRequest, data);
+                    }
 
                 }
                 else
@@ -303,7 +347,12 @@ namespace BeetleX.FastHttpApi
         public override void Log(IServer server, ServerLogEventArgs e)
         {
             if (ServerLog == null)
-                base.Log(server, e);
+            {
+                if (ServerConfig.Debug)
+                    base.Log(server, e);
+                if (ServerConfig.WriteLog)
+                    mFileLog.Add(e);
+            }
             else
                 ServerLog(server, e);
         }
@@ -322,6 +371,7 @@ namespace BeetleX.FastHttpApi
 
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
+            System.Threading.Interlocked.Increment(ref mRequests);
             HttpToken token = (HttpToken)e.Session.Tag;
             if (token.WebSocket)
             {
@@ -331,6 +381,10 @@ namespace BeetleX.FastHttpApi
             {
                 HttpRequest request = (HttpRequest)e.Message;
                 request.Server = this;
+                if (request.ClientIPAddress == null)
+                {
+                    request.Header.Add(HeaderType.CLIENT_IPADDRESS, ((IPEndPoint)e.Session.RemoteEndPoint).Address.ToString());
+                }
                 HttpResponse response = request.CreateResponse();
                 token.KeepAlive = request.KeepAlive;
                 if (token.FirstRequest && string.Compare(request.Header[HeaderType.UPGRADE], "websocket", true) == 0)

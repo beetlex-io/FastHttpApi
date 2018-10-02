@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="bootstrap.css" rel="stylesheet" />
+    <link href="bootstrap-theme.css" rel="stylesheet" />
+    <script src="jquery.js"></script>
+    <script src="bootstrap.js"></script>
+    <title>FastHttpApi</title>
+</head>
+<body>
+
+    <div class="container bs-docs-container" style="padding-top:10px;">
+        <div class="row">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="/_info/index.html">FastHttpApi 服务信息</a>
+                    </div>
+                    <ul class="nav nav-tabs" style="float:right; border:none;padding-top:5px;">
+                        <li role="presentation"><a href="http://github/ikende/fasthttpapi">Copyright © henryfan 2018 email:henryfan@msn.com</a></li>
+
+                    </ul>
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+
+                </div><!-- /.container-fluid -->
+            </nav>
+            <ul class="nav nav-tabs">
+                <li role="presentation" class="active"><a href="#">服务基础信息</a></li>
+                <li role="presentation"><a href="Connections.html">在线连接</a></li>
+                <li role="presentation"><a href="api.html">API信息</a></li>
+                <li role="presentation"><a href="apiscript.html">API Script</a></li>
+            </ul>
+
+            <table class="table">
+
+                <tbody>
+                    <tr>
+                        <td><span> 服务名称</span></td>
+                        <td><span id="name"></span></td>
+                        <td><span> 运行时长</span></td>
+                        <td><span id="RunTime"></span></td>
+                    </tr>
+                    <tr>
+                        <td><span> 服务地址</span></td>
+                        <td><span id="Host"></span></td>
+                        <td><span> 当前连接数</span></td>
+                        <td><span id="count"></span></td>
+                    </tr>
+                    <tr>
+                        <td><span> 总请求数量</span></td>
+                        <td><span id="Request"></span></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><span>接收IO总数</span></td>
+                        <td><span id="ReceiveQuantity"></span></td>
+                        <td><span>接收字节总数</span></td>
+                        <td><span id="ReceivBytes"></span></td>
+                    </tr>
+                    <tr>
+                        <td><span>发送IO总数</span></td>
+                        <td><span id="SendQuantity"></span></td>
+                        <td><span>发送字节总数</span></td>
+                        <td><span id="SendBytes"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="connectStatus" style="display:flex;"> </div>
+        </div>
+      </div>
+        <script>
+            var url = '/_admin/GetServerInfo'
+            var websocket;
+            function onOpen(evt) {
+                searchInfo();
+                setInterval(function () {
+                    searchInfo();
+                }, 2000)
+                $('#connectStatus').empty();
+                $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
+
+            }
+
+            function onClose(evt) {
+                $('#connectStatus').empty();
+                $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
+            }
+            function onMessage(evt) {
+              
+                var result = JSON.parse(evt.data);
+                if (result.Code == 408) {
+                    window.location.href = 'Login.html';
+                    return;
+                }
+                $('#name').text(result.Data.Name);
+                $('#RunTime').text(result.Data.RunTime);
+                $('#Host').text((result.Data.Host ? result.Data.Host : '') + '@' + result.Data.Port);
+                $('#count').text(result.Data.Count);
+                $('#Request').text(result.Data.Request);
+                $('#ReceivBytes').text(result.Data.ReceivBytes);
+                $('#ReceiveQuantity').text(result.Data.ReceiveQuantity);
+                $('#SendQuantity').text(result.Data.SendQuantity);
+                $('#SendBytes').text(result.Data.SendBytes);
+
+            }
+
+            function onError(evt) {
+                $('#connectStatus').empty();
+                $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
+
+            }
+            $(document).ready(function () {
+                websocket = new WebSocket("ws://" + window.location.host);
+                websocket.onopen = function (evt) { onOpen(evt) };
+                websocket.onclose = function (evt) { onClose(evt) };
+                websocket.onmessage = function (evt) { onMessage(evt) };
+                websocket.onerror = function (evt) { onError(evt) };
+
+            });
+            function searchInfo() {
+                websocket.send('{"url":"/_admin/GetServerInfo","params":{}}');
+            }
+        </script>
+</body>
+</html>

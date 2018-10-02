@@ -1,12 +1,10 @@
-﻿<!DOCTYPE html>
-
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+﻿<html>
 <head>
     <meta charset="utf-8" />
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/bootstrap-theme.css" rel="stylesheet" />
-
     <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/apis.js"></script>
     <script src="js/bootstrap.js"></script>
     <title>FastHttpApi WebSocket</title>
 </head>
@@ -24,69 +22,233 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="#">FastHttpApi WebSocket sample</a>
+                        <a class="navbar-brand" href="#">FastHttpApi Chat room sample</a>
                     </div>
 
                     <!-- Collect the nav links, forms, and other content for toggling -->
 
                 </div><!-- /.container-fluid -->
             </nav>
+
+
+
             <ul class="nav nav-tabs">
-                <li role="presentation" class="active"><a href="/">Onlines</a></li>
-                <li role="presentation"><a href="/chat.html">Chat Room</a></li>
+                <li role="presentation" class="active"><a href="#">聊天室</a></li>
+                <li role="presentation"><a href="admin.html">管理</a></li>
+
+                <li role="presentation"><a href="/_admin/index.html" target="_blank">服务后台</a></li>
             </ul>
-            <div class="col-md-9" role="main">
+
+            <form class="form-inline" style="padding-top:10px;" id="loginBar">
+                <div class="form-group">
+                    <label for="exampleInputName2">昵称</label>
+                    <input type="text" class="form-control" id="userName" placeholder="昵称">
+                </div>
+
+                <button onclick="login()" type="button" class="btn btn-default">登陆</button>
+            </form>
+            <div class="row">
                 <br />
-                <form class="form-inline">
-                    <div class="form-group">
-                        <label for="exampleInputName2"></label>
-                        <input type="text" class="form-control" id="msg" placeholder="message">
+                <div class="col-md-3" role="main">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">房间</div>
+                        <div class="panel-body">
+                            <form>
+                                <div class="form-group">
+
+                                    <input type="email" class="form-control" id="roomName" placeholder="房间名称">
+                                </div>
+                                <button type="button" onclick="createRoom()" class="btn btn-default">创建房间</button>
+                            </form>
+                            <hr />
+                            <div id="lstRoom" class="list-group" style="height:405px;overflow: auto; overflow-x:hidden;">
+                                <a href="#" class="list-group-item">Vestibulum at eros</a>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <button type="button" onclick="sendMessage()" class="btn btn-default">Talk</button>
-                </form>
-
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>SessionID</th>
-                            <th>Name</th>
-                            <th>IPAddress</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lstbody"></tbody>
-                </table>
-
-
+                <div class="col-md-6" role="main">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="roomTitle">聊天记录</div>
+                        <div class="panel-body">
+                            <div id="lstTalk" style="height:500px;overflow: auto; overflow-x:hidden;">
+                            </div>
+                            <form class="form-inline" id="talkBar">
+                                <div class="form-group">
+                                    <input type="text" style="width:300px;" class="form-control" id="talkMsg" placeholder="发言">
+                                </div>
+                                <button type="button" onclick="sendMessage()" class="btn btn-default">发送</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3" role="main">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">房间用户</div>
+                        <div class="panel-body">
+                            <div style="height:550px;overflow: auto; overflow-x:hidden;">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>IPAddress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lstbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</body>
-<script>
-    $(document).ready(function () {
+    <script>
 
-        search();
-    });
-
-    function sendMessage() {
-
-        if (!$('#msg').val()) {
-            alert("enter talk message!")
-            return;
+        var loginStatus = false;
+        var activeRoom;
+        async function createRoom() {
+            if (!$('#roomName').val()) {
+                alert('请输入创建房间名称!');
+                return;
+            }
+            var result = await $CreateRoom($('#roomName').val());
+            if (result.Code != 200) {
+                alert(result.Error);
+            }
+            else
+                listRoom();
         }
-        var url = "SendMessage?sessionid=&message=" + $('#msg').val();
-        $.get(url);
-    }
-    function search() {
-        $.get('/Onlines', function (result) {
-            var a = new Array();
-            a = result.Data;
-            $("#lstbody").empty();
-            a.forEach(function (v, i) {
-                $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.ID + '</td><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>')
+        async function sendMessage() {
+            if (!$('#talkMsg').val()) {
+                alert('请输入发言的内容！');
+                return;
+            }
+            var result = await $SendMessage($('#talkMsg').val());
+            if (result.Code == 200) {
+                $('#talkMsg').val('');
+            }
+            else {
+                alert(result.Error);
+            }
+        }
+
+        async function login() {
+            if (!$('#userName').val() || $('#userName').val().toLowerCase()=='admin') {
+                alert('登陆名称无效！');
+                return;
+            }
+            var result = await $Login($('#userName').val());
+            if (result.Code != 200) {
+                alert(result.Error);
+            }
+            else {
+                alert("登陆成功");
+                $('#lstTalk').empty();
+                $('#loginBar').hide();
+                $('#lstbody').empty();
+                loginStatus = true;
+                activeRoom = null;
+                listRoom();
+            }
+        }
+
+        async function listRoomUsers() {
+            if (loginStatus == true && activeRoom) {
+                var result = await $GetRoomOnlines(activeRoom);
+                $('#lstbody').empty();
+                result.Data.forEach(function (v, i) {
+                    $('#lstbody').append('<tr><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>');
+                });
+            }
+        }
+
+        async function selectRoom(name) {
+            if (loginStatus == true) {
+                if (name == activeRoom)
+                    return;
+                console.log("select room " + name);
+                if (activeRoom) {
+                    console.log("checkout " + activeRoom);
+                    await $CheckOutRoom(activeRoom);
+                }
+                activeRoom = name;
+                $('#roomTitle').html(activeRoom);
+                $('#lstTalk').empty();
+                var result = await $CheckInRoom(name);
+                if (result.Code == 200) {
+                    $('#talkBar').show();
+                 
+                    listRoomUsers();
+                }
+                else {
+                    alert(result.Error);
+                }
+            }
+        }
+        async function listRoom() {
+            var result = await $ListRooms();
+            $('#lstRoom').empty();
+            result.Data.forEach(function (v, i) {
+                $('#lstRoom').append('<a href="javascript:void(0)" class="list-group-item" onclick="selectRoom(\'' + v.Name + '\')" >' + v.Name + '</a>');
             });
+        }
+
+        function GetTime() {
+            var now = new Date();
+            return now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+        }
+        api_connect(async function () {
+            listRoom();         
         });
-    }
-</script>
+        api_receive(function (result) {
+            console.log(JSON.stringify(result));
+            switch (result.Data.Type) {
+                case "Talk":
+                    $('#lstTalk').append('<p>[' + GetTime() + "] " + result.Data.Name + ' 说:' + result.Data.Message + '</p>');
+                    break;
+                case "CheckIn":
+                    $('#lstTalk').append('<p>[' + GetTime() + "] " + result.Data.Name + ' 进入</p>');
+                  
+                    listRoomUsers();
+                    break;
+                case "CheckOut":
+                    $('#lstTalk').append('<p>[' + GetTime() + "] " + result.Data.Name + ' 退出</p>');
+                    listRoomUsers();
+                    break;
+                case "Delete":
+
+                    if (result.Data.Room == activeRoom) {
+                        alert('房间已关闭！');
+                        $('#talkBar').hide();
+                        $('#lstTalk').empty();
+                        activeRoom = null;
+                    }
+
+                    listRoom();
+
+                    break;
+                case "CreateRoom":
+                    $('#lstRoom').append('<a href="javascript:void(0)" class="list-group-item" onclick="selectRoom(\'' + result.Data.Name + '\')" >' + result.Data.Name + '</a>');
+                    break;
+            }
+            var objDiv = document.getElementById("lstTalk");
+            objDiv.scrollTop = objDiv.scrollHeight;
+        });
+        api_disconnect(function () {
+            $('#loginBar').show();
+            $('#talkBar').hide();
+            loginStatus = false;
+        });
+
+        $(document).ready(function () {
+            listRoom();
+            $('#talkBar').hide();
+        });
+
+
+    </script>
+</body>
+
 </html>

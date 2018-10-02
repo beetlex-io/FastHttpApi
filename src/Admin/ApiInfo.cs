@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BeetleX.FastHttpApi.ApiViews
+namespace BeetleX.FastHttpApi.Admin
 {
 
     class UrlInfo : IComparable
@@ -14,7 +15,13 @@ namespace BeetleX.FastHttpApi.ApiViews
             Http.Build(handler);
             WebSocket = new WebSocketInvoke();
             WebSocket.Build(handler);
+            Remark = handler.Remark;
+            Handler = handler;
         }
+
+        internal ActionHandler Handler { get; set; }
+
+        public string Remark { get; set; }
 
         public string Url { get; set; }
 
@@ -60,6 +67,20 @@ namespace BeetleX.FastHttpApi.ApiViews
                 if (pi.IsBody)
                 {
                     Body = Newtonsoft.Json.JsonConvert.SerializeObject(pi.Value);
+                    if (pi.Value is IEnumerable && pi.Value.GetType().IsGenericType)
+                    {
+                        try
+                        {
+                            System.Collections.ArrayList list = new ArrayList();
+                            Type[] subtype = pi.Value.GetType().GetGenericArguments();
+                            list.Add(Activator.CreateInstance(subtype[0]));
+                            list.Add(Activator.CreateInstance(subtype[0]));
+                            Body = Newtonsoft.Json.JsonConvert.SerializeObject(list);
+                        }
+                        catch
+                        { }
+
+                    }
                 }
                 else
                 {
@@ -94,6 +115,20 @@ namespace BeetleX.FastHttpApi.ApiViews
                     if (pi.IsBody)
                     {
                         mParams["body"] = pi.Value;
+                        if (pi.Value is IEnumerable && pi.Value.GetType().IsGenericType)
+                        {
+                            try
+                            {
+                                System.Collections.ArrayList list = new ArrayList();
+                                Type[] subtype = pi.Value.GetType().GetGenericArguments();
+                                list.Add(Activator.CreateInstance(subtype[0]));
+                                list.Add(Activator.CreateInstance(subtype[0]));
+                                mParams["body"] = list;
+                            }
+                            catch
+                            { }
+
+                        }
                     }
                     else
                     {
@@ -118,6 +153,25 @@ namespace BeetleX.FastHttpApi.ApiViews
         public bool IsBody { get; set; }
 
         public Type Type { get; set; }
+
+        public override string ToString()
+        {
+            string value = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
+            if (Value is IEnumerable && Value.GetType().IsGenericType)
+            {
+                try
+                {
+                    System.Collections.ArrayList list = new ArrayList();
+                    Type[] subtype = Value.GetType().GetGenericArguments();
+                    list.Add(Activator.CreateInstance(subtype[0]));
+                    list.Add(Activator.CreateInstance(subtype[0]));
+                    value = Newtonsoft.Json.JsonConvert.SerializeObject(list);
+                }
+                catch
+                { }
+            }
+            return value.ToString();
+        }
 
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
-using BeetleX.FastHttpApi.ApiViews;
+using BeetleX.FastHttpApi.Admin;
 
 namespace BeetleX.FastHttpApi
 {
@@ -11,13 +12,19 @@ namespace BeetleX.FastHttpApi
     {
         public ActionHandler(object controller, System.Reflection.MethodInfo method)
         {
+            Remark = "";
             Parameters = new List<ParameterBinder>();
             mMethod = method;
             mMethodHandler = new MethodHandler(mMethod);
             Controller = controller;
             LoadParameter();
             Filters = new List<FilterAttribute>();
+           
         }
+
+        
+
+        public string Remark { get; set; }
 
         public List<FilterAttribute> Filters { get; set; }
 
@@ -31,6 +38,9 @@ namespace BeetleX.FastHttpApi
 
         private void LoadParameter()
         {
+            DescriptionAttribute da = mMethod.GetCustomAttribute<DescriptionAttribute>(false);
+            if (da != null)
+                this.Remark = da.Description;
             foreach (System.Reflection.ParameterInfo pi in mMethod.GetParameters())
             {
                 ParameterBinder pb = new DefaultParameter();
@@ -160,7 +170,7 @@ namespace BeetleX.FastHttpApi
 
         public abstract object GetValue(IHttpContext context);
 
-        public abstract ApiViews.ParameterInfo GetInfo();
+        public abstract Admin.ParameterInfo GetInfo();
     }
 
     class IntParameter : ParameterBinder
@@ -172,9 +182,9 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -186,9 +196,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetShort(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -200,9 +210,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetLong(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -214,9 +224,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetUInt(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -228,9 +238,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetUShort(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -242,9 +252,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetULong(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -256,9 +266,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetFloat(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -270,9 +280,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetDouble(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -284,9 +294,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetString(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = "" };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = "" };
         }
     }
 
@@ -298,9 +308,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetDecimal(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
         }
     }
 
@@ -312,9 +322,9 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetDateTime(this.Name, out result);
             return result;
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = DateTime.Now };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = DateTime.Now };
         }
     }
 
@@ -324,9 +334,9 @@ namespace BeetleX.FastHttpApi
         {
             return context.Data.GetBody(this.Type);
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { IsBody = true, Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { IsBody = true, Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -338,9 +348,9 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -353,9 +363,9 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -368,9 +378,9 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -384,9 +394,9 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -399,9 +409,9 @@ namespace BeetleX.FastHttpApi
 
         public override bool DataParameter => false;
 
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 
@@ -411,9 +421,9 @@ namespace BeetleX.FastHttpApi
         {
             return context.Data.GetObject(this.Name, this.Type);
         }
-        public override ApiViews.ParameterInfo GetInfo()
+        public override Admin.ParameterInfo GetInfo()
         {
-            return new ApiViews.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
         }
     }
 

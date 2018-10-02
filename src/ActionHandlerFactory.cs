@@ -91,7 +91,8 @@ namespace BeetleX.FastHttpApi
                 if (string.Compare("Equals", mi.Name, true) == 0
                     || string.Compare("GetHashCode", mi.Name, true) == 0
                     || string.Compare("GetType", mi.Name, true) == 0
-                    || string.Compare("ToString", mi.Name, true) == 0)
+                    || string.Compare("ToString", mi.Name, true) == 0 || mi.Name.IndexOf("set_") >= 0
+                    || mi.Name.IndexOf("get_") >= 0)
                     continue;
                 if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
                     continue;
@@ -120,16 +121,16 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        private List<ApiViews.UrlInfo> mUrlsInfo;
+        private List<Admin.UrlInfo> mUrlsInfo;
 
-        internal List<ApiViews.UrlInfo> GetUrlInfos()
+        internal List<Admin.UrlInfo> GetUrlInfos()
         {
             if (mUrlsInfo == null)
             {
-                mUrlsInfo = new List<ApiViews.UrlInfo>();
+                mUrlsInfo = new List<Admin.UrlInfo>();
                 foreach (ActionHandler handler in mMethods.Values)
                 {
-                    mUrlsInfo.Add(new ApiViews.UrlInfo(handler));
+                    mUrlsInfo.Add(new Admin.UrlInfo(handler));
                 }
                 mUrlsInfo.Sort();
             }
@@ -152,6 +153,7 @@ namespace BeetleX.FastHttpApi
             WebSockets.DataFrame dataFrame = server.CreateDataFrame(result);
             if (url == null)
             {
+                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "websocket {0} not support url info notfound!", request.ClientIPAddress);
                 result.Code = 403;
                 result.Error = "not support url info notfound!";
                 request.Session.Send(dataFrame);
@@ -161,10 +163,17 @@ namespace BeetleX.FastHttpApi
             string baseurl = HttpParse.CharToLower(result.Url);
             if (baseurl[0] != '/')
                 baseurl = "/" + baseurl;
+            result.Url = baseurl;
+            JToken data = token["params"];
+            if (data == null)
+                data = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject("{}");
+            JToken requestid = data["_requestid"];
+            if (requestid != null)
+                result.ID = requestid.Value<string>();
             ActionHandler handler = GetAction(baseurl);
             if (handler == null)
             {
-                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, baseurl + " not found");
+                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "websocket {0} {1} notfound", request.ClientIPAddress, result.Url);
                 result.Code = 404;
                 result.Error = "url " + baseurl + " notfound!";
                 request.Session.Send(dataFrame);
@@ -173,21 +182,31 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    JToken data = token["params"];
-                    if (data == null)
-                        data = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject("{}");
                     WebsocketContext dc = new WebsocketContext(server, request, data);
+                    dc.ActionUrl = baseurl;
+                    dc.RequestID = result.ID;
                     ActionContext context = new ActionContext(handler, dc);
                     context.Execute();
                     if (!dc.AsyncResult)
                     {
-                        result.Data = context.Result;
+                        if (context.Result is ActionResult)
+                        {
+                            result = (ActionResult)context.Result;
+                            result.ID = dc.RequestID;
+                            if (result.Url == null)
+                                result.Url = dc.ActionUrl;
+                            dataFrame.Body = result;
+                        }
+                        else
+                        {
+                            result.Data = context.Result;
+                        }
                         request.Session.Send(dataFrame);
                     }
                 }
                 catch (Exception e_)
                 {
-                    server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "{0} inner error {1}@{2}", request.Url, e_.Message, e_.StackTrace);
+                    server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "websocket {3} {0} inner error {1}@{2}", request.Url, e_.Message, e_.StackTrace, request.ClientIPAddress);
                     result.Code = 500;
                     result.Error = e_.Message;
                     if (server.ServerConfig.OutputStackTrace)
@@ -207,13 +226,15 @@ namespace BeetleX.FastHttpApi
             if (handler == null)
             {
                 response.NotFound();
-                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, request.Url + " not found");
+                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {0} {1} not found", request.ClientIPAddress, request.Url);
             }
             else
             {
                 try
                 {
+
                     HttpContext pc = new HttpContext(server, request, response);
+                    pc.ActionUrl = request.BaseUrl;
                     ActionContext context = new ActionContext(handler, pc);
                     context.Execute();
                     if (!response.AsyncResult)
@@ -225,7 +246,7 @@ namespace BeetleX.FastHttpApi
                 catch (Exception e_)
                 {
                     response.InnerError(e_, server.ServerConfig.OutputStackTrace);
-                    response.Session.Server.Log(EventArgs.LogType.Error, response.Session, "{0} inner error {1}@{2}", request.Url, e_.Message, e_.StackTrace);
+                    response.Session.Server.Log(EventArgs.LogType.Error, response.Session, "http {3} {0} inner error {1}@{2}", request.Url, e_.Message, e_.StackTrace, request.ClientIPAddress);
                 }
             }
         }

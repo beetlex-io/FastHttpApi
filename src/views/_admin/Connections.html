@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="bootstrap.css" rel="stylesheet" />
+    <link href="bootstrap-theme.css" rel="stylesheet" />
+    <script src="jquery.js"></script>
+    <script src="bootstrap.js"></script>
+    <title>FastHttpApi</title>
+</head>
+<body>
+
+    <div class="container bs-docs-container" style="padding-top:10px;">
+        <div class="row">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="/_info/index.html">FastHttpApi 服务信息</a>
+                    </div>
+                    <ul class="nav nav-tabs" style="float:right; border:none;padding-top:5px;">
+                        <li role="presentation"><a href="http://github/ikende/fasthttpapi">Copyright © henryfan 2018 email:henryfan@msn.com</a></li>
+
+                    </ul>
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+
+                </div><!-- /.container-fluid -->
+            </nav>
+            <ul class="nav nav-tabs">
+                <li role="presentation"><a href="index.html">服务基础信息</a></li>
+                <li role="presentation" class="active"><a href="#">在线连接</a></li>
+
+                <li role="presentation"><a href="api.html">API信息</a></li>
+                <li role="presentation"><a href="apiscript.html">API Script</a></li>
+            </ul>
+            <form class="bs-example" data-example-id="btn-tags" style="padding:4px;">
+                <button type="button" class="btn btn-success" onclick="searchConn(0)">查询</button>  <button type="button" class="btn btn-danger" onclick="disconnect()">关闭连接</button>
+                <span id="connections" class="badge"></span>
+            </form>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width:40px;"><input type="checkbox" onclick="selectAll(this)" /></th>
+                        <th style="width:120px;">IPAddress</th>
+                        <th style="width:120px;">类型</th>
+                        <th style="width:120px;">会话ID</th>
+                        <th>会话名称</th>
+                        <th>在线时长</th>
+                    </tr>
+                </thead>
+                <tbody id="lstConnection"></tbody>
+            </table>
+            <nav aria-label="Page navigation">
+                <ul id="pagination" class="pagination">
+                    <li>
+                        <a href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li><a href="javascript:void(0)" onclick="searchConn(0)">1</a></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li><a href="#">4</a></li>
+                    <li><a href="#">5</a></li>
+                    <li>
+                        <a href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+     </div>
+        <script>
+
+
+            function selectAll(e) {
+                var checkedOfAll = $(e).prop("checked");
+                $("input[type='checkbox']").prop("checked", checkedOfAll);
+            }
+
+            function getSelectItems() {
+                var items = new Array();
+                $("input[type='checkbox']").each(function () {
+                    if ($(this).prop("checked") == true && $(this).prop("id"))
+                        items.push({ ID: $(this).attr('id'), IP: $(this).attr('IP') });
+                });
+                return items;
+            }
+
+            function disconnect() {
+                var items = getSelectItems();
+                if (items.length > 0) {
+                    if (confirm('是否要断开选择的连接?')) {
+                        var url = "/_admin/CloseSession";
+                        var sessions = getSelectItems();
+                        if (sessions.length > 0) {
+                            $.post(url, JSON.stringify(sessions), function (result) {
+                                searchConn(0);
+                            });
+                        }
+                    }
+                }
+            }
+
+            $(document).ready(function () {
+                searchConn(0);
+            });
+
+
+            function searchConn(index) {
+                var url = '/_admin/ListConnection?index=' + index;
+                $.get(url, function (result) {
+                    if (result.Code == 408) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    pagination(result.Data.Index, result.Data.Pages);
+                    $('#lstConnection').empty();
+                    var pages = result.Data.Pages;
+                    $('#connections').text(result.Data.Count);
+                    result.Data.Items.forEach(function (v, i) {
+                        var tr = '                    <tr> \
+                                                                                                                                                                            <td><input id="'+ v.ID + '" ip="' + v.IPAddress + '" type="checkbox"/></td> \
+                                                                                                                                                                            <td>'+ v.IPAddress + '</td> \
+                                                                                                                                                                                                    <td>'+ v.Type + '</td> \
+                                                                                                                                                                                                        <td>'+ v.ID + '</td> \
+                                                                                                                                                                                                        <td>'+ v.Name + '</td> \
+                                                                                                                                                                                                        <td>'+ v.CreateTime + '</td> \
+                                                                                                                                                                                            </tr > ';
+                        $('#lstConnection').append(tr);
+                    });
+                });
+            }
+
+            function pagination(index, pages) {
+                $('#pagination').empty();
+                if (pages < 10) {
+                    for (i = 0; i < pages; i++) {
+                        var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
+                        $('#pagination').append(item);
+                    }
+                }
+                else {
+                    var item = '<li><a page="' + 0 + '" href="javascript:void(0)" onclick="searchConn(0)">1</a></li>'
+                    $('#pagination').append(item);
+
+
+                    for (i = index - 5; i < index + 1; i++) {
+                        if (i > 0 && i < pages - 1) {
+                            var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
+                            $('#pagination').append(item);
+                        }
+                    }
+
+
+                    for (i = index + 1; i < index + 5; i++) {
+                        if (i < (pages - 1)) {
+                            var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
+                            $('#pagination').append(item);
+                        }
+                    }
+                    if (pages > 1) {
+                        var item = '<li><a page="' + (pages - 1) + '" href="javascript:void(0)" onclick="searchConn(' + (pages - 1) + ')">' + (pages) + '</a></li>'
+                        $('#pagination').append(item);
+                    }
+                }
+                $('a').each(function () {
+                    if ($(this).attr('page') == index) {
+                        $(this).html('<span class="badge">' + (index + 1) + '</span>')
+                    }
+                })
+            }
+        </script>
+</body>
+</html>

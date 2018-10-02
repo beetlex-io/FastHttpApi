@@ -22,13 +22,12 @@ namespace BeetleX.FastHttpApi
             this.Session = session;
             mState = LoadedState.None;
             Serializer = formater;
-            RemoteEndPoint = session.RemoteEndPoint;
+
             WebSocket = false;
         }
 
         public bool WebSocket { get; set; }
 
-        public EndPoint RemoteEndPoint { get; set; }
 
         private LoadedState mState;
 
@@ -47,6 +46,8 @@ namespace BeetleX.FastHttpApi
         public Cookies Cookies => mCookies;
 
         public int Length => mLength;
+
+        public string ClientIPAddress => Header[HeaderType.CLIENT_IPADDRESS];
 
         public string Method { get; set; }
 
@@ -170,6 +171,7 @@ namespace BeetleX.FastHttpApi
             if (this.KeepAlive)
                 response.Header[HeaderType.CONNECTION] = "Keep-Alive";
             response.Header[HeaderType.HOST] = Header[HeaderType.HOST];
+            response.RequestID = QueryString["_requestid"];
             return response;
         }
     }

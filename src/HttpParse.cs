@@ -1,6 +1,7 @@
 ﻿using BeetleX.Buffers;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -95,6 +96,16 @@ namespace BeetleX.FastHttpApi
                 }
             }
             return CharToLower(url);
+        }
+
+        public static string MD5Encrypt(string filename)
+        {
+            using (MD5 md5Hash = MD5.Create())
+            {
+                byte[] hash = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(filename));
+
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
         }
 
         public static string GetBaseUrlExt(ReadOnlySpan<char> url)

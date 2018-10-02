@@ -35,9 +35,6 @@ namespace BeetleX.FastHttpApi
 
         object GetObject(string name, Type type);
 
-
-
-
     }
 
     class WebsocketContext : IHttpContext, IDataContext
@@ -78,6 +75,7 @@ namespace BeetleX.FastHttpApi
         }
 
 
+        public string RequestID { get; set; }
 
         public void Result(object data)
         {
@@ -86,7 +84,13 @@ namespace BeetleX.FastHttpApi
             {
                 ActionResult result = data as ActionResult;
                 if (result == null)
+                {
+                    result = new ActionResult();
                     result.Data = data;
+                }
+                result.ID = RequestID;
+                if (result.Url == null)
+                    result.Url = this.ActionUrl;
                 frame = Server.CreateDataFrame(result);
             }
             Request.Session.Send(frame);
@@ -237,6 +241,8 @@ namespace BeetleX.FastHttpApi
 
         public ISession Session => Request.Session;
 
+        public string ActionUrl { get; internal set; }
+
         public object this[string name] { get => Session[name]; set => Session[name] = value; }
 
         public void Async()
@@ -244,32 +250,33 @@ namespace BeetleX.FastHttpApi
             AsyncResult = true;
         }
 
-        private WebSockets.DataFrame CreateFrame(object data)
+
+        public void SendToWebSocket(WebSockets.DataFrame data, HttpRequest request)
         {
-            DataFrame frame = data as WebSockets.DataFrame;
-            if (frame == null)
-            {
-                ActionResult result = data as ActionResult;
-                if (result == null)
-                    result = new ActionResult { Data = data };
-                else
-                    result.Data = data;
-                frame = Server.CreateDataFrame(result);
-            }
-            return frame;
+            Server.SendToWebSocket(data, request);
         }
 
-        public void ResultToWebSocket(object data, HttpRequest request)
+        public void SendToWebSocket(WebSockets.DataFrame data, Func<ISession, HttpRequest, bool> filter = null)
+        {
+            Server.SendToWebSocket(data, filter);
+        }
+
+
+        public void SendToWebSocket(ActionResult data, HttpRequest request)
         {
 
-            DataFrame frame = CreateFrame(data);
+            if (data.Url == null)
+                data.Url = this.ActionUrl;
+            DataFrame frame = Server.CreateDataFrame(data);
             Server.SendToWebSocket(frame, request);
 
         }
 
-        public void ResultToWebSocket(object data, Func<ISession, HttpRequest, bool> filter = null)
+        public void SendToWebSocket(ActionResult data, Func<ISession, HttpRequest, bool> filter = null)
         {
-            DataFrame frame = CreateFrame(data);
+            if (data.Url == null)
+                data.Url = this.ActionUrl;
+            DataFrame frame = Server.CreateDataFrame(data);
             Server.SendToWebSocket(frame, filter);
         }
     }
@@ -297,6 +304,8 @@ namespace BeetleX.FastHttpApi
         public IDataContext Data => this;
 
         public ISession Session => Request.Session;
+
+        public string ActionUrl { get; internal set; }
 
         public object this[string name] { get => Session[name]; set => Session[name] = value; }
 
@@ -375,33 +384,32 @@ namespace BeetleX.FastHttpApi
             Response.Async();
         }
 
-
-        private WebSockets.DataFrame CreateFrame(object data)
+        public void SendToWebSocket(WebSockets.DataFrame data, HttpRequest request)
         {
-            DataFrame frame = data as WebSockets.DataFrame;
-            if (frame == null)
-            {
-                ActionResult result = data as ActionResult;
-                if (result == null)
-                    result = new ActionResult { Data = data };
-                else
-                    result.Data = data;
-                frame = Server.CreateDataFrame(result);
-            }
-            return frame;
+            Server.SendToWebSocket(data, request);
         }
 
-        public void ResultToWebSocket(object data, HttpRequest request)
+        public void SendToWebSocket(WebSockets.DataFrame data, Func<ISession, HttpRequest, bool> filter = null)
+        {
+            Server.SendToWebSocket(data, filter);
+        }
+
+
+        public void SendToWebSocket(ActionResult data, HttpRequest request)
         {
 
-            DataFrame frame = CreateFrame(data);
+            if (data.Url == null)
+                data.Url = this.ActionUrl;
+            DataFrame frame = Server.CreateDataFrame(data);
             Server.SendToWebSocket(frame, request);
 
         }
 
-        public void ResultToWebSocket(object data, Func<ISession, HttpRequest, bool> filter = null)
+        public void SendToWebSocket(ActionResult data, Func<ISession, HttpRequest, bool> filter = null)
         {
-            DataFrame frame = CreateFrame(data);
+            if (data.Url == null)
+                data.Url = this.ActionUrl;
+            DataFrame frame = Server.CreateDataFrame(data);
             Server.SendToWebSocket(frame, filter);
         }
     }

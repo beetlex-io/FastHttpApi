@@ -18,17 +18,17 @@ namespace BeetleX.FastHttpApi
 
         public object GetInnerError(Exception e, HttpResponse response, bool outputStackTrace)
         {
-            return new ActionResult { Url =HttpParse.GetBaseUrl(response.Request.Url), Code = 500, Error = e.Message, StackTrace = outputStackTrace ? e.StackTrace : null };
+            return new ActionResult { ID=response.RequestID, Url =HttpParse.GetBaseUrl(response.Request.Url), Code = 500, Error = e.Message, StackTrace = outputStackTrace ? e.StackTrace : null };
         }
 
         public object GetNotSupport(HttpResponse response)
         {
-            return new ActionResult { Url = HttpParse.GetBaseUrl(response.Request.Url), Code = 403, Error = response.Request.Method + " method type not support" };
+            return new ActionResult { ID = response.RequestID, Url = HttpParse.GetBaseUrl(response.Request.Url), Code = 403, Error = response.Request.Method + " method type not support" };
         }
 
         public object GetNotFoundData(HttpResponse response)
         {
-            return new ActionResult { Url = response.Request.BaseUrl, Code = 404 };
+            return new ActionResult { ID = response.RequestID, Url = response.Request.BaseUrl, Code = 404 };
         }
 
         public class ErrorResult

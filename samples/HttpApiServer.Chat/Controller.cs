@@ -4,28 +4,128 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using BeetleX.FastHttpApi.WebSockets;
+using System.ComponentModel;
 
 namespace HttpApiServer.Chat
 {
-    [ControllerAttribute]
+    [Controller]
     public class Controller : IController
     {
+        [Description("获取所有在线人数")]
         public object Onlines(IHttpContext context)
         {
             return from i in context.Server.GetWebSockets()
                    select new { i.Session.ID, i.Session.Name, IPAddress = i.Session.RemoteEndPoint.ToString() };
 
         }
+        [Description("获取指定房间的在线人数")]
+        public object GetRoomOnlines(string roomName, IHttpContext context)
+        {
+            Room room;
+            if (mRooms.TryGetValue(roomName, out room))
+            {
+                return from i in room.Sessions
+                       select new { i.Session.ID, i.Session.Name, IPAddress = i.Session.RemoteEndPoint.ToString() };
+            }
+            return new BeetleX.ISession[0];
+        }
+
+        private System.Collections.Concurrent.ConcurrentDictionary<string, Room> mRooms = new System.Collections.Concurrent.ConcurrentDictionary<string, Room>();
+
+        private List<BeetleX.ISession> mAdminList = new List<BeetleX.ISession>();
 
         private BeetleX.FastHttpApi.HttpApiServer mServer;
 
-        public void Login(string name, IHttpContext context)
+        [Description("用户登陆")]
+        public bool Login(string userName, IHttpContext context)
         {
-            context.Session.Name = name;
-            Command cmd = new Command { Name = name, Type = "Login", Message = "" };
-            context.ResultToWebSocket(cmd);
+            context.Session.Name = userName;
+            if (context.Session.Name == "admin")
+            {
+                lock (mAdminList)
+                    mAdminList.Add(context.Session);
+            }
+            return true;
+        }
+        [Description("获取所有房间信息")]
+        public object ListRooms()
+        {
+            return from r in mRooms.Values select new { r.Name, r.Sessions.Count };
+        }
+        [Description("关闭连接")]
+        public void CloseSession([BodyParameter]List<int> sessions, IHttpContext context)
+        {
+            foreach (int i in sessions)
+            {
+                BeetleX.ISession session = context.Server.BaseServer.GetSession(i);
+                if (session != null)
+                    session.Dispose();
+            }
+        }
+        [Description("关闭房间")]
+        public void CloseRoom(string roomName, IHttpContext context)
+        {
+            Room room;
+            if (mRooms.Remove(roomName, out room))
+            {
+                room.Sessions.Clear();
+                Command cmd = new Command();
+                cmd.Type = "Delete";
+                cmd.Room = roomName;
+                context.SendToWebSocket(new ActionResult(cmd));
+            }
         }
 
+        [Description("退出房间")]
+        public object CheckOutRoom(string roomName, IHttpContext context)
+        {
+            Room room;
+            if (mRooms.TryGetValue(roomName, out room))
+            {
+                room.CheckOut(context);
+            }
+            else
+            {
+                return new ActionResult(404, "房间不存在");
+            }
+            return true;
+        }
+
+        [Description("进入房间")]
+        public object CheckInRoom(string roomName, IHttpContext context)
+        {
+            Room room;
+            if (mRooms.TryGetValue(roomName, out room))
+            {
+                room.CheckIn(context);
+            }
+            else
+            {
+                return new ActionResult(404, "房间不存在");
+            }
+            return true;
+
+        }
+        [Description("创建房间")]
+        public object CreateRoom(string roomName, IHttpContext context)
+        {
+            roomName = roomName.ToLower();
+            if (mRooms.Count > 200)
+            {
+                return new ActionResult(503, "房间已经满，不能再创建");
+            }
+            if (mRooms.ContainsKey(roomName))
+            {
+                return new ActionResult(504, "房间已经存在");
+            }
+            Room room = new Room();
+            room.Name = roomName;
+            room.Controller = this;
+            mRooms[room.Name] = room;
+            context.SendToWebSocket(new ActionResult(new Command { Type = "CreateRoom", Name = roomName }));
+            return true;
+        }
+        [Description("发送消息")]
         public void SendMessage(string message, IHttpContext context)
         {
             string name;
@@ -37,18 +137,48 @@ namespace HttpApiServer.Chat
             {
                 name = "http user";
             }
-            var msg = new Command { Name = name, Type = "Talk", Message = message };
-            context.ResultToWebSocket(msg, (c, r) => c.Name != null);
+            Room room = GetRoom(context.Session);
+            if (room != null)
+            {
+                Command cmd = room.Talk(name, message, context);
+            }
+        }
+
+        public void SendToAdmin(Command cmd)
+        {
+            ActionResult result = new ActionResult { Data = cmd };
+            DataFrame frame = mServer.CreateDataFrame(result);
+            lock (mAdminList)
+                foreach (BeetleX.ISession session in mAdminList)
+                {
+                    frame.Send(session);
+                }
+        }
+
+        private Room GetRoom(BeetleX.ISession session)
+        {
+            string room = (string)session["room"];
+            if (!string.IsNullOrEmpty(room))
+            {
+                Room result;
+                mRooms.TryGetValue(room, out result);
+                result.Controller = this;
+                return result;
+            }
+            return null;
         }
 
         private void OnHttpDisconnect(object sender, BeetleX.EventArgs.SessionEventArgs e)
         {
-            if (e.Session.Name != null)
+            BeetleX.ISession session = e.Session;
+            HttpToken token = (HttpToken)e.Session.Tag;
+            if (session.Name != null && token != null)
             {
-                Command cmd = new Command { Name = e.Session.Name, Type = "Quit", Message = "" };
-                DataFrame frame = mServer.CreateDataFrame(new ActionResult { Data = cmd });
-                mServer.SendToWebSocket(frame, (s, r) => s.Name != null);
+                Room room = GetRoom(e.Session);
+                room?.CheckOut(token.WebSocketRequest, mServer);
             }
+            lock (mAdminList)
+                mAdminList.Remove(session);
         }
 
         private void OnHttpConnected(object sender, BeetleX.EventArgs.ConnectedEventArgs e)
@@ -64,11 +194,110 @@ namespace HttpApiServer.Chat
         }
         public class Command
         {
+            public string Room { get; set; }
+
             public string Name { get; set; }
 
             public string Type { get; set; }
 
             public string Message { get; set; }
+        }
+
+        public class Room : IComparable
+        {
+
+            public Controller Controller
+            {
+                get; set;
+            }
+
+            public Room()
+            {
+                Sessions = new List<HttpRequest>();
+
+            }
+
+
+            public string Name { get; set; }
+
+            public List<HttpRequest> Sessions { get; private set; }
+
+            public int CompareTo(object obj)
+            {
+                return Name.CompareTo(((Room)obj).Name);
+            }
+
+            public Command Talk(string username, string message, IHttpContext context)
+            {
+                Command cmd = new Command();
+                cmd.Type = "Talk";
+                cmd.Message = message;
+                cmd.Room = Name;
+                cmd.Name = username;
+                SendMessage(cmd, context.Server);
+                Controller.SendToAdmin(cmd);
+                return cmd;
+            }
+
+
+            public void CheckIn(IHttpContext context)
+            {
+                if (!Sessions.Contains(context.Request))
+                {
+                    Command cmd = new Command();
+                    cmd.Type = "CheckIn";
+                    cmd.Room = Name;
+                    cmd.Name = context.Session.Name;
+                    context.Session["room"] = this.Name;
+                    lock (this.Sessions)
+                        Sessions.Add(context.Request);
+                    SendMessage(cmd, context.Server);
+                    Controller.SendToAdmin(cmd);
+                }
+            }
+
+            public void CheckOut(IHttpContext context)
+            {
+                Command cmd = new Command();
+                cmd.Type = "CheckOut";
+                cmd.Room = Name;
+                cmd.Name = context.Session.Name;
+                lock (this.Sessions)
+                    Sessions.Remove(context.Request);
+                SendMessage(cmd, context.Server);
+                Controller.SendToAdmin(cmd);
+            }
+
+
+            public void CheckOut(HttpRequest request, BeetleX.FastHttpApi.HttpApiServer server)
+            {
+                ActionResult result = new ActionResult();
+                result.Url = "/CheckOutRoom";
+                Command cmd = new Command();
+                cmd.Type = "CheckOut";
+                cmd.Room = Name;
+                cmd.Name = request.Session.Name;
+                result.Data = cmd;
+                lock (this.Sessions)
+                    Sessions.Remove(request);
+                SendMessage(result, server);
+                Controller.SendToAdmin(cmd);
+
+            }
+            private void SendMessage(Command msg, BeetleX.FastHttpApi.HttpApiServer server)
+            {
+                ActionResult ar = new ActionResult { Data = msg };
+                SendMessage(ar, server);
+            }
+            private void SendMessage(ActionResult msg, BeetleX.FastHttpApi.HttpApiServer server)
+            {
+                DataFrame df = server.CreateDataFrame(msg);
+                lock (this.Sessions)
+                    for (int i = 0; i < Sessions.Count; i++)
+                    {
+                        df.Send(Sessions[i].Session);
+                    }
+            }
         }
 
     }
