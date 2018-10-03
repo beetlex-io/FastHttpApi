@@ -1,4 +1,8 @@
-﻿var __id = 0;
+﻿/*
+FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+*/
+/******** api base **********/
+var __id = 0;
 var __receive;
 var __connect;
 var __disconnect;
@@ -34,7 +38,7 @@ FastHttpApiWebSocket.prototype.onClose = function (evt) {
     if (evt.code == 1006) {
         setTimeout(function () {
             _this.Connect();
-        }, 1000);
+        }, 2000);
     }
 
 }
@@ -62,8 +66,11 @@ FastHttpApiWebSocket.prototype.Connect = function () {
 }
 
 
-function FastHttpApi(url, params) {
-    this.http = false;
+function FastHttpApi(url, params, http) {
+    if (http == true)
+        this.http = true;
+    else
+        this.http = false;
     this.url = url;
     this.params = params;
     if (!this.params)
@@ -90,14 +97,17 @@ FastHttpApi.prototype.execute = function (callback, http) {
     var id = ++__id;
     if (__id > 1024)
         __id = 1024;
+    var httpurl;
+    var keys;
+    var index;
     this.params['_requestid'] = id;
     if (this.http || __websocket.status == false) {
         if (this.params['body']) {
             //post
             var body;
-            var httpurl = this.url;
-            var keys = Object.keys(this.params);
-            var index = 0;
+            httpurl = this.url;
+            keys = Object.keys(this.params);
+            index = 0;
             for (i = 0; i < keys.length; i++) {
                 if (keys[i] == 'body') {
                     body = this.params[keys[i]];
@@ -120,9 +130,9 @@ FastHttpApi.prototype.execute = function (callback, http) {
         }
         else {
             //get
-            var httpurl = this.url;
-            var keys = Object.keys(this.params);
-            var index = 0;
+            httpurl = this.url;
+            keys = Object.keys(this.params);
+            index = 0;
             for (i = 0; i < keys.length; i++) {
                 if (index == 0) {
                     httpurl += "?";
@@ -164,202 +174,120 @@ function api_receive(callback) {
 
 var __websocket = new FastHttpApiWebSocket();
 __websocket.Connect();
-/**
-*关闭指定的连接,需要后台管理权限
-*
-* @param body [{"ID":0,"IPAddress":null},{"ID":0,"IPAddress":null}]
-*/
-var $_admin$CloseSession$url = '/_admin/closesession';
-function $_admin$CloseSession$async(body) {
-    return api($_admin$CloseSession$url, { body: body });
-}
-function $_admin$CloseSession(body) {
-    return api($_admin$CloseSession$url, { body: body }).sync();
-}
-/**
-*获取基于API相应调用Javascript代码,兼容http和websocket
-*
-*/
-var $_admin$GetApiScript$url = '/_admin/getapiscript';
-function $_admin$GetApiScript$async() {
-    return api($_admin$GetApiScript$url);
-}
-function $_admin$GetApiScript() {
-    return api($_admin$GetApiScript$url).sync();
-}
-/**
-*获取后台登陆凭证
-*
-*/
-var $_admin$GetKey$url = '/_admin/getkey';
-function $_admin$GetKey$async() {
-    return api($_admin$GetKey$url);
-}
-function $_admin$GetKey() {
-    return api($_admin$GetKey$url).sync();
-}
-/**
-*获取基础服务信息,需要后台管理权限
-*
-*/
-var $_admin$GetServerInfo$url = '/_admin/getserverinfo';
-function $_admin$GetServerInfo$async() {
-    return api($_admin$GetServerInfo$url);
-}
-function $_admin$GetServerInfo() {
-    return api($_admin$GetServerInfo$url).sync();
-}
-/**
-*获取所有接口信息,需要后台管理权
-*
-*/
-var $_admin$ListApi$url = '/_admin/listapi';
-function $_admin$ListApi$async() {
-    return api($_admin$ListApi$url);
-}
-function $_admin$ListApi() {
-    return api($_admin$ListApi$url).sync();
-}
-/**
-*获取在线连接信息,需要后台管理权限
-*
-* @param index 0
-*/
-var $_admin$ListConnection$url = '/_admin/listconnection';
-function $_admin$ListConnection$async(index) {
-    return api($_admin$ListConnection$url, { index: index });
-}
-function $_admin$ListConnection(index) {
-    return api($_admin$ListConnection$url, { index: index }).sync();
-}
-/**
-*管理后台登陆
-*
-* @param name ""
-* @param pwd ""
-*/
-var $_admin$Login$url = '/_admin/login';
-function $_admin$Login$async(name, pwd) {
-    return api($_admin$Login$url, { name: name, pwd: pwd });
-}
-function $_admin$Login(name, pwd) {
-    return api($_admin$Login$url, { name: name, pwd: pwd }).sync();
-}
-/**
-*进入房间
-*
-* @param roomName ""
-*/
-var $CheckInRoom$url = '/checkinroom';
-function $CheckInRoom$async(roomName) {
-    return api($CheckInRoom$url, { roomName: roomName });
-}
-function $CheckInRoom(roomName) {
-    return api($CheckInRoom$url, { roomName: roomName }).sync();
-}
-/**
-*退出房间
-*
-* @param roomName ""
-*/
-var $CheckOutRoom$url = '/checkoutroom';
-function $CheckOutRoom$async(roomName) {
-    return api($CheckOutRoom$url, { roomName: roomName });
-}
-function $CheckOutRoom(roomName) {
-    return api($CheckOutRoom$url, { roomName: roomName }).sync();
-}
-/**
-*关闭房间
-*
-* @param roomName ""
-*/
-var $CloseRoom$url = '/closeroom';
-function $CloseRoom$async(roomName) {
-    return api($CloseRoom$url, { roomName: roomName });
-}
-function $CloseRoom(roomName) {
-    return api($CloseRoom$url, { roomName: roomName }).sync();
-}
-/**
-*关闭连接
-*
-* @param body [0,0]
-*/
-var $CloseSession$url = '/closesession';
-function $CloseSession$async(body) {
-    return api($CloseSession$url, { body: body });
-}
-function $CloseSession(body) {
-    return api($CloseSession$url, { body: body }).sync();
-}
-/**
-*创建房间
-*
-* @param roomName ""
-*/
-var $CreateRoom$url = '/createroom';
-function $CreateRoom$async(roomName) {
-    return api($CreateRoom$url, { roomName: roomName });
-}
-function $CreateRoom(roomName) {
-    return api($CreateRoom$url, { roomName: roomName }).sync();
-}
-/**
-*获取指定房间的在线人数
-*
-* @param roomName ""
-*/
-var $GetRoomOnlines$url = '/getroomonlines';
-function $GetRoomOnlines$async(roomName) {
-    return api($GetRoomOnlines$url, { roomName: roomName });
-}
-function $GetRoomOnlines(roomName) {
-    return api($GetRoomOnlines$url, { roomName: roomName }).sync();
-}
-/**
-*获取所有房间信息
-*
-*/
-var $ListRooms$url = '/listrooms';
-function $ListRooms$async() {
-    return api($ListRooms$url);
-}
-function $ListRooms() {
-    return api($ListRooms$url).sync();
-}
-/**
-*用户登陆
-*
-* @param userName ""
-*/
-var $Login$url = '/login';
-function $Login$async(userName) {
-    return api($Login$url, { userName: userName });
-}
-function $Login(userName) {
-    return api($Login$url, { userName: userName }).sync();
-}
-/**
-*获取所有在线人数
-*
-*/
+/******** api base **********/
+
 var $Onlines$url = '/onlines';
-function $Onlines$async() {
-    return api($Onlines$url);
+///<summary>
+///  获取在线人数
+/// </summary>
+/// <returns>{ID, Name, IPAddress}</returns>
+function $Onlines(useHttp) {
+    return api($Onlines$url, {}, useHttp).sync();
 }
-function $Onlines() {
-    return api($Onlines$url).sync();
+function $Onlines$async(useHttp) {
+    return api($Onlines$url, {}, useHttp);
 }
-/**
-*发送消息
-*
-* @param message ""
-*/
+var $GetRoomOnlines$url = '/getroomonlines';
+///<summary>
+/// 获取房间在线人数
+/// </summary>
+/// <param name="roomName">房间名称</param>
+/// <returns>{ID, Name, IPAddress}</returns>
+function $GetRoomOnlines(roomName, useHttp) {
+    return api($GetRoomOnlines$url, { roomName: roomName }, useHttp).sync();
+}
+function $GetRoomOnlines$async(roomName, useHttp) {
+    return api($GetRoomOnlines$url, { roomName: roomName }, useHttp);
+}
+var $Login$url = '/login';
+///<summary>
+/// 用户登陆
+/// </summary>
+/// <param name="userName">用户名</param>
+/// <returns>true|false</returns>
+function $Login(userName, useHttp) {
+    return api($Login$url, { userName: userName }, useHttp).sync();
+}
+function $Login$async(userName, useHttp) {
+    return api($Login$url, { userName: userName }, useHttp);
+}
+var $ListRooms$url = '/listrooms';
+///<summary>
+/// 获取所有房间信息
+/// </summary>
+/// <returns>{Name,Count}</returns>
+function $ListRooms(useHttp) {
+    return api($ListRooms$url, {}, useHttp).sync();
+}
+function $ListRooms$async(useHttp) {
+    return api($ListRooms$url, {}, useHttp);
+}
+var $CloseSession$url = '/closesession';
+///<summary>
+/// 关闭连接
+/// </summary>
+/// <param name="sessions">[id1,id2,id3]</param>
+function $CloseSession(body, useHttp) {
+    return api($CloseSession$url, { body: body }, useHttp).sync();
+}
+function $CloseSession$async(body, useHttp) {
+    return api($CloseSession$url, { body: body }, useHttp);
+}
+var $CloseRoom$url = '/closeroom';
+///<summary>
+/// 关闭房间
+/// </summary>
+/// <param name="roomName">房间名称</param>
+function $CloseRoom(roomName, useHttp) {
+    return api($CloseRoom$url, { roomName: roomName }, useHttp).sync();
+}
+function $CloseRoom$async(roomName, useHttp) {
+    return api($CloseRoom$url, { roomName: roomName }, useHttp);
+}
+var $CheckOutRoom$url = '/checkoutroom';
+///<summary>
+/// 退出房间
+/// </summary>
+/// <param name="roomName">房间名称</param>
+/// <returns>{Code:200,Error}</returns>
+function $CheckOutRoom(roomName, useHttp) {
+    return api($CheckOutRoom$url, { roomName: roomName }, useHttp).sync();
+}
+function $CheckOutRoom$async(roomName, useHttp) {
+    return api($CheckOutRoom$url, { roomName: roomName }, useHttp);
+}
+var $CheckInRoom$url = '/checkinroom';
+///<summary>
+/// 进入房间
+/// </summary>
+/// <param name="roomName">进入房间</param>
+/// <returns>{Code:200,Error}</returns>
+function $CheckInRoom(roomName, useHttp) {
+    return api($CheckInRoom$url, { roomName: roomName }, useHttp).sync();
+}
+function $CheckInRoom$async(roomName, useHttp) {
+    return api($CheckInRoom$url, { roomName: roomName }, useHttp);
+}
+var $CreateRoom$url = '/createroom';
+///<summary>
+/// 创建记房间
+/// </summary>
+/// <param name="roomName">房间名称</param>
+/// <returns>{Code:200,Error}</returns>
+function $CreateRoom(roomName, useHttp) {
+    return api($CreateRoom$url, { roomName: roomName }, useHttp).sync();
+}
+function $CreateRoom$async(roomName, useHttp) {
+    return api($CreateRoom$url, { roomName: roomName }, useHttp);
+}
 var $SendMessage$url = '/sendmessage';
-function $SendMessage$async(message) {
-    return api($SendMessage$url, { message: message });
+///<summary>
+/// 发送消息
+/// </summary>
+/// <param name="message">消息内容</param>
+function $SendMessage(message, useHttp) {
+    return api($SendMessage$url, { message: message }, useHttp).sync();
 }
-function $SendMessage(message) {
-    return api($SendMessage$url, { message: message }).sync();
+function $SendMessage$async(message, useHttp) {
+    return api($SendMessage$url, { message: message }, useHttp);
 }

@@ -9,6 +9,7 @@
     <script src="js/jquery_2_1_min.js"></script>
     <script src="js/apis.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <title>FastHttpApi WebSocket</title>
 </head>
 <body>
@@ -47,7 +48,13 @@
                             <thead>
 
                             </thead>
-                            <tbody id="lstRoom"></tbody>
+                            <tbody id="lstRoom">
+                                <tr v-for="item in Data">
+                                    <td style="width:160px;"><a class="btn btn-default" style="width:100%" href="javascript:void(0)" v-on:click="selectRoom(item.Name)">{{item.Name}}</a></td>
+                                    <td> <button type="button" v-on:click="closeRoom(item.Name)" class="btn btn-danger">删除</button></td>
+                                </tr>
+
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -58,6 +65,20 @@
                     <div class="panel-heading" id="roomTitle">聊天记录</div>
                     <div class="panel-body">
                         <div id="lstTalk" style="height:500px;overflow: auto; overflow-x:hidden;">
+                            <p v-for="item in Data" style="padding-top:4px;">
+                                <span class="label label-default" style="margin-right:4px;">
+                                    [{{item.Room}}]({{item.Time}}){{item.Name}}
+                                </span>
+                                <span class="label label-success" v-if="item.Type=='CheckIn'">
+                                    {{item.Message}}
+                                </span>
+                                <span class="label label-warning" v-else-if="item.Type=='CheckOut'">
+                                    {{item.Message}}
+                                </span>
+                                <span class="label label-info" v-else>
+                                    {{item.Message}}
+                                </span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -79,7 +100,10 @@
                                     <th>IPAddress</th>
                                 </tr>
                             </thead>
-                            <tbody id="lstbody"></tbody>
+                            <tbody id="lstUser">
+                                <tr v-for="item in Data"><td><input v-bind:id="item.ID" type="checkbox" /></td><td>{{item.Name}}</td><td>{{item.IPAddress}}</td></tr>
+
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -87,6 +111,27 @@
         </div>
         <script>
             var activeRoom;
+            var lstRoom;
+            var lstRoomControl;
+            var lstUserControl;
+            var lstTalkControl;
+            $(document).ready(function () {
+                lstRoomControl = new Vue({
+                    el: '#lstRoom',
+                    data: { Data: [] }
+                });
+                lstUserControl = new Vue(
+                    {
+                        el: '#lstUser',
+                        data: { Data: [] }
+                    }
+                );
+                lstTalkControl = new Vue({
+                    el: '#lstTalk',
+                    data: { Data: [] }
+                });
+                listRoom();
+            });
 
             function selectAll(e) {
                 var checkedOfAll = $(e).prop("checked");
@@ -113,27 +158,21 @@
             async function selectRoom(name) {
 
                 activeRoom = name;
-
                 listRoomUsers();
-
             }
 
             async function listRoomUsers() {
 
                 var result = await $GetRoomOnlines(activeRoom);
-                $('#lstbody').empty();
-                result.Data.forEach(function (v, i) {
-                    $('#lstbody').append('<tr><td><input id="' + v.ID + '" type="checkbox" /></td><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>');
-                });
+                lstUserControl.Data = result.Data;
+
+
 
             }
 
             async function listRoom() {
                 var result = await $ListRooms();
-                $('#lstRoom').empty();
-                result.Data.forEach(function (v, i) {
-                    addRoom(v.Name);
-                });
+                lstRoomControl.Data = result.Data;
             }
             async function closeRoom(name) {
                 if (confirm('是否要关闭房间?')) {
@@ -146,10 +185,7 @@
                     }
                 }
             }
-            function addRoom(name) {
-                $('#lstRoom').append('<tr><td style="width:160px;"><a  class="btn btn-default" style="width:100%" href="javascript:void(0)" onclick="selectRoom(\'' + name + '\')" >' + name + '</a></td> \
-                                                                    <td> <button type="button" onclick="closeRoom(\''+ name + '\')" class="btn btn-danger" >删除</button></td ></tr > ');
-            }
+
             api_connect(async function () {
                 listRoom();
                 $('#lstbody').empty();
@@ -163,14 +199,14 @@
                 console.log(JSON.stringify(result));
                 switch (result.Data.Type) {
                     case "Talk":
-                        $('#lstTalk').append('<p><span class="label label-default">(' + result.Data.Room + ')房间</span>[' + GetTime() + "] " + result.Data.Name + ' 说:' + result.Data.Message + '</p>');
+                        lstTalkControl.Data.push({ Type: 'Talk', Room: result.Data.Room, Time: GetTime(), Name: result.Data.Name, Message: ' 说:' + result.Data.Message });
                         break;
                     case "CheckIn":
-                        $('#lstTalk').append('<p><span class="label label-default">(' + result.Data.Room + ')房间</span>[' + GetTime() + "] " + result.Data.Name + ' 进入</p>');
+                        lstTalkControl.Data.push({ Type: 'CheckIn', Room: result.Data.Room,Time: GetTime(), Name: result.Data.Name, Message: ' 进入房间' });
                         listRoomUsers();
                         break;
                     case "CheckOut":
-                        $('#lstTalk').append('<p><span class="label label-default">(' + result.Data.Room + ')房间</span>[' + GetTime() + "] " + result.Data.Name + ' 退出</p>');
+                        lstTalkControl.Data.push({ Type: 'CheckOut', Room: result.Data.Room, Time: GetTime(), Name: result.Data.Name, Message: ' 退出房间' });
                         listRoomUsers();
                         break;
                     case "Delete":
@@ -186,9 +222,7 @@
                 var objDiv = document.getElementById("lstTalk");
                 objDiv.scrollTop = objDiv.scrollHeight;
             });
-            $(document).ready(function () {
-                listRoom();
-            });
+
 
         </script>
 </body>

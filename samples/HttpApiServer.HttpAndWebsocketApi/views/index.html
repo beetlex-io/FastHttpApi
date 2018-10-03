@@ -7,6 +7,8 @@
     <link href="css/bootstrap-theme.css" rel="stylesheet" />
     <script src="js/jquery_2_1_min.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="js/api.js"></script>
     <title>FastHttpApi WebApplication</title>
 </head>
 <body>
@@ -46,17 +48,18 @@
                                 <label for="exampleInputName2">Employee:</label>
                                 <select id="lstEmployees" style="margin:5px;">
                                     <option value=""></option>
+                                    <option v-for="item in Data" v-bind:value="item.ID">{{item.Name}}</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="exampleInputEmail2">Customer:</label>
                                 <select id="lstCustomers" style="margin:5px;">
                                     <option value=""></option>
+                                    <option v-for="item in Data" v-bind:value="item.ID">{{item.Name}}</option>
                                 </select>
                             </div>
                             <br />
-                            <button type="button" onclick="HttpSearch()" class="btn btn-default">Http Search</button>
-                            <button type="button" onclick="WebSocketSearch()" class="btn btn-default">WebSocket Search</button>
+                            <button type="button" onclick="searchOrder(0)" class="btn btn-default">Search</button>
                         </form>
                         <table class="table">
                             <thead>
@@ -69,8 +72,33 @@
                                     <th>OrderDate</th>
                                 </tr>
                             </thead>
-                            <tbody id="lstbody"></tbody>
+                            <tbody id="lstbody">
+                                <tr v-for="item in Data.Items">
+                                    <td></td>
+                                    <td>{{item.OrderID}}</td>
+                                    <td>{{item.ShipName}}</td>
+                                    <td>{{item.ShipAddress}}</td>
+                                    <td>{{item.City}}</td>
+                                    <td>{{item.OrderDate}}</td>
+                                </tr>
+                            </tbody>
                         </table>
+
+                        <nav aria-label="Page navigation">
+                            <ul id="pagination" class="pagination">
+                                <li>
+                                    <a href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li><a href="javascript:void(0)" onclick="searchOrder(0)">1</a></li>
+                                <li>
+                                    <a href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
 
@@ -79,80 +107,74 @@
     </div>
 </body>
 <script>
-    var websocket;
+    var app6;
     $(document).ready(function () {
-
-
+        app6 = new Vue({
+            el: '#lstbody',
+            data: { Data: [] }
+        });
+        init();
     });
 
-    function onOpen(evt) {
-        $('#connectStatus').empty();
-        $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
-
-    }
-
-    function onClose(evt) {
-        $('#connectStatus').empty();
-        $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
-    }
-    function onMessage(evt) {
-        var msg = JSON.parse(evt.data);
-        var message;
-        bindOrders(msg.Data);
-
-    }
-
-    function onError(evt) {
-        $('#connectStatus').empty();
-        $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
-
-    }
-
-
-    function HttpSearch() {
-        $.get('/listorders?employeeid=' + $('#lstEmployees').val() + "&customerid=" + $('#lstCustomers').val(), function (result) {
-            bindOrders(result.Data);
+    async function init() {
+        var result = await $GetEmployeesName();
+        var app4 = new Vue({
+            el: '#lstEmployees',
+            data: result
         });
+
+        result = await $GetCustomersName();
+        var app5 = new Vue({
+            el: '#lstCustomers',
+            data: result
+        });
+        searchOrder(0);
     }
 
-    function WebSocketSearch() {
-        var searchInfo = {
-            url: '/listorders', params: { employeeid: $('#lstEmployees').val(), customerid: $('#lstCustomers').val() }
-        };
-        websocket.send(JSON.stringify(searchInfo));
+    async function searchOrder(index) {
+        var result = await $ListOrders($('#lstEmployees').val(), $('#lstCustomers').val(), index);
+        app6.Data = result.Data;
+        pagination(index, result.Data.Pages);
     }
 
-    $(document).ready(function () {
-        $.get("/GetEmployeesName", function (result) {
-            var a = new Array();
-            a = result.Data;
-            a.forEach(function (v, i) {
-                $('#lstEmployees').append(' <option value="' + v.ID + '">' + v.Name + '</option>')
-            });
-        });
-        $.get("/GetCustomersName", function (result) {
-            var a = new Array();
-            a = result.Data;
-            a.forEach(function (v, i) {
-                $('#lstCustomers').append(' <option value="' + v.ID + '">' + v.Name + '</option>')
-            });
-        });
-        $('#talk').hide();
-        websocket = new WebSocket("ws://" + window.location.host);
-        websocket.onopen = function (evt) { onOpen(evt) };
-        websocket.onclose = function (evt) { onClose(evt) };
-        websocket.onmessage = function (evt) { onMessage(evt) };
-        websocket.onerror = function (evt) { onError(evt) };
-        HttpSearch();
-    });
+    function pagination(index, pages) {
+        $('#pagination').empty();
+        if (pages < 10) {
+            for (i = 0; i < pages; i++) {
+                var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
+                $('#pagination').append(item);
+            }
+        }
+        else {
+            var item = '<li><a page="' + 0 + '" href="javascript:void(0)" onclick="searchOrder(0)">1</a></li>'
+            $('#pagination').append(item);
 
-    function bindOrders(items) {
-        $("#lstbody").empty();
-        items.forEach(function (v, i) {
-            $("#lstbody").append('<tr><td>' + i + '</td><td>' + v.OrderID + '</td><td>' + v.ShipName + '</td><td>' + v.ShipAddress + '</td><td>' + v.ShipCity + '</td><td>' + v.OrderDate + '</td></tr>')
-        });
+
+            for (i = index - 5; i < index + 1; i++) {
+                if (i > 0 && i < pages - 1) {
+                    var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
+                    $('#pagination').append(item);
+                }
+            }
+
+
+            for (i = index + 1; i < index + 5; i++) {
+                if (i < (pages - 1)) {
+                    var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
+                    $('#pagination').append(item);
+                }
+            }
+            if (pages > 1) {
+                var item = '<li><a page="' + (pages - 1) + '" href="javascript:void(0)" onclick="searchOrder(' + (pages - 1) + ')">' + (pages) + '</a></li>'
+                $('#pagination').append(item);
+            }
+        }
+        $('a').each(function () {
+            if ($(this).attr('page') == index) {
+                $(this).html('<span class="badge">' + (index + 1) + '</span>')
+            }
+        })
     }
-
 
 </script>
 </html>

@@ -34,6 +34,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controller.cs">
+      <Generator>JSAPI</Generator>
+      <LastGenOutput>Controller.js</LastGenOutput>
+    </Compile>
     <Compile Update="Datas.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -46,6 +50,14 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Datas.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Controller.js">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Controller.cs</DependentUpon>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,8 @@
     <link href="css/bootstrap.css" rel="stylesheet" />
     <script src="js/jquery_2_1_min.js"></script>
     <script src="js/bootstrap.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="js/api.js"></script>
     <title>
     </title>
 </head>
@@ -49,7 +50,16 @@
                                     <th>HomePhone</th>
                                 </tr>
                             </thead>
-                            <tbody id="lstbody"></tbody>
+                            <tbody id="lstbody">
+                                <tr v-for="item in Data">
+                                    <td></td>
+                                    <td><a v-bind:href="['EmployeeEditor.html?id='+item.EmployeeID]">{{item.FirstName}}</a></td>
+                                    <td>{{item.LastName}}</td>
+                                    <td>{{item.Address}}</td>
+                                    <td>{{item.City}}</td>
+                                    <td>{{item.HomePhone}}</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -58,20 +68,18 @@
     </div>
 </body>
 <script>
+   
     $(document).ready(function () {
-        $.get("/ListEmployees", function (e) {
-            var items = new Array();
-            items = e.Data;
-            $('#lstbody').empty();
-            items.forEach(function (v, i) {
-                $('#lstbody').append('<tr><td>' + i + '</td><td><a href="EmployeeEditor.html?id=' + v.EmployeeID + '">'
-                    + v.FirstName + '</a></td><td>' + v.LastName + '</td><td>' + v.Address + '</td><td>' + v.City + '</td><td>'
-                    + v.HomePhone + '</td></tr>');
-            });
-        });
+        Init()
     });
 
-
+    async function Init() {
+        var result = await $ListEmployees();
+        var empsBlock = new Vue({
+            el: '#lstbody',
+            data: result
+        });
+    }
 
 </script>
 </html>

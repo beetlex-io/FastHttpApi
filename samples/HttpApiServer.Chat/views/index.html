@@ -6,6 +6,7 @@
     <script src="js/jquery_2_1_min.js"></script>
     <script src="js/apis.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <title>FastHttpApi WebSocket</title>
 </head>
 <body>
@@ -62,7 +63,7 @@
                             </form>
                             <hr />
                             <div id="lstRoom" class="list-group" style="height:405px;overflow: auto; overflow-x:hidden;">
-                                <a href="#" class="list-group-item">Vestibulum at eros</a>
+                                <a href="javascript:void(0)" v-for="item in Data" v-on:click="selectRoom(item.Name)" class="list-group-item">{{item.Name}}</a>
                             </div>
                         </div>
                     </div>
@@ -73,6 +74,20 @@
                         <div class="panel-heading" id="roomTitle">聊天记录</div>
                         <div class="panel-body">
                             <div id="lstTalk" style="height:500px;overflow: auto; overflow-x:hidden;">
+                                <p v-for="item in Data" style="padding-top:4px;">
+                                    <span class="label label-default" style="margin-right:4px;">
+                                        [{{item.Time}}]{{item.Name}}
+                                    </span>
+                                        <span class="label label-success" v-if="item.Type=='CheckIn'">
+                                            {{item.Message}}
+                                        </span>
+                                        <span class="label label-warning" v-else-if="item.Type=='CheckOut'">
+                                            {{item.Message}}
+                                        </span>
+                                        <span class="label label-info" v-else>
+                                            {{item.Message}}
+                                        </span>
+</p>
                             </div>
                             <form class="form-inline" id="talkBar">
                                 <div class="form-group">
@@ -95,7 +110,12 @@
                                             <th>IPAddress</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="lstbody"></tbody>
+                                    <tbody id="lstUser">
+                                        <tr v-for="item in Data">
+                                            <td>{{item.Name}}</td>
+                                            <td>{{item.Address}}</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -108,6 +128,28 @@
 
         var loginStatus = false;
         var activeRoom;
+        var lstRoomControl;
+        var lstUserControl;
+        var lstTalkControl;
+        $(document).ready(function () {
+            lstRoomControl = new Vue({
+                el: '#lstRoom',
+                data: { Data: [] }
+            });
+            lstUserControl = new Vue(
+                {
+                    el: '#lstUser',
+                    data: { Data: [] }
+                }
+            );
+            lstTalkControl = new Vue({
+                el: '#lstTalk',
+                data: { Data: [] }
+            });
+            listRoom();
+            $('#talkBar').hide();
+        });
+
         async function createRoom() {
             if (!$('#roomName').val()) {
                 alert('请输入创建房间名称!');
@@ -135,7 +177,7 @@
         }
 
         async function login() {
-            if (!$('#userName').val() || $('#userName').val().toLowerCase()=='admin') {
+            if (!$('#userName').val() || $('#userName').val().toLowerCase() == 'admin') {
                 alert('登陆名称无效！');
                 return;
             }
@@ -145,7 +187,7 @@
             }
             else {
                 alert("登陆成功");
-                $('#lstTalk').empty();
+                lstTalkControl.Data = [];
                 $('#loginBar').hide();
                 $('#lstbody').empty();
                 loginStatus = true;
@@ -157,14 +199,12 @@
         async function listRoomUsers() {
             if (loginStatus == true && activeRoom) {
                 var result = await $GetRoomOnlines(activeRoom);
-                $('#lstbody').empty();
-                result.Data.forEach(function (v, i) {
-                    $('#lstbody').append('<tr><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>');
-                });
+                lstUserControl.Data = result.Data;
             }
         }
 
         async function selectRoom(name) {
+
             if (loginStatus == true) {
                 if (name == activeRoom)
                     return;
@@ -174,12 +214,12 @@
                     await $CheckOutRoom(activeRoom);
                 }
                 activeRoom = name;
-                $('#roomTitle').html(activeRoom);
-                $('#lstTalk').empty();
+                $('#roomTitle').html('进入房间:' + activeRoom);
+                lstTalkControl.Data = [];
                 var result = await $CheckInRoom(name);
                 if (result.Code == 200) {
                     $('#talkBar').show();
-                 
+
                     listRoomUsers();
                 }
                 else {
@@ -189,10 +229,7 @@
         }
         async function listRoom() {
             var result = await $ListRooms();
-            $('#lstRoom').empty();
-            result.Data.forEach(function (v, i) {
-                $('#lstRoom').append('<a href="javascript:void(0)" class="list-group-item" onclick="selectRoom(\'' + v.Name + '\')" >' + v.Name + '</a>');
-            });
+            lstRoomControl.Data = result.Data;
         }
 
         function GetTime() {
@@ -200,29 +237,27 @@
             return now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
         }
         api_connect(async function () {
-            listRoom();         
+            listRoom();
         });
         api_receive(function (result) {
             console.log(JSON.stringify(result));
             switch (result.Data.Type) {
                 case "Talk":
-                    $('#lstTalk').append('<p>[' + GetTime() + "] " + result.Data.Name + ' 说:' + result.Data.Message + '</p>');
+                    lstTalkControl.Data.push({ Type: 'Talk', Time: GetTime(), Name: result.Data.Name, Message: ' 说:' + result.Data.Message });
                     break;
                 case "CheckIn":
-                    $('#lstTalk').append('<p>[' + GetTime() + "] " + result.Data.Name + ' 进入</p>');
-                  
+                    lstTalkControl.Data.push({ Type: 'CheckIn', Time: GetTime(), Name: result.Data.Name, Message: ' 进入房间' });
                     listRoomUsers();
                     break;
                 case "CheckOut":
-                    $('#lstTalk').append('<p>[' + GetTime() + "] " + result.Data.Name + ' 退出</p>');
+                    lstTalkControl.Data.push({ Type: 'CheckOut', Time: GetTime(), Name: result.Data.Name, Message: ' 退出房间' });
                     listRoomUsers();
                     break;
                 case "Delete":
-
                     if (result.Data.Room == activeRoom) {
                         alert('房间已关闭！');
                         $('#talkBar').hide();
-                        $('#lstTalk').empty();
+                        lstTalkControl.Data = [];
                         activeRoom = null;
                     }
 
@@ -230,7 +265,7 @@
 
                     break;
                 case "CreateRoom":
-                    $('#lstRoom').append('<a href="javascript:void(0)" class="list-group-item" onclick="selectRoom(\'' + result.Data.Name + '\')" >' + result.Data.Name + '</a>');
+                    listRoom();
                     break;
             }
             var objDiv = document.getElementById("lstTalk");
@@ -242,10 +277,7 @@
             loginStatus = false;
         });
 
-        $(document).ready(function () {
-            listRoom();
-            $('#talkBar').hide();
-        });
+
 
 
     </script>

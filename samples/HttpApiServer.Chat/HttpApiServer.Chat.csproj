@@ -44,6 +44,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controller.cs">
+      <Generator>JSAPI</Generator>
+      <LastGenOutput>Controller.js</LastGenOutput>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Controller.js">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Controller.cs</DependentUpon>
+    </None>
     <None Update="HttpConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -11,6 +11,10 @@ namespace HttpApiServer.Chat
     [Controller]
     public class Controller : IController
     {
+        /// <summary>
+        ///  获取在线人数
+        /// </summary>
+        /// <returns>{ID, Name, IPAddress}</returns>
         [Description("获取所有在线人数")]
         public object Onlines(IHttpContext context)
         {
@@ -18,6 +22,11 @@ namespace HttpApiServer.Chat
                    select new { i.Session.ID, i.Session.Name, IPAddress = i.Session.RemoteEndPoint.ToString() };
 
         }
+        /// <summary>
+        /// 获取房间在线人数
+        /// </summary>
+        /// <param name="roomName">房间名称</param>
+        /// <returns>{ID, Name, IPAddress}</returns>
         [Description("获取指定房间的在线人数")]
         public object GetRoomOnlines(string roomName, IHttpContext context)
         {
@@ -35,7 +44,11 @@ namespace HttpApiServer.Chat
         private List<BeetleX.ISession> mAdminList = new List<BeetleX.ISession>();
 
         private BeetleX.FastHttpApi.HttpApiServer mServer;
-
+        /// <summary>
+        /// 用户登陆
+        /// </summary>
+        /// <param name="userName">用户名</param>
+        /// <returns>true|false</returns>
         [Description("用户登陆")]
         public bool Login(string userName, IHttpContext context)
         {
@@ -47,11 +60,19 @@ namespace HttpApiServer.Chat
             }
             return true;
         }
+        /// <summary>
+        /// 获取所有房间信息
+        /// </summary>
+        /// <returns>{Name,Count}</returns>
         [Description("获取所有房间信息")]
         public object ListRooms()
         {
             return from r in mRooms.Values select new { r.Name, r.Sessions.Count };
         }
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
+        /// <param name="sessions">[id1,id2,id3]</param>
         [Description("关闭连接")]
         public void CloseSession([BodyParameter]List<int> sessions, IHttpContext context)
         {
@@ -62,6 +83,10 @@ namespace HttpApiServer.Chat
                     session.Dispose();
             }
         }
+        /// <summary>
+        /// 关闭房间
+        /// </summary>
+        /// <param name="roomName">房间名称</param>
         [Description("关闭房间")]
         public void CloseRoom(string roomName, IHttpContext context)
         {
@@ -75,7 +100,11 @@ namespace HttpApiServer.Chat
                 context.SendToWebSocket(new ActionResult(cmd));
             }
         }
-
+        /// <summary>
+        /// 退出房间
+        /// </summary>
+        /// <param name="roomName">房间名称</param>
+        /// <returns>{Code:200,Error}</returns>
         [Description("退出房间")]
         public object CheckOutRoom(string roomName, IHttpContext context)
         {
@@ -90,7 +119,11 @@ namespace HttpApiServer.Chat
             }
             return true;
         }
-
+        /// <summary>
+        /// 进入房间
+        /// </summary>
+        /// <param name="roomName">进入房间</param>
+        /// <returns>{Code:200,Error}</returns>
         [Description("进入房间")]
         public object CheckInRoom(string roomName, IHttpContext context)
         {
@@ -106,6 +139,11 @@ namespace HttpApiServer.Chat
             return true;
 
         }
+        /// <summary>
+        /// 创建记房间
+        /// </summary>
+        /// <param name="roomName">房间名称</param>
+        /// <returns>{Code:200,Error}</returns>
         [Description("创建房间")]
         public object CreateRoom(string roomName, IHttpContext context)
         {
@@ -125,6 +163,10 @@ namespace HttpApiServer.Chat
             context.SendToWebSocket(new ActionResult(new Command { Type = "CreateRoom", Name = roomName }));
             return true;
         }
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="message">消息内容</param>
         [Description("发送消息")]
         public void SendMessage(string message, IHttpContext context)
         {
@@ -143,7 +185,7 @@ namespace HttpApiServer.Chat
                 Command cmd = room.Talk(name, message, context);
             }
         }
-
+        [NotAction]
         public void SendToAdmin(Command cmd)
         {
             ActionResult result = new ActionResult { Data = cmd };

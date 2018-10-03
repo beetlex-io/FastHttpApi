@@ -15,6 +15,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Data.resx</DependentUpon>
     </Compile>
+    <Compile Update="Program.cs">
+      <Generator>peanut</Generator>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
