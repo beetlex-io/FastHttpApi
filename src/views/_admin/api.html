@@ -83,7 +83,7 @@
             $(document).ready(function () {
                 var i = 0;
                 $.get("/_admin/listapi", function (result) {
-                    if (result.Code == 408) {
+                    if (result.Code == 403) {
                         window.location.href = 'login.html';
                         return;
                     }

@@ -66,7 +66,14 @@ namespace BeetleX.FastHttpApi.Admin
                 ParameterInfo pi = item.GetInfo();
                 if (pi.IsBody)
                 {
-                    Body = Newtonsoft.Json.JsonConvert.SerializeObject(pi.Value);
+                    try
+                    {
+                        Body = Newtonsoft.Json.JsonConvert.SerializeObject(pi.Value);
+                    }
+                    catch (Exception e_)
+                    {
+                        Body = "{ }";
+                    }
                     if (pi.Value is IEnumerable && pi.Value.GetType().IsGenericType)
                     {
                         try
@@ -139,7 +146,14 @@ namespace BeetleX.FastHttpApi.Admin
             Dictionary<string, object> msg = new Dictionary<string, object>();
             msg["url"] = handler.SourceUrl;
             msg["params"] = mParams;
-            Body = Newtonsoft.Json.JsonConvert.SerializeObject(msg);
+            try
+            {
+                Body = Newtonsoft.Json.JsonConvert.SerializeObject(msg);
+            }
+            catch
+            {
+                Body = "{}";
+            }
             Response = Newtonsoft.Json.JsonConvert.SerializeObject(new ActionResult());
         }
     }

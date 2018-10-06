@@ -95,11 +95,11 @@ namespace BeetleX.FastHttpApi
 
         public EventHandler<WebSocketConnectArgs> WebSocketConnect { get; set; }
 
-        private System.Reflection.Assembly[] mAssemblies;
+        private List<System.Reflection.Assembly> mAssemblies = new List<System.Reflection.Assembly>();
 
         public void Register(params System.Reflection.Assembly[] assemblies)
         {
-            mAssemblies = assemblies;
+            mAssemblies.AddRange(assemblies);
             try
             {
                 mActionFactory.Register(this.ServerConfig, this, assemblies);

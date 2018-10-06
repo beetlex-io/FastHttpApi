@@ -25,6 +25,7 @@ namespace BeetleX.FastHttpApi.WebSockets
             Type = DataPacketType.text;
             IsMask = false;
         }
+
         const int CHECK_B1 = 0x1;
 
         const int CHECK_B2 = 0x2;

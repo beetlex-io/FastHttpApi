@@ -19,10 +19,10 @@ namespace BeetleX.FastHttpApi
             Controller = controller;
             LoadParameter();
             Filters = new List<FilterAttribute>();
-           
+
         }
 
-        
+
 
         public string Remark { get; set; }
 
@@ -336,7 +336,20 @@ namespace BeetleX.FastHttpApi
         }
         public override Admin.ParameterInfo GetInfo()
         {
-            return new Admin.ParameterInfo { IsBody = true, Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            object value = null;
+            try
+            {
+                if (Type.IsArray)
+                {
+                    value = Array.CreateInstance(Type, 0);
+                }
+                else
+                {
+                    value = Activator.CreateInstance(Type);
+                }
+            }
+            catch { }
+            return new Admin.ParameterInfo { IsBody = true, Name = this.Name, Type = this.Type, Value = value };
         }
     }
 

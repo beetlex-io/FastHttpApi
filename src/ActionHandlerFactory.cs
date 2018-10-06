@@ -20,7 +20,8 @@ namespace BeetleX.FastHttpApi
         {
             foreach (Assembly item in assemblies)
             {
-                foreach (Type type in item.GetTypes())
+                Type[] types = item.GetTypes();
+                foreach (Type type in types)
                 {
                     ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
                     if (ca != null)

@@ -63,10 +63,10 @@ namespace BeetleX.FastHttpApi.Admin
                     code.AppendLine(pi.ToString());
                 }
                 code.AppendLine("*/");
-           
-                code.AppendLine("var "+ item.Url.Replace("/", "$") + "$url='"+item.Url.ToLower()+"';");
+
+                code.AppendLine("var " + item.Url.Replace("/", "$") + "$url='" + item.Url.ToLower() + "';");
                 code.Append("function ")
-                    .Append(item.Url.Replace("/", "$")+"$async")
+                    .Append(item.Url.Replace("/", "$") + "$async")
                     .Append("(");
                 string paramogj = "";
                 var len = code.Length;
@@ -101,7 +101,7 @@ namespace BeetleX.FastHttpApi.Admin
                 code.Append("function ")
                    .Append(item.Url.Replace("/", "$"))
                    .Append("(");
-                 paramogj = "";
+                paramogj = "";
                 len = code.Length;
                 foreach (ParameterBinder pb in item.Handler.Parameters)
                 {
@@ -202,13 +202,18 @@ namespace BeetleX.FastHttpApi.Admin
         [Description("管理后台登陆")]
         public bool Login(string name, string pwd, IHttpContext context)
         {
+            return LoginProcess(name, pwd, context, null);
+        }
+        [NotAction]
+        public static bool LoginProcess(string name, string pwd, IHttpContext context, DateTime? cookieTimeOut)
+        {
             string vpwd = string.Format("{0}{1}", context.Server.ServerConfig.ManagerPWD, context.Request.Cookies[LOGIN_KEY]);
             vpwd = HttpParse.MD5Encrypt(vpwd);
             string vname = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager);
             if (name == vname && pwd == vpwd)
             {
                 string tokey = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager + DateTime.Now.Day + context.Request.Header[HeaderType.CLIENT_IPADDRESS]);
-                context.Response.SetCookie(LOGIN_TOKEN, tokey);
+                context.Response.SetCookie(LOGIN_TOKEN, tokey, cookieTimeOut);
                 context.Response.SetCookie(LOGIN_KEY, "");
                 return true;
             }
@@ -218,6 +223,13 @@ namespace BeetleX.FastHttpApi.Admin
 
     public class LoginFilter : FilterAttribute
     {
+        public LoginFilter()
+        {
+            LoginUrl = "/_admin/login.html";
+        }
+
+        public string LoginUrl { get; set; }
+
         public override void Execute(ActionContext context)
         {
             string tokey = context.HttpContext.Request.Cookies[AdminController.LOGIN_TOKEN];
@@ -231,7 +243,8 @@ namespace BeetleX.FastHttpApi.Admin
             else
             {
                 ActionResult Result = new ActionResult();
-                Result.Code = 408;
+                Result.Code = 403;
+                Result.Data = LoginUrl;
                 context.Result = Result;
             }
         }

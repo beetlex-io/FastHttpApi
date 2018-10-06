@@ -77,59 +77,59 @@
             </table>
             <div id="connectStatus" style="display:flex;"> </div>
         </div>
-      </div>
-        <script>
-            var url = '/_admin/GetServerInfo'
-            var websocket;
-            function onOpen(evt) {
+    </div>
+    <script>
+        var url = '/_admin/GetServerInfo'
+        var websocket;
+        function onOpen(evt) {
+            searchInfo();
+            setInterval(function () {
                 searchInfo();
-                setInterval(function () {
-                    searchInfo();
-                }, 2000)
-                $('#connectStatus').empty();
-                $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
+            }, 2000)
+            $('#connectStatus').empty();
+            $('#connectStatus').append('<span class="label label-success">websocket connected</span>');
 
+        }
+
+        function onClose(evt) {
+            $('#connectStatus').empty();
+            $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
+        }
+        function onMessage(evt) {
+
+            var result = JSON.parse(evt.data);
+            if (result.Code == 403) {
+                window.location.href = 'Login.html';
+                return;
             }
+            $('#name').text(result.Data.Name);
+            $('#RunTime').text(result.Data.RunTime);
+            $('#Host').text((result.Data.Host ? result.Data.Host : '') + '@' + result.Data.Port);
+            $('#count').text(result.Data.Count);
+            $('#Request').text(result.Data.Request);
+            $('#ReceivBytes').text(result.Data.ReceivBytes);
+            $('#ReceiveQuantity').text(result.Data.ReceiveQuantity);
+            $('#SendQuantity').text(result.Data.SendQuantity);
+            $('#SendBytes').text(result.Data.SendBytes);
 
-            function onClose(evt) {
-                $('#connectStatus').empty();
-                $('#connectStatus').append('<span class="label label-default">websocket disconnect</span>');
-            }
-            function onMessage(evt) {
-              
-                var result = JSON.parse(evt.data);
-                if (result.Code == 408) {
-                    window.location.href = 'Login.html';
-                    return;
-                }
-                $('#name').text(result.Data.Name);
-                $('#RunTime').text(result.Data.RunTime);
-                $('#Host').text((result.Data.Host ? result.Data.Host : '') + '@' + result.Data.Port);
-                $('#count').text(result.Data.Count);
-                $('#Request').text(result.Data.Request);
-                $('#ReceivBytes').text(result.Data.ReceivBytes);
-                $('#ReceiveQuantity').text(result.Data.ReceiveQuantity);
-                $('#SendQuantity').text(result.Data.SendQuantity);
-                $('#SendBytes').text(result.Data.SendBytes);
+        }
 
-            }
+        function onError(evt) {
+            $('#connectStatus').empty();
+            $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
 
-            function onError(evt) {
-                $('#connectStatus').empty();
-                $('#connectStatus').append('<span class="label label-danger">websocket error ' + evt.data + '</span>');
+        }
+        $(document).ready(function () {
+            websocket = new WebSocket("ws://" + window.location.host);
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
 
-            }
-            $(document).ready(function () {
-                websocket = new WebSocket("ws://" + window.location.host);
-                websocket.onopen = function (evt) { onOpen(evt) };
-                websocket.onclose = function (evt) { onClose(evt) };
-                websocket.onmessage = function (evt) { onMessage(evt) };
-                websocket.onerror = function (evt) { onError(evt) };
-
-            });
-            function searchInfo() {
-                websocket.send('{"url":"/_admin/GetServerInfo","params":{}}');
-            }
-        </script>
+        });
+        function searchInfo() {
+            websocket.send('{"url":"/_admin/GetServerInfo","params":{}}');
+        }
+    </script>
 </body>
 </html>

@@ -77,107 +77,107 @@
                 </ul>
             </nav>
         </div>
-     </div>
-        <script>
+    </div>
+    <script>
 
 
-            function selectAll(e) {
-                var checkedOfAll = $(e).prop("checked");
-                $("input[type='checkbox']").prop("checked", checkedOfAll);
-            }
+        function selectAll(e) {
+            var checkedOfAll = $(e).prop("checked");
+            $("input[type='checkbox']").prop("checked", checkedOfAll);
+        }
 
-            function getSelectItems() {
-                var items = new Array();
-                $("input[type='checkbox']").each(function () {
-                    if ($(this).prop("checked") == true && $(this).prop("id"))
-                        items.push({ ID: $(this).attr('id'), IP: $(this).attr('IP') });
-                });
-                return items;
-            }
+        function getSelectItems() {
+            var items = new Array();
+            $("input[type='checkbox']").each(function () {
+                if ($(this).prop("checked") == true && $(this).prop("id"))
+                    items.push({ ID: $(this).attr('id'), IP: $(this).attr('IP') });
+            });
+            return items;
+        }
 
-            function disconnect() {
-                var items = getSelectItems();
-                if (items.length > 0) {
-                    if (confirm('是否要断开选择的连接?')) {
-                        var url = "/_admin/CloseSession";
-                        var sessions = getSelectItems();
-                        if (sessions.length > 0) {
-                            $.post(url, JSON.stringify(sessions), function (result) {
-                                searchConn(0);
-                            });
-                        }
+        function disconnect() {
+            var items = getSelectItems();
+            if (items.length > 0) {
+                if (confirm('是否要断开选择的连接?')) {
+                    var url = "/_admin/CloseSession";
+                    var sessions = getSelectItems();
+                    if (sessions.length > 0) {
+                        $.post(url, JSON.stringify(sessions), function (result) {
+                            searchConn(0);
+                        });
                     }
                 }
             }
+        }
 
-            $(document).ready(function () {
-                searchConn(0);
-            });
+        $(document).ready(function () {
+            searchConn(0);
+        });
 
 
-            function searchConn(index) {
-                var url = '/_admin/ListConnection?index=' + index;
-                $.get(url, function (result) {
-                    if (result.Code == 408) {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    pagination(result.Data.Index, result.Data.Pages);
-                    $('#lstConnection').empty();
-                    var pages = result.Data.Pages;
-                    $('#connections').text(result.Data.Count);
-                    result.Data.Items.forEach(function (v, i) {
-                        var tr = '                    <tr> \
-                                                                                                                                                                            <td><input id="'+ v.ID + '" ip="' + v.IPAddress + '" type="checkbox"/></td> \
-                                                                                                                                                                            <td>'+ v.IPAddress + '</td> \
-                                                                                                                                                                                                    <td>'+ v.Type + '</td> \
-                                                                                                                                                                                                        <td>'+ v.ID + '</td> \
-                                                                                                                                                                                                        <td>'+ v.Name + '</td> \
-                                                                                                                                                                                                        <td>'+ v.CreateTime + '</td> \
-                                                                                                                                                                                            </tr > ';
-                        $('#lstConnection').append(tr);
-                    });
+        function searchConn(index) {
+            var url = '/_admin/ListConnection?index=' + index;
+            $.get(url, function (result) {
+                if (result.Code == 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                pagination(result.Data.Index, result.Data.Pages);
+                $('#lstConnection').empty();
+                var pages = result.Data.Pages;
+                $('#connections').text(result.Data.Count);
+                result.Data.Items.forEach(function (v, i) {
+                    var tr = '                    <tr> \
+                                                                                                                                                                                <td><input id="'+ v.ID + '" ip="' + v.IPAddress + '" type="checkbox"/></td> \
+                                                                                                                                                                                <td>'+ v.IPAddress + '</td> \
+                                                                                                                                                                                                        <td>'+ v.Type + '</td> \
+                                                                                                                                                                                                            <td>'+ v.ID + '</td> \
+                                                                                                                                                                                                            <td>'+ v.Name + '</td> \
+                                                                                                                                                                                                            <td>'+ v.CreateTime + '</td> \
+                                                                                                                                                                                                </tr > ';
+                    $('#lstConnection').append(tr);
                 });
-            }
+            });
+        }
 
-            function pagination(index, pages) {
-                $('#pagination').empty();
-                if (pages < 10) {
-                    for (i = 0; i < pages; i++) {
+        function pagination(index, pages) {
+            $('#pagination').empty();
+            if (pages < 10) {
+                for (i = 0; i < pages; i++) {
+                    var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
+                    $('#pagination').append(item);
+                }
+            }
+            else {
+                var item = '<li><a page="' + 0 + '" href="javascript:void(0)" onclick="searchConn(0)">1</a></li>'
+                $('#pagination').append(item);
+
+
+                for (i = index - 5; i < index + 1; i++) {
+                    if (i > 0 && i < pages - 1) {
                         var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
                         $('#pagination').append(item);
                     }
                 }
-                else {
-                    var item = '<li><a page="' + 0 + '" href="javascript:void(0)" onclick="searchConn(0)">1</a></li>'
-                    $('#pagination').append(item);
 
 
-                    for (i = index - 5; i < index + 1; i++) {
-                        if (i > 0 && i < pages - 1) {
-                            var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
-                            $('#pagination').append(item);
-                        }
-                    }
-
-
-                    for (i = index + 1; i < index + 5; i++) {
-                        if (i < (pages - 1)) {
-                            var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
-                            $('#pagination').append(item);
-                        }
-                    }
-                    if (pages > 1) {
-                        var item = '<li><a page="' + (pages - 1) + '" href="javascript:void(0)" onclick="searchConn(' + (pages - 1) + ')">' + (pages) + '</a></li>'
+                for (i = index + 1; i < index + 5; i++) {
+                    if (i < (pages - 1)) {
+                        var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchConn(' + i + ')">' + (i + 1) + '</a></li>'
                         $('#pagination').append(item);
                     }
                 }
-                $('a').each(function () {
-                    if ($(this).attr('page') == index) {
-                        $(this).html('<span class="badge">' + (index + 1) + '</span>')
-                    }
-                })
+                if (pages > 1) {
+                    var item = '<li><a page="' + (pages - 1) + '" href="javascript:void(0)" onclick="searchConn(' + (pages - 1) + ')">' + (pages) + '</a></li>'
+                    $('#pagination').append(item);
+                }
             }
-        </script>
+            $('a').each(function () {
+                if ($(this).attr('page') == index) {
+                    $(this).html('<span class="badge">' + (index + 1) + '</span>')
+                }
+            })
+        }
+    </script>
 </body>
 </html>
