@@ -14,7 +14,7 @@
  
  **[功能介绍和使用](https://github.com/IKende/FastHttpApi/wiki/%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8)**
 ## 演示
-[websocket聊天室](http://www.ikende.com:9090/index.html)
+[基于fastHttpApi构建的官网和Samples](http://www.ikende.com/)
 ## 更新日志
 #### 2018-10-2 ActionResul添加一个ID用于匹配websocket请求应用使用,集成一个后台管理，增加API调用JS，同一方式兼容ajax和websocket
 可以通过管理端生成所有接口调用的API脚本
