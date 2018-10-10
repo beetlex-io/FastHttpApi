@@ -145,7 +145,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
     class NoGzipResource : FileResource
     {
-        public NoGzipResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource) { }
+        public NoGzipResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource) {
+
+
+        }
 
         protected override void LoadFile()
         {
@@ -185,7 +188,6 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 return new ArraySegment<byte>(buffer, 0, len);
             }
         }
-
         public override void Recovery(byte[] buffer)
         {
             mPool.Enqueue(buffer);

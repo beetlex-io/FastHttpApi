@@ -154,9 +154,10 @@ namespace BeetleX.FastHttpApi
             WebSockets.DataFrame dataFrame = server.CreateDataFrame(result);
             if (url == null)
             {
-                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "websocket {0} not support url info notfound!", request.ClientIPAddress);
+                if (server.EnableLog(EventArgs.LogType.Warring))
+                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "websocket {0} not support, url info notfound!", request.ClientIPAddress);
                 result.Code = 403;
-                result.Error = "not support url info notfound!";
+                result.Error = "not support, url info notfound!";
                 request.Session.Send(dataFrame);
                 return result;
             }
@@ -174,7 +175,8 @@ namespace BeetleX.FastHttpApi
             ActionHandler handler = GetAction(baseurl);
             if (handler == null)
             {
-                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "websocket {0} {1} notfound", request.ClientIPAddress, result.Url);
+                if (server.EnableLog(EventArgs.LogType.Warring))
+                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "websocket {0} execute {1} notfound", request.ClientIPAddress, result.Url);
                 result.Code = 404;
                 result.Error = "url " + baseurl + " notfound!";
                 request.Session.Send(dataFrame);
@@ -207,7 +209,8 @@ namespace BeetleX.FastHttpApi
                 }
                 catch (Exception e_)
                 {
-                    server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "websocket {3} {0} inner error {1}@{2}", request.Url, e_.Message, e_.StackTrace, request.ClientIPAddress);
+                    if (server.EnableLog(EventArgs.LogType.Error))
+                        server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "websocket {0} execute {1} inner error {2}@{3}", request.ClientIPAddress, request.Url, e_.Message, e_.StackTrace);
                     result.Code = 500;
                     result.Error = e_.Message;
                     if (server.ServerConfig.OutputStackTrace)
@@ -226,8 +229,10 @@ namespace BeetleX.FastHttpApi
             ActionHandler handler = GetAction(request.BaseUrl);
             if (handler == null)
             {
+                if(server.EnableLog(EventArgs.LogType.Warring))
+                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} execute {1} action  not found", request.ClientIPAddress, request.Url);
                 response.NotFound();
-                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {0} {1} not found", request.ClientIPAddress, request.Url);
+                
             }
             else
             {
@@ -247,7 +252,8 @@ namespace BeetleX.FastHttpApi
                 catch (Exception e_)
                 {
                     response.InnerError(e_, server.ServerConfig.OutputStackTrace);
-                    response.Session.Server.Log(EventArgs.LogType.Error, response.Session, "http {3} {0} inner error {1}@{2}", request.Url, e_.Message, e_.StackTrace, request.ClientIPAddress);
+                    if (server.EnableLog(EventArgs.LogType.Error))
+                        response.Session.Server.Log(EventArgs.LogType.Error, response.Session, "{0} execute {1} action inner error {2}@{3}", request.ClientIPAddress, request.Url, e_.Message, e_.StackTrace);
                 }
             }
         }

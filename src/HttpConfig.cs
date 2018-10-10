@@ -24,9 +24,20 @@ namespace BeetleX.FastHttpApi
             ManagerPWD = "123456";
             WriteLog = false;
             MaxConnections = 2000;
+            NoGzipFiles = "jpg;jpeg;png;gif;png;ico;zip;rar";
+            BufferSize = 1024 * 8;
+            WebSocketMaxRPS = 30;
+            LogLevel = EventArgs.LogType.Warring;
 
         }
 
+        public BeetleX.EventArgs.LogType LogLevel { get; set; }
+
+        public int WebSocketMaxRPS { get; set; }
+
+        public int BufferSize { get; set; }
+
+        public string NoGzipFiles { get; set; }
 
         public int MaxConnections { get; set; }
 

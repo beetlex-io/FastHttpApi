@@ -32,7 +32,7 @@ namespace BeetleX.FastHttpApi
             int offset = 0;
             char[] data = HttpParse.GetCharBuffer();
             IMemoryBlock memory = result.Start;
-            for (int i = result.StartPostion; i < memory.Bytes.Length; i++)
+            for (int i = result.StartPostion; i < memory.Length; i++)
             {
                 data[offset] = (char)result.Start.Bytes[i];
                 offset++;
@@ -41,8 +41,10 @@ namespace BeetleX.FastHttpApi
             }
             if (offset < result.Length)
             {
-                Next:
+                
+            Next:
                 memory = result.Start.NextMemory;
+               
                 int count;
                 if (memory.ID == result.End.ID)
                 {
@@ -50,7 +52,7 @@ namespace BeetleX.FastHttpApi
                 }
                 else
                 {
-                    count = memory.Bytes.Length;
+                    count = memory.Length;
                 }
                 for (int i = 0; i < count; i++)
                 {

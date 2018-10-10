@@ -109,14 +109,16 @@ FastHttpApi.prototype.execute = function (callback, http) {
                     body = this.params[keys[i]];
                 }
                 else {
-                    if (index == 0) {
-                        httpurl += "?";
+                    if (this.params[keys[i]]) {
+                        if (index == 0) {
+                            httpurl += "?";
+                        }
+                        else {
+                            httpurl += "&";
+                        }
+                        httpurl += keys[i] + '=' + encodeURIComponent(this.params[keys[i]]);
+                        index++;
                     }
-                    else {
-                        httpurl += "&";
-                    }
-                    httpurl += keys[i] + '=' + this.params[keys[i]];
-                    index++;
                 }
             }
             $.post(httpurl, JSON.stringify(body), function (result) {
@@ -130,14 +132,16 @@ FastHttpApi.prototype.execute = function (callback, http) {
             keys = Object.keys(this.params);
             index = 0;
             for (i = 0; i < keys.length; i++) {
-                if (index == 0) {
-                    httpurl += "?";
+                if (this.params[keys[i]]) {
+                    if (index == 0) {
+                        httpurl += "?";
+                    }
+                    else {
+                        httpurl += "&";
+                    }
+                    httpurl += keys[i] + '=' + encodeURIComponent(this.params[keys[i]]);
+                    index++;
                 }
-                else {
-                    httpurl += "&";
-                }
-                httpurl += keys[i] + '=' + this.params[keys[i]];
-                index++;
             }
             $.get(httpurl, function (result) {
                 if (callback)

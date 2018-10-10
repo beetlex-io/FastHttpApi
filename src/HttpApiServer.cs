@@ -133,6 +133,8 @@ namespace BeetleX.FastHttpApi
             config.Port = ServerConfig.Port;
             config.CertificateFile = ServerConfig.CertificateFile;
             config.CertificatePassword = ServerConfig.CertificatePassword;
+            config.BufferSize = ServerConfig.BufferSize;
+            config.LogLevel = ServerConfig.LogLevel;
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
@@ -156,6 +158,35 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Load();
             StartTime = DateTime.Now;
             mServer.Open();
+
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                using (System.IO.StreamWriter writer = new StreamWriter("__UnhandledException.txt"))
+                {
+                    Exception error = e.ExceptionObject as Exception;
+                    writer.WriteLine(DateTime.Now);
+                    if (error != null)
+                    {
+                        writer.WriteLine(error.Message);
+                        writer.WriteLine(error.StackTrace);
+                        if (error.InnerException != null)
+                        {
+                            writer.WriteLine(error.InnerException.Message);
+                            writer.WriteLine(error.InnerException.StackTrace);
+                        }
+                    }
+                    else
+                    {
+                        writer.WriteLine("Unhandled Exception:" + e.ExceptionObject.ToString());
+
+                    }
+                    writer.Flush();
+                }
+            };
+            if (EnableLog(LogType.Info))
+            {
+                mServer.Log(LogType.Info, null, "FastHttpApi Server started!");
+            }
         }
 
         public string Name { get { return mServer.Name; } set { mServer.Name = value; } }
@@ -260,12 +291,15 @@ namespace BeetleX.FastHttpApi
 
         private void OnWebSocketConnect(HttpRequest request, HttpResponse response)
         {
-
             HttpToken token = (HttpToken)request.Session.Tag;
             token.KeepAlive = true;
             token.WebSocketRequest = request;
             token.WebSocket = true;
             request.WebSocket = true;
+            if (EnableLog(LogType.Info))
+            {
+                mServer.Log(LogType.Info, request.Session, "{0} upgrade to websocket", request.Session.RemoteEndPoint);
+            }
             ConnectionUpgradeWebsocket(request, response);
 
         }
@@ -277,6 +311,10 @@ namespace BeetleX.FastHttpApi
             WebSocketConnect?.Invoke(this, wsca);
             if (wsca.Cancel)
             {
+                if (EnableLog(LogType.Warring))
+                {
+                    mServer.Log(LogType.Warring, request.Session, "{0} cancel upgrade to websocket", request.Session.RemoteEndPoint);
+                }
                 response.Session.Dispose();
             }
             else
@@ -304,6 +342,10 @@ namespace BeetleX.FastHttpApi
 
         protected virtual void OnReceiveWebSocketData(ISession session, DataFrame data)
         {
+            if (EnableLog(LogType.Info))
+            {
+                mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());
+            }
             HttpToken token = (HttpToken)session.Tag;
             if (data.Type == DataPacketType.ping)
             {
@@ -379,7 +421,12 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
+
                 HttpRequest request = (HttpRequest)e.Message;
+                if (EnableLog(LogType.Info))
+                {
+                    mServer.Log(LogType.Info, e.Session, "{0} Http {1} {2}", e.Session.RemoteEndPoint, request.Method, request.Url);
+                }
                 request.Server = this;
                 if (request.ClientIPAddress == null)
                 {
@@ -446,6 +493,11 @@ namespace BeetleX.FastHttpApi
                            select ((HttpToken)s.Tag).WebSocketRequest;
             }
             return mOnlines;
+        }
+
+        public bool EnableLog(LogType logType)
+        {
+            return (int)(this.ServerConfig.LogLevel) <= (int)logType;
         }
     }
 }

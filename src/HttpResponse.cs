@@ -129,7 +129,7 @@ namespace BeetleX.FastHttpApi
                 {
                     result = new ActionResult();
                     result.Data = data;
-                }    
+                }
                 result.Url = this.Request.BaseUrl;
                 result.ID = RequestID;
                 Completed(result);
@@ -206,7 +206,10 @@ namespace BeetleX.FastHttpApi
                 stream.Write(HeaderType.NULL_CONTENT_LENGTH_BYTES);
                 stream.Write(HeaderType.LINE_BYTES);
             }
-
+            if (Session.Server.EnableLog(EventArgs.LogType.Info))
+            {
+                Session.Server.Log(EventArgs.LogType.Info, Session, "{0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg);
+            }
         }
 
     }

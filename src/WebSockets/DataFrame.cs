@@ -129,9 +129,10 @@ namespace BeetleX.FastHttpApi.WebSockets
             {
                 if ((ulong)stream.Length >= this.Length)
                 {
-                    if (this.IsMask && this.Length > 0)
+                    if (this.Length > 0)
                     {
-                        ReadMask(stream);
+                        if (this.IsMask)
+                            ReadMask(stream);
                         Body = this.DataPacketSerializer.FrameDeserialize(this, stream);
                     }
                     mLoadStep = DataPacketLoadStep.Completed;
@@ -243,7 +244,13 @@ namespace BeetleX.FastHttpApi.WebSockets
         {
             HttpToken token = (HttpToken)session.Tag;
             if (token != null && token.WebSocket)
+            {
                 session.Send(this);
+                if (session.Server.EnableLog(EventArgs.LogType.Info))
+                {
+                    session.Server.Log(EventArgs.LogType.Info, session, "websocket {0} send {1}", session.RemoteEndPoint, this.Type.ToString());
+                }
+            }
         }
     }
 }

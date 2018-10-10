@@ -4,10 +4,10 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Copyright>Copyright © henryfan 2018 email:henryfan@msn.com</Copyright>
     <Authors>henryfan</Authors>
-    <Company>henryfan</Company>
+    <Company>ikende.com</Company>
     <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>0.9.5</Version>
+    <Version>0.9.7</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
@@ -45,8 +45,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.0.2.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\BeetleX\BeetleX.csproj" />
   </ItemGroup>
 
   <ItemGroup>

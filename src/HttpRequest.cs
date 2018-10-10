@@ -6,12 +6,12 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    public enum LoadedState
+    public enum LoadedState:int
     {
-        None,
-        Method,
-        Header,
-        Completed
+        None = 1,
+        Method = 2,
+        Header = 4,
+        Completed = 8
     }
 
     public class HttpRequest
@@ -28,7 +28,6 @@ namespace BeetleX.FastHttpApi
 
         public bool WebSocket { get; set; }
 
-
         private LoadedState mState;
 
         private int mLength;
@@ -38,6 +37,8 @@ namespace BeetleX.FastHttpApi
         private Cookies mCookies = new Cookies();
 
         private PipeStream mStream;
+
+        internal LoadedState State => mState;
 
         public bool KeepAlive { get; set; }
 

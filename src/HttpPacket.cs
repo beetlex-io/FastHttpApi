@@ -31,6 +31,10 @@ namespace BeetleX.FastHttpApi
 
         private HttpRequest mRequest;
 
+        private long mWebSocketRequest;
+
+        private long mLastTime;
+
         private DataFrame mDataPacket;
 
         private WebSockets.IDataFrameSerializer mDataPacketSerializer;
@@ -39,7 +43,7 @@ namespace BeetleX.FastHttpApi
 
         private void OnHttpDecode(ISession session, PipeStream pstream)
         {
-            START:
+        START:
             if (mRequest == null)
             {
                 mRequest = new HttpRequest(session, this.Serializer);
@@ -59,8 +63,12 @@ namespace BeetleX.FastHttpApi
                 else
                 {
                     mRequest.CreateResponse().NotSupport();
-                    if (length > 0)
-                        pstream.ReadFree(length);
+                    if (session.Server.EnableLog(LogType.Warring))
+                    {
+                        session.Server.Log(LogType.Warring, session, "{0} {1} {2} not support", session.RemoteEndPoint,  mRequest.Method, mRequest.Url);
+                    }
+                    HttpToken token = (HttpToken)session.Tag;
+                    token.KeepAlive = false;
                 }
                 mRequest = null;
                 if (pstream.Length == 0)
@@ -69,8 +77,20 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                if (mRequest.Length > mServerConfig.MaxBodyLength)
+                if ((int)mRequest.State < (int)LoadedState.Header && pstream.Length > 1024 * 4)
                 {
+                    if (session.Server.EnableLog(LogType.Warring))
+                    {
+                        session.Server.Log(LogType.Warring, session, "{0} http header too long!", session.RemoteEndPoint);
+                    }
+                    session.Dispose();
+                }
+                else if (mRequest.Length > mServerConfig.MaxBodyLength)
+                {
+                    if (session.Server.EnableLog(LogType.Warring))
+                    {
+                        session.Server.Log(LogType.Warring, session, "{0} http body too long!", session.RemoteEndPoint);
+                    }
                     session.Dispose();
                     return;
                 }
@@ -79,7 +99,7 @@ namespace BeetleX.FastHttpApi
         }
         private void OnWebSocketDecode(ISession session, PipeStream pstream)
         {
-            START:
+        START:
             if (mDataPacket == null)
             {
                 mDataPacket = new DataFrame();
@@ -87,11 +107,36 @@ namespace BeetleX.FastHttpApi
             }
             if (mDataPacket.Read(pstream) == DataPacketLoadStep.Completed)
             {
+                mWebSocketRequest++;
+                long now = session.Server.GetRunTime();
+                if (now - mLastTime > 1000)
+                {
+                    if (mServerConfig.WebSocketMaxRPS > 0 && mWebSocketRequest > mServerConfig.WebSocketMaxRPS)
+                    {
+                        if (session.Server.EnableLog(LogType.Warring))
+                        {
+                            session.Server.Log(LogType.Warring, session, "{0} websocket session rps to max!", session.RemoteEndPoint);
+                        }
+                        session.Dispose();
+                    }
+                    else
+                    {
+                        mWebSocketRequest = 0;
+                        mLastTime = now;
+                    }
+                }
                 DataFrame data = mDataPacket;
                 mDataPacket = null;
                 Completed?.Invoke(this, mCompletedArgs.SetInfo(session, data));
                 if (pstream.Length > 0)
                     goto START;
+            }
+            else
+            {
+                if (pstream.Length > mServerConfig.MaxBodyLength)
+                {
+                    session.Dispose();
+                }
             }
         }
 
@@ -101,7 +146,10 @@ namespace BeetleX.FastHttpApi
             PipeStream pstream = stream.ToPipeStream();
             if (pstream.Length > mServerConfig.MaxBodyLength)
             {
-                session.Server.Log(LogType.Error, session, "http body too long!");
+                if (session.Server.EnableLog(LogType.Warring))
+                {
+                    session.Server.Log(LogType.Warring, session, "{0} http protocol data to long!", session.RemoteEndPoint);
+                }
                 session.Dispose();
                 return;
             }

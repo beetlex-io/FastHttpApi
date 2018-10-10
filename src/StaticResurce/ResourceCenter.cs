@@ -103,7 +103,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         }
                         else
                         {
-                            if ("jpg;jpeg;png;gif;png".IndexOf(ext) >= 0)
+                            if (Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0)
                             {
                                 fr = new NoGzipResource(filename, urlname);
                             }
@@ -114,7 +114,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         }
                         mResources[urlname] = fr;
                         fr.Load();
-                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
+                        if (Server.EnableLog(EventArgs.LogType.Info))
+                            Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
                     }
                 }
             }
@@ -151,6 +152,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
                 if (response.Request.IfNoneMatch == fr.FileMD5)
                 {
+                    if (Server.EnableLog(EventArgs.LogType.Info))
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "{0} source No Modify ", response.Request.Url);
                     response.NoModify();
                     return;
                 }
@@ -205,7 +208,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
                 response.NotFound();
-                Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {1} {0} not found", request.BaseUrl, request.ClientIPAddress);
+                if (Server.EnableLog(EventArgs.LogType.Warring))
+                    Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.ClientIPAddress, request.BaseUrl);
                 return;
             }
 
@@ -231,14 +235,16 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     else
                     {
                         response.NotFound();
-                        Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {1} {0} not found", request.BaseUrl, request.ClientIPAddress);
+                        if (Server.EnableLog(EventArgs.LogType.Warring))
+                            Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.ClientIPAddress, request.BaseUrl);
                     }
                 }
             }
             else
             {
                 response.NotSupport();
-                Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "http {1} {0} not support", request.BaseUrl, request.ClientIPAddress);
+                if (Server.EnableLog(EventArgs.LogType.Warring))
+                    Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.ClientIPAddress, request.BaseUrl);
             }
         }
 
@@ -279,7 +285,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             else
             {
-                return Path + url;
+                return Path + url.Replace('/', System.IO.Path.DirectorySeparatorChar);
             }
         }
 
@@ -331,7 +337,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                     else
                     {
-                        if ("jpg;jpeg;png;gif;png;ico".IndexOf(ext) >= 0)
+                        FileInfo info = new FileInfo(file);
+                        if (Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0 && info.Length < 1024 * 1024)
                         {
                             fr = new NoGzipResource(file, urlname);
                         }
