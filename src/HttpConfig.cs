@@ -25,11 +25,17 @@ namespace BeetleX.FastHttpApi
             WriteLog = false;
             MaxConnections = 2000;
             NoGzipFiles = "jpg;jpeg;png;gif;png;ico;zip;rar";
+            CacheFiles = "html;htm;js;css";
             BufferSize = 1024 * 8;
             WebSocketMaxRPS = 30;
-            LogLevel = EventArgs.LogType.Warring;
 
+            LogLevel = EventArgs.LogType.Warring;
+            this.LogToConsole = false;
         }
+
+        public bool LogToConsole { get; set; }
+
+        public string CacheFiles { get; set; }
 
         public BeetleX.EventArgs.LogType LogLevel { get; set; }
 

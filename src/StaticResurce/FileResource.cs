@@ -14,6 +14,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
             FullName = filename;
             UrlName = urlname;
             mInnerResource = innerResource;
+            GZIP = true;
+            Cached = false;
         }
 
         public System.Reflection.Assembly Assembly { get; set; }
@@ -36,9 +38,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public byte[] Data { get; set; }
 
-        public virtual bool GZIP { get { return true; } }
+        public virtual bool GZIP { get; set; }
 
-        public virtual bool Cached => false;
+        public virtual bool Cached { get; set; }
 
         public bool InnerResource => mInnerResource;
 
@@ -66,7 +68,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             else
             {
-                fsstream = System.IO.File.OpenRead(FullName);
+                fsstream = System.IO.File.Open(FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             using (fsstream)
             {
@@ -88,6 +90,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
             }
+            fsstream.Close();
             Length = Data.Length;
         }
 
@@ -121,6 +124,11 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
         }
 
+        public virtual FileBlock CreateFileBlock()
+        {
+            return new FileBlock(this);
+        }
+
         public static string FMD5(string filename, System.Reflection.Assembly assembly)
         {
             using (var md5 = MD5.Create())
@@ -143,21 +151,18 @@ namespace BeetleX.FastHttpApi.StaticResurce
         }
     }
 
-    class NoGzipResource : FileResource
+    class NoCacheResource : FileResource
     {
-        public NoGzipResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource) {
+        public NoCacheResource(string filename, string urlname, bool innerResource = false) : base(filename, urlname, innerResource)
+        {
 
-
+            GZIP = false;
         }
 
         protected override void LoadFile()
         {
 
         }
-
-        public override bool GZIP => false;
-
-        public override bool Cached => true;
 
         private System.Collections.Concurrent.ConcurrentQueue<byte[]> mPool = new System.Collections.Concurrent.ConcurrentQueue<byte[]>();
 
@@ -167,11 +172,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             if (length >= size)
                 length = size;
             newOffset = offset + length;
-            byte[] buffer = null;
-            if (!mPool.TryDequeue(out buffer))
-            {
-                buffer = new byte[size];
-            }
+            byte[] buffer = GetBuffer(size);
             System.IO.Stream fsstream;
             if (InnerResource)
             {
@@ -179,15 +180,51 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             else
             {
-                fsstream = System.IO.File.OpenRead(FullName);
+                fsstream = System.IO.File.Open(FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             using (fsstream)
             {
-                fsstream.Seek(offset, SeekOrigin.Begin);
-                int len = fsstream.Read(buffer, 0, buffer.Length);
-                return new ArraySegment<byte>(buffer, 0, len);
+                //if (GZIP)
+                //{
+
+                //    byte[] gzipBuffer = GetBuffer(size);
+                //    System.IO.MemoryStream memory = new MemoryStream(gzipBuffer);
+                //    using (GZipStream gstream = new GZipStream(memory, CompressionMode.Compress))
+                //    {
+                //        fsstream.Seek(offset, SeekOrigin.Begin);
+                //        int len = fsstream.Read(buffer, 0, buffer.Length);
+                //        gstream.Write(buffer, 0, len);
+                //        Recovery(buffer);
+                //        gstream.Flush();
+                //        return new ArraySegment<byte>(gzipBuffer, 0, (int)gstream.BaseStream.Position);
+                //    }
+                //}
+                //else
+                //{
+                    fsstream.Seek(offset, SeekOrigin.Begin);
+                    int len = fsstream.Read(buffer, 0, buffer.Length);
+                    return new ArraySegment<byte>(buffer, 0, len);
+                //}
             }
         }
+
+        public override FileBlock CreateFileBlock()
+        {
+            FileBlock result = base.CreateFileBlock();
+            result.GZip = this.GZIP;
+            return result;
+        }
+
+        protected virtual byte[] GetBuffer(int size)
+        {
+            byte[] buffer = null;
+            if (!mPool.TryDequeue(out buffer))
+            {
+                buffer = new byte[size];
+            }
+            return buffer;
+        }
+
         public override void Recovery(byte[] buffer)
         {
             mPool.Enqueue(buffer);

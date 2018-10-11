@@ -204,7 +204,8 @@ namespace BeetleX.FastHttpApi
                         {
                             result.Data = context.Result;
                         }
-                        request.Session.Send(dataFrame);
+                        dataFrame.Send(request.Session);
+                        //request.Session.Send(dataFrame);
                     }
                 }
                 catch (Exception e_)
@@ -217,7 +218,8 @@ namespace BeetleX.FastHttpApi
                     {
                         result.StackTrace = e_.StackTrace;
                     }
-                    request.Session.Send(dataFrame);
+                    dataFrame.Send(request.Session);
+                    //request.Session.Send(dataFrame);
                 }
             }
             return result;

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    public enum LoadedState:int
+    public enum LoadedState : int
     {
         None = 1,
         Method = 2,
@@ -174,6 +174,15 @@ namespace BeetleX.FastHttpApi
             response.Header[HeaderType.HOST] = Header[HeaderType.HOST];
             response.RequestID = QueryString["_requestid"];
             return response;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(this.Method + " " + this.Url);
+            sb.Append(Header.ToString());
+            sb.Append(this.Cookies.ToString());
+            return sb.ToString();
         }
     }
 }

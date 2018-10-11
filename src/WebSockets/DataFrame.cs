@@ -116,7 +116,6 @@ namespace BeetleX.FastHttpApi.WebSockets
                     {
                         this.MaskKey = new byte[4];
                         stream.Read(this.MaskKey, 0, 4);
-
                         mLoadStep = DataPacketLoadStep.Mask;
                     }
                 }
@@ -127,14 +126,11 @@ namespace BeetleX.FastHttpApi.WebSockets
             }
             if (mLoadStep == DataPacketLoadStep.Mask)
             {
-                if ((ulong)stream.Length >= this.Length)
+                if (this.Length > 0 && (ulong)stream.Length >= this.Length)
                 {
-                    if (this.Length > 0)
-                    {
-                        if (this.IsMask)
-                            ReadMask(stream);
-                        Body = this.DataPacketSerializer.FrameDeserialize(this, stream);
-                    }
+                    if (this.IsMask)
+                        ReadMask(stream);
+                    Body = this.DataPacketSerializer.FrameDeserialize(this, stream);
                     mLoadStep = DataPacketLoadStep.Completed;
                 }
             }
@@ -144,7 +140,7 @@ namespace BeetleX.FastHttpApi.WebSockets
         private void ReadMask(PipeStream stream)
         {
             IndexOfResult result = stream.IndexOf((int)this.Length);
-            int index = 0;
+            ulong index = 0;
             if (result.Start.ID == result.End.ID)
             {
                 index = MarkBytes(result.Start.Bytes, result.StartPostion, result.EndPostion, index);
@@ -153,7 +149,7 @@ namespace BeetleX.FastHttpApi.WebSockets
             {
                 index = MarkBytes(result.Start.Bytes, result.StartPostion, result.Start.Length - 1, index);
                 IMemoryBlock next = result.Start.NextMemory;
-                while (next != null)
+                while (next != null && index < this.Length)
                 {
                     if (next.ID == result.End.ID)
                     {
@@ -164,17 +160,19 @@ namespace BeetleX.FastHttpApi.WebSockets
                     {
                         index = MarkBytes(next.Bytes, 0, next.Length - 1, index);
                     }
-                    next = result.Start.NextMemory;
+                    next = next.NextMemory;
                 }
             }
         }
 
-        private int MarkBytes(Span<byte> bytes, int start, int end, int index)
+        private ulong MarkBytes(Span<byte> bytes, int start, int end, ulong index)
         {
             for (int i = start; i <= end; i++)
             {
                 bytes[i] = (byte)(bytes[i] ^ MaskKey[index % 4]);
                 index++;
+                if (index >= this.Length)
+                    break;
             }
             return index;
         }
@@ -248,7 +246,7 @@ namespace BeetleX.FastHttpApi.WebSockets
                 session.Send(this);
                 if (session.Server.EnableLog(EventArgs.LogType.Info))
                 {
-                    session.Server.Log(EventArgs.LogType.Info, session, "websocket {0} send {1}", session.RemoteEndPoint, this.Type.ToString());
+                    session.Server.Log(EventArgs.LogType.Info, session, "{0} websocket send data {1}", session.RemoteEndPoint, this.Type.ToString());
                 }
             }
         }

@@ -97,19 +97,25 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         string filename = tmpFolder + System.IO.Path.DirectorySeparatorChar + item;
                         SaveTempFile(assembly, item, filename);
                         FileResource fr;
+                        bool nogzip = !(Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0);
+                        bool cachefile = Server.ServerConfig.CacheFiles.IndexOf(ext) >= 0;
                         if (Debug)
                         {
-                            fr = new NoGzipResource(filename, urlname);
+                            fr = new NoCacheResource(filename, urlname);
+                            if (nogzip)
+                                fr.GZIP = true;
                         }
                         else
                         {
-                            if (Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0)
+                            if (cachefile)
                             {
-                                fr = new NoGzipResource(filename, urlname);
+                                fr = new FileResource(filename, urlname);
                             }
                             else
                             {
-                                fr = new FileResource(filename, urlname);
+                                fr = new NoCacheResource(filename, urlname);
+                                if (nogzip)
+                                    fr.GZIP = true;
                             }
                         }
                         mResources[urlname] = fr;
@@ -153,7 +159,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 if (response.Request.IfNoneMatch == fr.FileMD5)
                 {
                     if (Server.EnableLog(EventArgs.LogType.Info))
-                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "{0} source No Modify ", response.Request.Url);
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "{0} get {1} source no modify ", response.Request.ClientIPAddress, response.Request.Url);
                     response.NoModify();
                     return;
                 }
@@ -180,9 +186,14 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             SetChunked(response);
             HttpToken token = (HttpToken)response.Session.Tag;
-            token.File = new FileBlock(fr);
+            token.File = fr.CreateFileBlock();
             response.SetContentType(fct.ContentType);
             response.Result(token.File);
+            if (Server.EnableLog(EventArgs.LogType.Info))
+            {
+                Server.BaseServer.Log(EventArgs.LogType.Info, response.Request.Session, "{0} get {1} response gzip {2}",
+                    response.Request.ClientIPAddress, response.Request.BaseUrl, fr.GZIP);
+            }
         }
 
         public void ProcessFile(HttpRequest request, HttpResponse response)
@@ -229,6 +240,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         fr = CreateResource(file);
                         if (fr != null)
                         {
+
                             OutputFileResource(fct, fr, response);
                         }
                     }
@@ -255,7 +267,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         private void SetChunked(HttpResponse response)
         {
+           
             response.Header.Add("Transfer-Encoding", "chunked");
+            
         }
 
         public bool ExtSupport(string ext)
@@ -331,32 +345,41 @@ namespace BeetleX.FastHttpApi.StaticResurce
                                 return fr;
                         }
                     }
+                    bool nogzip = !(Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0);
+                    bool cachefile = Server.ServerConfig.CacheFiles.IndexOf(ext) >= 0;
                     if (Debug)
                     {
-                        fr = new NoGzipResource(file, urlname);
+                        fr = new NoCacheResource(file, urlname);
+                        if (nogzip)
+                            fr.GZIP = true;
                     }
                     else
                     {
                         FileInfo info = new FileInfo(file);
-                        if (Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0 && info.Length < 1024 * 1024)
-                        {
-                            fr = new NoGzipResource(file, urlname);
-                        }
-                        else
+                        if (cachefile && info.Length < 1024 * 500)
                         {
                             fr = new FileResource(file, urlname);
                         }
+                        else
+                        {
+                            fr = new NoCacheResource(file, urlname);
+                            if (nogzip)
+                                fr.GZIP = true;
+                        }
                     }
-                    mResources[urlname] = fr;
-                    fr.CreateTime = Server.BaseServer.GetRunTime();
+
                     fr.Load();
-                    Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
+                    fr.CreateTime = Server.BaseServer.GetRunTime();
+                    mResources[urlname] = fr;
+                    if (Server.EnableLog(EventArgs.LogType.Info))
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "upload static resource " + urlname);
                     return fr;
                 }
             }
             catch (Exception e_)
             {
-                Server.BaseServer.Error(e_, null, "load " + file + " resource error");
+                if (Server.EnableLog(EventArgs.LogType.Error))
+                    Server.BaseServer.Error(e_, null, "upload {0} resource error {1}", file, e_.Message);
             }
             return null;
         }

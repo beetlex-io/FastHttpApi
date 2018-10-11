@@ -206,10 +206,26 @@ namespace BeetleX.FastHttpApi
                 stream.Write(HeaderType.NULL_CONTENT_LENGTH_BYTES);
                 stream.Write(HeaderType.LINE_BYTES);
             }
+
+            if (Session.Server.EnableLog(EventArgs.LogType.Debug))
+                Session.Server.Log(EventArgs.LogType.Debug, Session, "{0} {1}", Request.ClientIPAddress, this.ToString());
+
             if (Session.Server.EnableLog(EventArgs.LogType.Info))
             {
-                Session.Server.Log(EventArgs.LogType.Info, Session, "{0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg);
+                Session.Server.Log(EventArgs.LogType.Info, Session, "{4} {0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg, Request.ClientIPAddress);
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(Request.Method + " " + Request.Url + " response " + Code + " " + CodeMsg);
+            sb.Append(this.Header.ToString());
+            for (int i = 0; i < mSetCookies.Count; i++)
+            {
+                sb.AppendLine(mSetCookies[i]);
+            }
+            return sb.ToString();
         }
 
     }

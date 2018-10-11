@@ -230,8 +230,8 @@ namespace HttpApiServer.Chat
         [NotAction]
         public void Init(BeetleX.FastHttpApi.HttpApiServer server)
         {
-            server.HttpConnected = OnHttpConnected;
-            server.HttpDisconnect = OnHttpDisconnect;
+            server.HttpConnected += OnHttpConnected;
+            server.HttpDisconnect += OnHttpDisconnect;
             mServer = server;
         }
         public class Command

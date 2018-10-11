@@ -89,9 +89,9 @@ namespace BeetleX.FastHttpApi
 
         public EventHandler<WebSocketReceiveArgs> WebSocketReceive { get; set; }
 
-        public EventHandler<ConnectedEventArgs> HttpConnected { get; set; }
+        public event EventHandler<ConnectedEventArgs> HttpConnected;
 
-        public EventHandler<SessionEventArgs> HttpDisconnect { get; set; }
+        public event EventHandler<SessionEventArgs> HttpDisconnect;
 
         public EventHandler<WebSocketConnectArgs> WebSocketConnect { get; set; }
 
@@ -390,7 +390,7 @@ namespace BeetleX.FastHttpApi
         {
             if (ServerLog == null)
             {
-                if (ServerConfig.Debug)
+                if (ServerConfig.LogToConsole)
                     base.Log(server, e);
                 if (ServerConfig.WriteLog)
                     mFileLog.Add(e);
@@ -425,7 +425,11 @@ namespace BeetleX.FastHttpApi
                 HttpRequest request = (HttpRequest)e.Message;
                 if (EnableLog(LogType.Info))
                 {
-                    mServer.Log(LogType.Info, e.Session, "{0} Http {1} {2}", e.Session.RemoteEndPoint, request.Method, request.Url);
+                    mServer.Log(LogType.Info, e.Session, "{0} Http {1} {2}",request.ClientIPAddress, request.Method, request.Url);
+                }
+                if(EnableLog(LogType.Debug))
+                {
+                    mServer.Log(LogType.Info, e.Session, "{0} {1}", request.ClientIPAddress, request.ToString());
                 }
                 request.Server = this;
                 if (request.ClientIPAddress == null)
