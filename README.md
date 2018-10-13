@@ -12,7 +12,7 @@
 7. 支持外置或内嵌到DLL的静态资源输出（默认对html,js,css资源进行GZIP处理）
 8. 支持SSL和Https
 
-**[详细帮助文档](http://www.ikende.com/)**
+**[官方网站和帮助文档](http://www.ikende.com/)**
 ## 更新日志
 #### 2018-10-2 ActionResul添加一个ID用于匹配websocket请求应用使用,集成一个后台管理，增加API调用JS，同一方式兼容ajax和websocket
 可以通过管理端生成所有接口调用的API脚本
