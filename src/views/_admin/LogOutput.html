@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="bootstrap.css" rel="stylesheet" />
+    <link href="bootstrap-theme.css" rel="stylesheet" />
+    <script src="jquery.js"></script>
+    <script src="vue.js"></script>
+    <script src="ModuleLoader.js"></script>
+    <script src="FastHttpApi.js"></script>
+    <script src="AdminController.js"></script>
+    <script src="bootstrap.js"></script>
+    <script src="md5.js"></script>
+    <title>FastHttpApi后台服务管理</title>
+    <style>
+        .log_Debug {
+            color: powderblue;
+            margin:2px;
+        }
+
+        .log_None {
+            color: white;
+            margin: 2px;
+        }
+
+        .log_Info {
+            color: greenyellow;
+            margin: 2px;
+        }
+
+        .log_Warring {
+            color: sandybrown;
+            margin: 2px;
+        }
+
+        .log_Error {
+            color: red;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container" slot="header">
+
+        </div>
+    </div>
+    <div class="container bs-docs-container" style="padding-top:60px;">
+        <div class="row">
+            <div slot="mainBar">
+            </div>
+            <div style="width:800px;margin:auto;margin-top:10px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">日志信息</div>
+                    <div class="panel-body">
+                        <form class="bs-example btn-group-sm" data-example-id="btn-tags" style="padding:4px;">
+                            <button type="button" class="btn btn-success" onclick="ConnectLog()">连接到服务器</button>
+                            <button type="button" class="btn btn-danger" onclick="DisconnectLog()">断开</button>
+                            <button type="button" class="btn btn-danger" onclick="$('#lstLogs').empty()">清除</button>
+
+                        </form>
+                        <div id="lstLogs" style="background-color:black;height:500px;overflow-y:scroll">
+
+                        </div>
+                    </div>
+
+                </div>
+              
+            </div>
+
+        </div>
+    </div>
+
+    <div class="navbar navbar-inverse navbar-fixed-bottom">
+        <div class="container" style="color:aliceblue;text-align:center;" slot="footer">
+        </div>
+    </div>
+
+    <script>
+        api_receive(function (data) {
+            if (data.Data.LogType) {
+                var html = '<p class="log_' + data.Data.LogType + '"><span class="badge">' + data.Data.Time + '</span>[' + data.Data.LogType + ']' + data.Data.Message + '</p>';
+                $(html).appendTo('#lstLogs');
+                var objDiv = document.getElementById("lstLogs");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            }
+        });
+        async function ConnectLog() {
+            var result = await $_admin$LogConnect();
+            if (result.Code == 403)
+                window.location.href = result.Data;
+        }
+        async function DisconnectLog() {
+            var result = await $_admin$LogDisConnect();
+            if (result.Code == 403)
+                window.location.href = result.Data;
+        }
+    </script>
+</body>
+</html>

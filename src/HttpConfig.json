@@ -11,11 +11,9 @@
     "DefaultPage": "index.html;index.htm",
     "Manager": "admin",
     "ManagerPWD": "123456",
-    "NoGzipFiles": "jpg;jpeg;png;gif;png;ico;zip;rar;bmp",
-    "CacheFiles": "html;htm;js;css",
+    "WriteLog": false,
+    "NoGzipFiles": "jpg;jpeg;png;gif;png;ico;zip;rar",
     "BufferSize": 8192,
-    "WriteLog": true,
-    "LogToConsole": true,
     "LogLevel": "Warring"
   }
 }

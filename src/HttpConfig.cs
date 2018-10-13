@@ -28,12 +28,14 @@ namespace BeetleX.FastHttpApi
             CacheFiles = "html;htm;js;css";
             BufferSize = 1024 * 8;
             WebSocketMaxRPS = 30;
-
             LogLevel = EventArgs.LogType.Warring;
             this.LogToConsole = false;
+            NotLoadFolder = @"\Files;\Images";
         }
 
         public bool LogToConsole { get; set; }
+
+        public string NotLoadFolder { get; set; }
 
         public string CacheFiles { get; set; }
 

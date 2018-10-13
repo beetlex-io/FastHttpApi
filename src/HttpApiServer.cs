@@ -97,6 +97,9 @@ namespace BeetleX.FastHttpApi
 
         private List<System.Reflection.Assembly> mAssemblies = new List<System.Reflection.Assembly>();
 
+
+        public ISession LogOutput { get; internal set; }
+
         public void Register(params System.Reflection.Assembly[] assemblies)
         {
             mAssemblies.AddRange(assemblies);
@@ -229,6 +232,8 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
+                if (LogOutput == e.Session)
+                    LogOutput = null;
                 HttpDisconnect?.Invoke(server, e);
                 base.Disconnect(server, e);
             }
@@ -397,6 +402,13 @@ namespace BeetleX.FastHttpApi
             }
             else
                 ServerLog(server, e);
+            ISession output = LogOutput;
+            if (output != null && e.Session != output)
+            {
+                ActionResult log = new ActionResult();
+                log.Data = new { LogType = e.Type.ToString(), Time = DateTime.Now.ToString("H:mm:ss"), Message = e.Message };
+                CreateDataFrame(log).Send(output);
+            }
         }
 
         protected virtual void OnProcessResource(HttpRequest request, HttpResponse response)
@@ -423,19 +435,20 @@ namespace BeetleX.FastHttpApi
             {
 
                 HttpRequest request = (HttpRequest)e.Message;
-                if (EnableLog(LogType.Info))
-                {
-                    mServer.Log(LogType.Info, e.Session, "{0} Http {1} {2}",request.ClientIPAddress, request.Method, request.Url);
-                }
-                if(EnableLog(LogType.Debug))
-                {
-                    mServer.Log(LogType.Info, e.Session, "{0} {1}", request.ClientIPAddress, request.ToString());
-                }
-                request.Server = this;
                 if (request.ClientIPAddress == null)
                 {
-                    request.Header.Add(HeaderType.CLIENT_IPADDRESS, ((IPEndPoint)e.Session.RemoteEndPoint).Address.ToString());
+                    request.Header.Add(HeaderType.CLIENT_IPADDRESS, e.Session.RemoteEndPoint.ToString());
                 }
+                if (EnableLog(LogType.Info))
+                {
+                    mServer.Log(LogType.Info, e.Session, "{0} Http {1} {2}", request.ClientIPAddress, request.Method, request.Url);
+                }
+                if (EnableLog(LogType.Debug))
+                {
+                    mServer.Log(LogType.Debug, e.Session, "{0} {1}", request.ClientIPAddress, request.ToString());
+                }
+                request.Server = this;
+                
                 HttpResponse response = request.CreateResponse();
                 token.KeepAlive = request.KeepAlive;
                 if (token.FirstRequest && string.Compare(request.Header[HeaderType.UPGRADE], "websocket", true) == 0)

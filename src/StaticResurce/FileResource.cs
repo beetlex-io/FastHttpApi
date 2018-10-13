@@ -24,7 +24,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public string UrlName { get; set; }
 
-        public string UrlMD5 { get; set; }
+
 
         public long CreateTime { get; set; }
 
@@ -97,7 +97,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
         public void Load()
         {
             Name = System.IO.Path.GetFileName(FullName);
-            UrlMD5 = MD5Encrypt(UrlName);
+
             FileMD5 = FMD5(FullName, this.Assembly);
             if (!InnerResource)
             {
@@ -184,27 +184,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             using (fsstream)
             {
-                //if (GZIP)
-                //{
-
-                //    byte[] gzipBuffer = GetBuffer(size);
-                //    System.IO.MemoryStream memory = new MemoryStream(gzipBuffer);
-                //    using (GZipStream gstream = new GZipStream(memory, CompressionMode.Compress))
-                //    {
-                //        fsstream.Seek(offset, SeekOrigin.Begin);
-                //        int len = fsstream.Read(buffer, 0, buffer.Length);
-                //        gstream.Write(buffer, 0, len);
-                //        Recovery(buffer);
-                //        gstream.Flush();
-                //        return new ArraySegment<byte>(gzipBuffer, 0, (int)gstream.BaseStream.Position);
-                //    }
-                //}
-                //else
-                //{
-                    fsstream.Seek(offset, SeekOrigin.Begin);
-                    int len = fsstream.Read(buffer, 0, buffer.Length);
-                    return new ArraySegment<byte>(buffer, 0, len);
-                //}
+                fsstream.Seek(offset, SeekOrigin.Begin);
+                int len = fsstream.Read(buffer, 0, buffer.Length);
+                return new ArraySegment<byte>(buffer, 0, len);
             }
         }
 

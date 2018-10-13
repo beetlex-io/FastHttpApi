@@ -6,8 +6,13 @@
     <link href="bootstrap.css" rel="stylesheet" />
     <link href="bootstrap-theme.css" rel="stylesheet" />
     <script src="jquery.js"></script>
+    <script src="vue.js"></script>
+    <script src="ModuleLoader.js"></script>
+    <script src="FastHttpApi.js"></script>
+    <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
-    <title>FastHttpApi api info </title>
+    <script src="md5.js"></script>
+    <title>FastHttpApi后台服务管理</title>
     <style>
         pre {
             padding: 5px;
@@ -36,109 +41,91 @@
     </style>
 </head>
 <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container" slot="header">
 
-    <div class="container bs-docs-container" style="padding-top:10px;">
+        </div>
+    </div>
+    <div class="container bs-docs-container" style="padding-top:60px;">
         <div class="row">
-            <nav class="navbar navbar-default">
-                <div class="container-fluid">
-                    <!-- Brand and toggle get grouped for better mobile display -->
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                            <span class="sr-only"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a class="navbar-brand" href="/_info/index.html">FastHttpApi 服务信息</a>
-                    </div>
-                    <ul class="nav nav-tabs" style="float:right; border:none;padding-top:5px;">
-                        <li role="presentation"><a href="http://github/ikende/fasthttpapi">Copyright © henryfan 2018 email:henryfan@msn.com</a></li>
-
-                    </ul>
-                    <!-- Collect the nav links, forms, and other content for toggling -->
-
-                </div><!-- /.container-fluid -->
-            </nav>
-
-            <ul class="nav nav-tabs">
-                <li role="presentation"><a href="index.html">服务基础信息</a></li>
-                <li role="presentation"><a href="Connections.html">在线连接</a></li>
-
-                <li role="presentation" class="active"><a href="#">API信息</a></li>
-                <li role="presentation" ><a href="apiscript.html">API Script</a></li>
-            </ul>
+            <div slot="mainBar">
+            </div>
             <div id="apis" class="list-group">
             </div>
         </div>
+    </div>
+    <div class="navbar navbar-inverse navbar-fixed-bottom">
+        <div class="container" style="color:aliceblue;text-align:center;" slot="footer">
         </div>
-        <script>
-            var _lastitem;
-            function showItem(item) {
-                if (_lastitem) {
-                    $(_lastitem).hide();
-                }
-                _lastitem = item;
-                $(_lastitem).show();
+    </div>
+    <script>
+        var _lastitem;
+        function showItem(item) {
+            if (_lastitem) {
+                $(_lastitem).hide();
             }
-            $(document).ready(function () {
-                var i = 0;
-                $.get("/_admin/listapi", function (result) {
-                    if (result.Code == 403) {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    result.Data.forEach(function (v, i) {
-                        var html = '<a href="javascript:void(0)" onclick="showItem(\'#api' + i + '\')" class="list-group-item"><b>' + v.Url + '</b>   '+v.Remark+'</a>';
-                        html += '<div id="api' + i + '" style="display:none;padding-left:20px;">'
+            _lastitem = item;
+            $(_lastitem).show();
+        }
+        $(document).ready(function () {
+            var i = 0;
+            $.get("/_admin/listapi", function (result) {
+                if (result.Code == 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                result.Data.forEach(function (v, i) {
+                    var html = '<a href="javascript:void(0)" onclick="showItem(\'#api' + i + '\')" class="list-group-item"><b>' + v.Url + '</b>   ' + v.Remark + '</a>';
+                    html += '<div id="api' + i + '" style="display:none;padding-left:20px;">'
 
-                            + '<div class="bs-callout bs-callout-warning" id="callout-inputgroup-container-body"> \
-                                                                                     <h4>http请求</h4 > \
+                        + '<div class="bs-callout bs-callout-warning" id="callout-inputgroup-container-body"> \
+                                                                                             <h4>http请求</h4 > \
 <span class="label label-default">Url:</span> \
-                                                    <pre>'+ v.Http.Url + '</pre>  \
-                                                      <span class="label label-default">Post:</span> \
+                                                            <pre>'+ v.Http.Url + '</pre>  \
+                                                              <span class="label label-default">Post:</span> \
 <pre>'+ (v.Http.Body ? v.Http.Body : '无') + '</pre> \
 <h4>WebSocket请求</h4 > \
 <span class="label label-default">Send:</span> \
 <pre>'+ v.WebSocket.Body + '</pre> \
-                                                                                                                                                                              </div > '
-                            + '</div >';
+                                                                                                                                                                                      </div > '
+                        + '</div >';
 
-                        i++;
-                        $('#apis').append(html);
-                    })
-
-                    $('pre').each(function () {
-
-                        $(this).html(syntaxHighlight($(this).html()));
-                    });
+                    i++;
+                    $('#apis').append(html);
                 })
-            })
 
-            function syntaxHighlight(json) {
-                if (typeof json != 'string') {
-                    json = JSON.stringify(json);
-                }
-                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                $('pre').each(function () {
 
-                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                    var cls = 'number';
-                    if (/^"/.test(match)) {
-                        if (/:$/.test(match)) {
-                            cls = 'key';
-                        } else {
-                            cls = 'string';
-                        }
-                    } else if (/true|false/.test(match)) {
-                        cls = 'boolean';
-                    } else if (/null/.test(match)) {
-                        cls = 'null';
-                    }
-
-                    return '<span class="' + cls + '">' + match + '</span>';
-
+                    $(this).html(syntaxHighlight($(this).html()));
                 });
-            }
+            })
+        })
 
-        </script>
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+
+                return '<span class="' + cls + '">' + match + '</span>';
+
+            });
+        }
+
+    </script>
 </body>
 </html>

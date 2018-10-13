@@ -2,45 +2,28 @@
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8" />
     <link href="bootstrap.css" rel="stylesheet" />
     <link href="bootstrap-theme.css" rel="stylesheet" />
     <script src="jquery.js"></script>
+    <script src="vue.js"></script>
+    <script src="ModuleLoader.js"></script>
+    <script src="FastHttpApi.js"></script>
+    <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
-    <title>FastHttpApi</title>
+    <script src="md5.js"></script>
+    <title>FastHttpApi后台服务管理</title>
 </head>
 <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container" slot="header">
 
-    <div class="container bs-docs-container" style="padding-top:10px;">
+        </div>
+    </div>
+    <div class="container bs-docs-container" style="padding-top:60px;">
         <div class="row">
-            <nav class="navbar navbar-default">
-                <div class="container-fluid">
-                    <!-- Brand and toggle get grouped for better mobile display -->
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                            <span class="sr-only"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a class="navbar-brand" href="/_info/index.html">FastHttpApi 服务信息</a>
-                    </div>
-                    <ul class="nav nav-tabs" style="float:right; border:none;padding-top:5px;">
-                        <li role="presentation"><a href="http://github/ikende/fasthttpapi">Copyright © henryfan 2018 email:henryfan@msn.com</a></li>
-
-                    </ul>
-                    <!-- Collect the nav links, forms, and other content for toggling -->
-
-                </div><!-- /.container-fluid -->
-            </nav>
-            <ul class="nav nav-tabs">
-                <li role="presentation"><a href="index.html">服务基础信息</a></li>
-                <li role="presentation" class="active"><a href="#">在线连接</a></li>
-
-                <li role="presentation"><a href="api.html">API信息</a></li>
-                <li role="presentation"><a href="apiscript.html">API Script</a></li>
-            </ul>
-            <form class="bs-example" data-example-id="btn-tags" style="padding:4px;">
+            <div slot="mainBar">
+            </div>
+            <form class="bs-example btn-group-sm" data-example-id="btn-tags" style="padding:4px;">
                 <button type="button" class="btn btn-success" onclick="searchConn(0)">查询</button>  <button type="button" class="btn btn-danger" onclick="disconnect()">关闭连接</button>
                 <span id="connections" class="badge"></span>
             </form>
@@ -55,29 +38,28 @@
                         <th>在线时长</th>
                     </tr>
                 </thead>
-                <tbody id="lstConnection"></tbody>
+                <tbody id="lstConnection">
+                    <tr v-for="item in Data">
+                        <td><input type="checkbox" v-bind:id="item.ID" v-bind:ip="item.IPAddress" /></td>
+                        <td>{{item.IPAddress}}</td>
+                        <td>{{item.Type}}</td>
+                        <td>{{item.ID}}</td>
+                        <td>{{item.Name}}</td>
+                        <td>{{item.CreateTime}}</td>
+                    </tr>
+                </tbody>
             </table>
             <nav aria-label="Page navigation">
-                <ul id="pagination" class="pagination">
-                    <li>
-                        <a href="#" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li><a href="javascript:void(0)" onclick="searchConn(0)">1</a></li>
-                    <li><a href="#">2</a></li>
-                    <li><a href="#">3</a></li>
-                    <li><a href="#">4</a></li>
-                    <li><a href="#">5</a></li>
-                    <li>
-                        <a href="#" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
+                <ul id="pagination" class="pagination"></ul>
             </nav>
         </div>
     </div>
+
+    <div class="navbar navbar-inverse navbar-fixed-bottom">
+        <div class="container" style="color:aliceblue;text-align:center;" slot="footer">
+        </div>
+    </div>
+
     <script>
 
 
@@ -109,35 +91,21 @@
                 }
             }
         }
-
+        var lstConnectionControl;
         $(document).ready(function () {
+            lstConnectionControl = new Vue({ el: '#lstConnection', data: { Data: [] } });
             searchConn(0);
         });
 
 
-        function searchConn(index) {
-            var url = '/_admin/ListConnection?index=' + index;
-            $.get(url, function (result) {
-                if (result.Code == 403) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                pagination(result.Data.Index, result.Data.Pages);
-                $('#lstConnection').empty();
-                var pages = result.Data.Pages;
-                $('#connections').text(result.Data.Count);
-                result.Data.Items.forEach(function (v, i) {
-                    var tr = '                    <tr> \
-                                                                                                                                                                                <td><input id="'+ v.ID + '" ip="' + v.IPAddress + '" type="checkbox"/></td> \
-                                                                                                                                                                                <td>'+ v.IPAddress + '</td> \
-                                                                                                                                                                                                        <td>'+ v.Type + '</td> \
-                                                                                                                                                                                                            <td>'+ v.ID + '</td> \
-                                                                                                                                                                                                            <td>'+ v.Name + '</td> \
-                                                                                                                                                                                                            <td>'+ v.CreateTime + '</td> \
-                                                                                                                                                                                                </tr > ';
-                    $('#lstConnection').append(tr);
-                });
-            });
+        async function searchConn(index) {
+            var result = await $_admin$ListConnection(index);
+            if (result.Code == 403) {
+                window.location.href = result.Data;
+                return;
+            }
+            lstConnectionControl.Data = result.Data.Items;
+            pagination(index, result.Data.Pages);
         }
 
         function pagination(index, pages) {

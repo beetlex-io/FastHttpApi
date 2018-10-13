@@ -233,7 +233,7 @@ namespace BeetleX.FastHttpApi
 
         public const string SEC_WEBSOCKT_ACCEPT = "Sec-WebSocket-Accept";
 
-        public const string CLIENT_IPADDRESS = "Client_IPAddress";
+        public const string CLIENT_IPADDRESS = "X-Real-IP";
 
         public static byte[] SEC_WEBSOCKT_ACCEPT_BYTES;
 

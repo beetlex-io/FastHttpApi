@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -6,6 +8,7 @@ using System.Text;
 namespace BeetleX.FastHttpApi.Admin
 {
     [Controller(BaseUrl = "/_admin/")]
+    [LoginFilter]
     public class AdminController
     {
 
@@ -23,12 +26,13 @@ namespace BeetleX.FastHttpApi.Admin
         internal ActionHandlerFactory HandleFactory { get; set; }
 
         [Description("获取所有接口信息,需要后台管理权")]
-        [LoginFilter]
+      
         public object ListApi()
         {
             return HandleFactory.GetUrlInfos();
         }
         [Description("获取后台登陆凭证")]
+        [SkipFilter(typeof(LoginFilter))]
         public string GetKey(IHttpContext context)
         {
             string key = Guid.NewGuid().ToString("N");
@@ -36,13 +40,66 @@ namespace BeetleX.FastHttpApi.Admin
             return key;
 
         }
-        [Description("获取基于API相应调用Javascript代码,兼容http和websocket")]
-        [LoginFilter]
+      
+        public object GetSettingInfo()
+        {
+            return new SettingInfo
+            {
+                MaxConn = Server.ServerConfig.MaxConnections,
+                WSMaxRPS = Server.ServerConfig.WebSocketMaxRPS,
+                LogLevel = Server.ServerConfig.LogLevel,
+                LogToConsole = Server.ServerConfig.LogToConsole,
+                WriteLog = Server.ServerConfig.WriteLog
+            };
+        }
+
+        public class SettingInfo
+        {
+            public int MaxConn { get; set; }
+            public int WSMaxRPS { get; set; }
+            [JsonConverter(typeof(StringEnumConverter))]
+            public BeetleX.EventArgs.LogType LogLevel { get; set; }
+            public bool LogToConsole { get; set; }
+            public bool WriteLog { get; set; }
+        }
+     
+        public void Setting([BodyParameter] SettingInfo setting, IHttpContext context)
+        {
+            Server.ServerConfig.MaxConnections = setting.MaxConn;
+            Server.ServerConfig.WebSocketMaxRPS = setting.WSMaxRPS;
+            Server.ServerConfig.LogLevel = setting.LogLevel;
+            Server.BaseServer.Config.LogLevel = setting.LogLevel;
+            Server.ServerConfig.LogToConsole = setting.LogToConsole;
+            Server.ServerConfig.WriteLog = setting.WriteLog;
+            if (Server.EnableLog(EventArgs.LogType.Warring))
+            {
+                Server.BaseServer.Log(EventArgs.LogType.Warring, context.Session, "{0} setting {1}", context.Request.ClientIPAddress,
+                    Newtonsoft.Json.JsonConvert.SerializeObject(setting));
+            }
+        }
+      
+        public void LogConnect(IHttpContext context)
+        {
+            Server.LogOutput = context.Session;
+            ActionResult log = new ActionResult();
+            log.Data = new { LogType = BeetleX.EventArgs.LogType.Info.ToString(), Time = DateTime.Now.ToString("H:mm:ss"), Message = "log connect!" };
+            context.Server.CreateDataFrame(log).Send(context.Session);
+        }
+      
+        public void LogDisConnect(IHttpContext context)
+        {
+            Server.LogOutput = null;
+            ActionResult log = new ActionResult();
+            log.Data = new { LogType = BeetleX.EventArgs.LogType.Info.ToString(), Time = DateTime.Now.ToString("H:mm:ss"), Message = "log disconnect!" };
+            context.Server.CreateDataFrame(log).Send(context.Session);
+        }
+
+     
         public string GetApiScript()
         {
             // api('/GetEmployeesName').execute();
             StringBuilder code = new StringBuilder();
-            code.Append(RES.API_SCRIPT);
+
             code.AppendLine("");
             var items = HandleFactory.GetUrlInfos();
 
@@ -133,8 +190,7 @@ namespace BeetleX.FastHttpApi.Admin
             return code.ToString();
         }
 
-        [Description("关闭指定的连接,需要后台管理权限")]
-        [LoginFilter]
+   
         public void CloseSession([BodyParameter]List<SessionItem> items, IHttpContext context)
         {
             foreach (SessionItem item in items)
@@ -151,8 +207,7 @@ namespace BeetleX.FastHttpApi.Admin
 
             public string IPAddress { get; set; }
         }
-        [Description("获取基础服务信息,需要后台管理权限")]
-        [LoginFilter]
+      
         public object GetServerInfo(IHttpContext context)
         {
             HttpApiServer server = context.Server;
@@ -171,8 +226,7 @@ namespace BeetleX.FastHttpApi.Admin
             };
             return info;
         }
-        [Description("获取在线连接信息,需要后台管理权限")]
-        [LoginFilter]
+     
         public object ListConnection(int index, IHttpContext context)
         {
             int size = 20;
@@ -200,6 +254,7 @@ namespace BeetleX.FastHttpApi.Admin
 
 
         [Description("管理后台登陆")]
+        [SkipFilter(typeof(LoginFilter))]
         public bool Login(string name, string pwd, IHttpContext context)
         {
             return LoginProcess(name, pwd, context, null);
@@ -212,7 +267,8 @@ namespace BeetleX.FastHttpApi.Admin
             string vname = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager);
             if (name == vname && pwd == vpwd)
             {
-                string tokey = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager + DateTime.Now.Day + context.Request.Header[HeaderType.CLIENT_IPADDRESS]);
+                string ip = context.Request.ClientIPAddress.Split(':')[0];
+                string tokey = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager + DateTime.Now.Day + ip);
                 context.Response.SetCookie(LOGIN_TOKEN, tokey, cookieTimeOut);
                 context.Response.SetCookie(LOGIN_KEY, "");
                 return true;
@@ -233,9 +289,10 @@ namespace BeetleX.FastHttpApi.Admin
         public override void Execute(ActionContext context)
         {
             string tokey = context.HttpContext.Request.Cookies[AdminController.LOGIN_TOKEN];
+            string ip = context.HttpContext.Request.ClientIPAddress.Split(':')[0];
             string stokey = HttpParse.MD5Encrypt(context.HttpContext.Server.ServerConfig.Manager
                 + DateTime.Now.Day
-                + context.HttpContext.Request.Header[HeaderType.CLIENT_IPADDRESS]);
+                + ip);
             if (tokey == stokey)
             {
                 context.Execute();

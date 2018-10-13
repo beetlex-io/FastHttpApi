@@ -1,39 +1,27 @@
 ﻿<!DOCTYPE html>
-
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
     <link href="bootstrap.css" rel="stylesheet" />
     <link href="bootstrap-theme.css" rel="stylesheet" />
     <script src="jquery.js"></script>
+    <script src="vue.js"></script>
+    <script src="ModuleLoader.js"></script>
+    <script src="FastHttpApi.js"></script>
+    <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
-    <title>FastHttpApi</title>
+    <title>FastHttpApi后台服务管理</title>
 </head>
 <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container" slot="header">
 
+        </div>
+    </div>
     <div class="container bs-docs-container" style="padding-top:10px;">
         <div class="row">
-            <nav class="navbar navbar-default">
-                <div class="container-fluid">
-                    <!-- Brand and toggle get grouped for better mobile display -->
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                            <span class="sr-only"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a class="navbar-brand" href="/_info/index.html">FastHttpApi 服务信息</a>
-                    </div>
-                    <ul class="nav nav-tabs" style="float:right; border:none;padding-top:5px;">
-                        <li role="presentation"><a href="http://github/ikende/fasthttpapi">Copyright © henryfan 2018 email:henryfan@msn.com</a></li>
 
-                    </ul>
-                    <!-- Collect the nav links, forms, and other content for toggling -->
-
-                </div><!-- /.container-fluid -->
-            </nav>
             <div class="panel panel-default" style="margin:auto;width:400px;">
                 <div class="panel-heading">登陆</div>
                 <div class="panel-body">
@@ -51,26 +39,33 @@
                 </div>
             </div>
         </div>
-      </div>
-        <script>
-            var key;
-            $(document).ready(function () {
-                $.get('/_admin/GetKey', function (result) { key = result.Data; });
-            });
-            function login() {
-                var name = md5($('#name').val());
-                var pwd = md5($('#pwd').val() + key);
-                $.get('/_admin/Login?name=' + name + '&pwd=' + pwd, function (result) {
-                    if (result.Data == true) {
-                        window.location.href = 'index.html';
-                    }
-                    else {
-                        alert('用户名密码不正确！');
-                    }
-                });
+    </div>
+    <script>
+        var key;
+        $(document).ready(function () {
+            GetKey();
+        });
+        async function GetKey() {
+            var result = await $_admin$GetKey(true);
+            key = result.Data;
+        }
+        async function login() {
+            var name = md5($('#name').val());
+            var pwd = md5($('#pwd').val() + key);
+            var result = await $_admin$Login(name, pwd, true);
+            if (result.Data == true) {
+                window.location.href = 'index.html';
             }
+            else {
+                alert('用户名密码不正确！');
+            }
+        }
 
-        </script>
+    </script>
+    <div class="navbar navbar-inverse navbar-fixed-bottom">
+        <div class="container" style="color:aliceblue;text-align:center;" slot="footer">
+        </div>
+    </div>
 </body>
 
 </html>

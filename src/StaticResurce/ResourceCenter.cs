@@ -38,6 +38,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public string Path { get; internal set; }
 
+
+
         public bool Debug { get; set; }
 
         private string GetResourceUrl(string name)
@@ -129,6 +131,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public void Load()
         {
+
             if (System.IO.Directory.Exists(Path))
             {
                 LoadFolder(Path);
@@ -234,9 +237,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 }
                 else
                 {
-                    if (ExistsFile(request.BaseUrl))
+                    if (ExistsFile(request.Url))
                     {
-                        string file = GetFile(url);
+                        string file = GetFile(request.Url);
                         fr = CreateResource(file);
                         if (fr != null)
                         {
@@ -267,9 +270,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         private void SetChunked(HttpResponse response)
         {
-           
+
             response.Header.Add("Transfer-Encoding", "chunked");
-            
+
         }
 
         public bool ExtSupport(string ext)
@@ -396,6 +399,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             foreach (string folder in System.IO.Directory.GetDirectories(path))
             {
+                string vfolder = folder.Replace(Server.ServerConfig.StaticResourcePath, "")
+                    .Replace(System.IO.Path.DirectorySeparatorChar.ToString(), @"\");
+                if (Server.ServerConfig.NotLoadFolder.IndexOf(vfolder, 0, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    continue;
                 LoadFolder(folder);
             }
         }
