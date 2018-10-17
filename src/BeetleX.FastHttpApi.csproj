@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Copyright>Copyright © henryfan 2018 email:henryfan@msn.com</Copyright>
+    <Copyright>Copyright © ikende.com 2018 email:henryfan@msn.com</Copyright>
     <Authors>henryfan</Authors>
     <Company>ikende.com</Company>
     <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>0.9.7.5</Version>
+    <Version>0.9.8.2</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
@@ -19,65 +19,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="views\_admin\AdminController.js" />
-    <None Remove="views\_admin\api.html" />
-    <None Remove="views\_admin\apiscript.html" />
-    <None Remove="views\_admin\bootstrap-theme.css" />
-    <None Remove="views\_admin\bootstrap.css" />
-    <None Remove="views\_admin\bootstrap.js" />
-    <None Remove="views\_admin\Connections.html" />
-    <None Remove="views\_admin\FastHttpApi.js" />
-    <None Remove="views\_admin\index.html" />
-    <None Remove="views\_admin\jquery.js" />
-    <None Remove="views\_admin\Login.html" />
-    <None Remove="views\_admin\LogOutput.html" />
-    <None Remove="views\_admin\md5.js" />
-    <None Remove="views\_admin\ModuleLoader.js" />
-    <None Remove="views\_admin\PublicModule.html" />
-    <None Remove="views\_admin\vue.js" />
+    <None Remove="FastHttpApi.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="views\_admin\AdminController.js" />
-    <EmbeddedResource Include="views\_admin\api.html" />
-    <EmbeddedResource Include="views\_admin\apiscript.html" />
-    <EmbeddedResource Include="views\_admin\bootstrap-theme.css" />
-    <EmbeddedResource Include="views\_admin\bootstrap.css" />
-    <EmbeddedResource Include="views\_admin\bootstrap.js" />
-    <EmbeddedResource Include="views\_admin\Connections.html" />
-    <EmbeddedResource Include="views\_admin\FastHttpApi.js" />
-    <EmbeddedResource Include="views\_admin\index.html" />
-    <EmbeddedResource Include="views\_admin\jquery.js" />
-    <EmbeddedResource Include="views\_admin\Login.html" />
-    <EmbeddedResource Include="views\_admin\LogOutput.html" />
-    <EmbeddedResource Include="views\_admin\md5.js" />
-    <EmbeddedResource Include="views\_admin\ModuleLoader.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="views\_admin\PublicModule.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="views\_admin\vue.js" />
+    <EmbeddedResource Include="FastHttpApi.js" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BeetleX" Version="1.0.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Admin\AdminController.cs">
-      <Generator>JSAPI</Generator>
-      <LastGenOutput>AdminController.js</LastGenOutput>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Admin\AdminController.js">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AdminController.cs</DependentUpon>
-    </None>
   </ItemGroup>
 
 </Project>

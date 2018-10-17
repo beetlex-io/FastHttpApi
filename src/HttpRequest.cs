@@ -16,13 +16,11 @@ namespace BeetleX.FastHttpApi
 
     public class HttpRequest
     {
-        public HttpRequest(ISession session, IBodySerializer formater)
+        public HttpRequest(ISession session)
         {
             Header = new Header();
             this.Session = session;
             mState = LoadedState.None;
-            Serializer = formater;
-
             WebSocket = false;
         }
 
@@ -40,6 +38,8 @@ namespace BeetleX.FastHttpApi
 
         internal LoadedState State => mState;
 
+        internal PipeStream Stream => mStream;
+
         public bool KeepAlive { get; set; }
 
         public Header Header { get; private set; }
@@ -48,7 +48,7 @@ namespace BeetleX.FastHttpApi
 
         public int Length => mLength;
 
-        public string ClientIPAddress => Header[HeaderType.CLIENT_IPADDRESS];
+        public string ClientIPAddress => Header[HeaderTypeFactory.CLIENT_IPADDRESS];
 
         public string Method { get; set; }
 
@@ -62,13 +62,11 @@ namespace BeetleX.FastHttpApi
 
         public HttpApiServer Server { get; set; }
 
-        public string IfNoneMatch => Header[HeaderType.IF_NONE_MATCH];
+        public string IfNoneMatch => Header[HeaderTypeFactory.IF_NONE_MATCH];
 
         public QueryString QueryString => mQueryString;
 
         public ISession Session { get; private set; }
-
-        public IBodySerializer Serializer { get; set; }
 
         public LoadedState Read(PipeStream stream)
         {
@@ -79,13 +77,19 @@ namespace BeetleX.FastHttpApi
             return mState;
         }
 
-
+        public void ClearStream()
+        {
+            if (Length > 0)
+            {
+                this.Stream.ReadFree(Length);
+            }
+        }
 
         private void LoadMethod(PipeStream stream)
         {
             if (mState == LoadedState.None)
             {
-                IndexOfResult index = stream.IndexOf(HeaderType.LINE_BYTES);
+                IndexOfResult index = stream.IndexOf(HeaderTypeFactory.LINE_BYTES);
                 if (index.End != null)
                 {
                     ReadOnlySpan<Char> line = HttpParse.ReadCharLine(index);
@@ -109,8 +113,8 @@ namespace BeetleX.FastHttpApi
                 if (this.Header.Read(stream, mCookies))
                 {
                     mState = LoadedState.Header;
-                    int.TryParse(Header[HeaderType.CONTENT_LENGTH], out mLength);
-                    KeepAlive = string.Compare(Header[HeaderType.CONNECTION], "Keep-Alive", true) == 0;
+                    int.TryParse(Header[HeaderTypeFactory.CONTENT_LENGTH], out mLength);
+                    KeepAlive = string.Compare(Header[HeaderTypeFactory.CONNECTION], "Keep-Alive", true) == 0;
                 }
             }
         }
@@ -133,45 +137,16 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        private object mBody;
-
-        public object GetBody(Type type)
-        {
-            if (mBody == null)
-            {
-                if (mLength == 0)
-                    return null;
-                else
-                {
-                    if (Serializer.TryDeserialize(mStream, mLength, type, out mBody))
-                    {
-                        mLength = 0;
-                    }
-                    return mBody;
-                }
-            }
-            else
-                return mBody;
-
-        }
-
-        public T GetBody<T>()
-        {
-            return (T)GetBody(typeof(T));
-        }
-
         public HttpResponse CreateResponse()
         {
-            HttpResponse response = new HttpResponse(this.Serializer);
-
+            HttpResponse response = new HttpResponse();
             response.HttpVersion = this.HttpVersion;
-            response.Serializer = this.Serializer;
             response.Session = this.Session;
             response.HttpVersion = this.HttpVersion;
             response.Request = this;
             if (this.KeepAlive)
-                response.Header[HeaderType.CONNECTION] = "Keep-Alive";
-            response.Header[HeaderType.HOST] = Header[HeaderType.HOST];
+                response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
+            response.Header[HeaderTypeFactory.HOST] = Header[HeaderTypeFactory.HOST];
             response.RequestID = QueryString["_requestid"];
             return response;
         }

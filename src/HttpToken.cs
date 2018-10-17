@@ -10,7 +10,10 @@ namespace BeetleX.FastHttpApi
         {
             FirstRequest = true;
             CreateTime = DateTime.Now;
+            RequestArgs = new EventHttpRequestArgs();
         }
+
+        internal EventHttpRequestArgs RequestArgs { get; set; }
 
         public bool KeepAlive { get; internal set; }
 

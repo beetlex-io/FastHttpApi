@@ -9,7 +9,7 @@ namespace BeetleX.FastHttpApi.Admin
 {
     [Controller(BaseUrl = "/_admin/")]
     [LoginFilter]
-    public class AdminController
+    public class AdminController : IController
     {
 
         public AdminController()
@@ -26,10 +26,15 @@ namespace BeetleX.FastHttpApi.Admin
         internal ActionHandlerFactory HandleFactory { get; set; }
 
         [Description("获取所有接口信息,需要后台管理权")]
-      
         public object ListApi()
         {
-            return HandleFactory.GetUrlInfos();
+            List<UrlInfo> items = new List<UrlInfo>();
+            foreach (ActionHandler item in HandleFactory.Handlers)
+            {
+                items.Add(new UrlInfo(item));
+
+            }
+            return items;
         }
         [Description("获取后台登陆凭证")]
         [SkipFilter(typeof(LoginFilter))]
@@ -40,7 +45,7 @@ namespace BeetleX.FastHttpApi.Admin
             return key;
 
         }
-      
+
         public object GetSettingInfo()
         {
             return new SettingInfo
@@ -62,7 +67,7 @@ namespace BeetleX.FastHttpApi.Admin
             public bool LogToConsole { get; set; }
             public bool WriteLog { get; set; }
         }
-     
+
         public void Setting([BodyParameter] SettingInfo setting, IHttpContext context)
         {
             Server.ServerConfig.MaxConnections = setting.MaxConn;
@@ -77,7 +82,7 @@ namespace BeetleX.FastHttpApi.Admin
                     Newtonsoft.Json.JsonConvert.SerializeObject(setting));
             }
         }
-      
+
         public void LogConnect(IHttpContext context)
         {
             Server.LogOutput = context.Session;
@@ -85,7 +90,7 @@ namespace BeetleX.FastHttpApi.Admin
             log.Data = new { LogType = BeetleX.EventArgs.LogType.Info.ToString(), Time = DateTime.Now.ToString("H:mm:ss"), Message = "log connect!" };
             context.Server.CreateDataFrame(log).Send(context.Session);
         }
-      
+
         public void LogDisConnect(IHttpContext context)
         {
             Server.LogOutput = null;
@@ -94,103 +99,8 @@ namespace BeetleX.FastHttpApi.Admin
             context.Server.CreateDataFrame(log).Send(context.Session);
         }
 
-     
-        public string GetApiScript()
-        {
-            // api('/GetEmployeesName').execute();
-            StringBuilder code = new StringBuilder();
-
-            code.AppendLine("");
-            var items = HandleFactory.GetUrlInfos();
-
-            foreach (var item in items)
-            {
-                code.AppendLine("/**");
-                code.AppendLine("*" + item.Remark);
-                code.AppendLine("*");
-                foreach (ParameterBinder pb in item.Handler.Parameters)
-                {
-                    if (!pb.DataParameter)
-                        continue;
-                    ParameterInfo pi = pb.GetInfo();
-                    if (pi.IsBody)
-                        code.Append("* @param body ");
-                    else
-                        code.Append("* @param " + pi.Name + " ");
-                    code.AppendLine(pi.ToString());
-                }
-                code.AppendLine("*/");
-
-                code.AppendLine("var " + item.Url.Replace("/", "$") + "$url='" + item.Url.ToLower() + "';");
-                code.Append("function ")
-                    .Append(item.Url.Replace("/", "$") + "$async")
-                    .Append("(");
-                string paramogj = "";
-                var len = code.Length;
-                foreach (ParameterBinder pb in item.Handler.Parameters)
-                {
-                    if (!pb.DataParameter)
-                        continue;
-                    ParameterInfo pi = pb.GetInfo();
-                    if (code.Length > len)
-                        code.Append(",");
-                    if (paramogj != "")
-                        paramogj += ",";
-                    if (pi.IsBody)
-                    {
-                        paramogj += "body:body";
-                        code.Append("body");
-                    }
-                    else
-                    {
-                        code.Append(pi.Name);
-                        paramogj += string.Format("{0}:{0}", pi.Name);
-                    }
 
 
-                }
-                code.AppendLine(")");
-                code.AppendLine("{");
-                code.Append("   return api(" + item.Url.Replace("/", "$") + "$url").Append(paramogj == "" ? "" : " ,{" + paramogj + "}").AppendLine(");");
-                code.AppendLine("}");
-
-
-                code.Append("function ")
-                   .Append(item.Url.Replace("/", "$"))
-                   .Append("(");
-                paramogj = "";
-                len = code.Length;
-                foreach (ParameterBinder pb in item.Handler.Parameters)
-                {
-                    if (!pb.DataParameter)
-                        continue;
-                    ParameterInfo pi = pb.GetInfo();
-                    if (code.Length > len)
-                        code.Append(",");
-                    if (paramogj != "")
-                        paramogj += ",";
-                    if (pi.IsBody)
-                    {
-                        paramogj += "body:body";
-                        code.Append("body");
-                    }
-                    else
-                    {
-                        code.Append(pi.Name);
-                        paramogj += string.Format("{0}:{0}", pi.Name);
-                    }
-
-
-                }
-                code.AppendLine(")");
-                code.AppendLine("{");
-                code.Append("   return api(" + item.Url.Replace("/", "$") + "$url").Append(paramogj == "" ? "" : " ,{" + paramogj + "}").AppendLine(").sync();");
-                code.AppendLine("}");
-            }
-            return code.ToString();
-        }
-
-   
         public void CloseSession([BodyParameter]List<SessionItem> items, IHttpContext context)
         {
             foreach (SessionItem item in items)
@@ -207,7 +117,7 @@ namespace BeetleX.FastHttpApi.Admin
 
             public string IPAddress { get; set; }
         }
-      
+
         public object GetServerInfo(IHttpContext context)
         {
             HttpApiServer server = context.Server;
@@ -226,7 +136,7 @@ namespace BeetleX.FastHttpApi.Admin
             };
             return info;
         }
-     
+
         public object ListConnection(int index, IHttpContext context)
         {
             int size = 20;
@@ -275,7 +185,16 @@ namespace BeetleX.FastHttpApi.Admin
             }
             return false;
         }
+        [NotAction]
+        public void Init(HttpApiServer server)
+        {
+            this.Server = server;
+            this.HandleFactory = Server.ActionFactory;
+
+        }
     }
+
+
 
     public class LoginFilter : FilterAttribute
     {

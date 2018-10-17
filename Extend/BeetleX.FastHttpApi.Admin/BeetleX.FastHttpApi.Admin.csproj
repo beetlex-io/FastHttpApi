@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>0.5</Version>
+    <Authors>henryfan</Authors>
+    <Company>ikende.com</Company>
+    <Description>dotnet core fast http api server manager
+</Description>
+    <Copyright>Copyright © ikende.com 2018 email:henryfan@msn.com</Copyright>
+    <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE.md/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="views\_admin\AdminController.js" />
+    <None Remove="views\_admin\api.html" />
+    <None Remove="views\_admin\apiscript.html" />
+    <None Remove="views\_admin\bootstrap-theme.css" />
+    <None Remove="views\_admin\bootstrap.css" />
+    <None Remove="views\_admin\bootstrap.js" />
+    <None Remove="views\_admin\Connections.html" />
+    <None Remove="views\_admin\FastHttpApi.js" />
+    <None Remove="views\_admin\FileManager.html" />
+    <None Remove="views\_admin\FileManagerController.js" />
+    <None Remove="views\_admin\glyphicons-halflings-regular.ttf" />
+    <None Remove="views\_admin\glyphicons-halflings-regular.woff" />
+    <None Remove="views\_admin\glyphicons-halflings-regular.woff2" />
+    <None Remove="views\_admin\index.html" />
+    <None Remove="views\_admin\jquery.js" />
+    <None Remove="views\_admin\Login.html" />
+    <None Remove="views\_admin\LogOutput.html" />
+    <None Remove="views\_admin\md5.js" />
+    <None Remove="views\_admin\ModuleLoader.js" />
+    <None Remove="views\_admin\PublicModule.html" />
+    <None Remove="views\_admin\ReadFileHandler.js" />
+    <None Remove="views\_admin\vue.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="views\_admin\AdminController.js" />
+    <EmbeddedResource Include="views\_admin\api.html" />
+    <EmbeddedResource Include="views\_admin\apiscript.html" />
+    <EmbeddedResource Include="views\_admin\bootstrap-theme.css" />
+    <EmbeddedResource Include="views\_admin\bootstrap.css" />
+    <EmbeddedResource Include="views\_admin\bootstrap.js" />
+    <EmbeddedResource Include="views\_admin\Connections.html" />
+    <EmbeddedResource Include="views\_admin\FastHttpApi.js" />
+    <EmbeddedResource Include="views\_admin\FileManager.html">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\FileManagerController.js" />
+    <EmbeddedResource Include="views\_admin\glyphicons-halflings-regular.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\glyphicons-halflings-regular.woff">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\glyphicons-halflings-regular.woff2">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\index.html" />
+    <EmbeddedResource Include="views\_admin\jquery.js" />
+    <EmbeddedResource Include="views\_admin\Login.html" />
+    <EmbeddedResource Include="views\_admin\LogOutput.html" />
+    <EmbeddedResource Include="views\_admin\md5.js" />
+    <EmbeddedResource Include="views\_admin\ModuleLoader.js">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\PublicModule.html">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\ReadFileHandler.js">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\vue.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="AdminController.cs">
+      <LastGenOutput>AdminController.js</LastGenOutput>
+      <Generator>JSAPI</Generator>
+    </Compile>
+    <Compile Update="ApiInfo.cs">
+      <Generator>JSAPI</Generator>
+      <LastGenOutput>ApiInfo.js</LastGenOutput>
+    </Compile>
+    <Compile Update="FileManagerController.cs">
+      <LastGenOutput>FileManagerController.js</LastGenOutput>
+      <Generator>JSAPI</Generator>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AdminController.js">
+      <DependentUpon>AdminController.cs</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </None>
+    <None Update="ApiInfo.js">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ApiInfo.cs</DependentUpon>
+    </None>
+    <None Update="FileManagerController.js">
+      <DependentUpon>FileManagerController.cs</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </None>
+  </ItemGroup>
+
+</Project>

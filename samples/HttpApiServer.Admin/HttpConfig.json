@@ -14,11 +14,11 @@
     "ManagerPWD": "123456",
     "NoGzipFiles": "jpg;jpeg;png;gif;png;ico;zip;rar;bmp",
     "CacheFiles": "html;htm;js;css",
-    "BufferSize": 1024,
-    "WebSocketMaxRPS": 1000,
+    "BufferSize": 8192,
+    "WebSocketMaxRPS": 2000,
     "WriteLog": true,
     "LogToConsole": true,
     "LogLevel": "Warring",
-    "FileManager": false
+    "FileManager": true
   }
 }

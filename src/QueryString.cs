@@ -7,9 +7,6 @@ namespace BeetleX.FastHttpApi
     public class QueryString
     {
         private Dictionary<string, string> mItems = new Dictionary<string, string>();
-
-
-
         public string this[string name]
         {
             get
@@ -82,6 +79,12 @@ namespace BeetleX.FastHttpApi
         {
             string result = GetValue(name);
             return ulong.TryParse(result, out value);
+        }
+
+        public bool TryGetBoolean(string name, out Boolean value)
+        {
+            string result = GetValue(name);
+            return Boolean.TryParse(result, out value);
         }
 
         public bool TryGetInt(string name, out int value)

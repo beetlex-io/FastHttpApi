@@ -8,6 +8,7 @@ namespace BeetleX.FastHttpApi
 {
     public interface IDataContext
     {
+        bool TryGetBoolean(string name, out bool value);
 
         bool TryGetString(string name, out string value);
 
@@ -37,9 +38,9 @@ namespace BeetleX.FastHttpApi
 
     }
 
-    class WebsocketContext : IHttpContext, IDataContext
+    class WebsocketJsonContext : IHttpContext, IDataContext
     {
-        public WebsocketContext(HttpApiServer server, HttpRequest request, Newtonsoft.Json.Linq.JToken parameterData)
+        public WebsocketJsonContext(HttpApiServer server, HttpRequest request, Newtonsoft.Json.Linq.JToken parameterData)
         {
             Server = server;
             Request = request;
@@ -73,7 +74,6 @@ namespace BeetleX.FastHttpApi
                 return body.ToObject(type);
             return null;
         }
-
 
         public string RequestID { get; set; }
 
@@ -233,6 +233,18 @@ namespace BeetleX.FastHttpApi
             return false;
         }
 
+        public bool TryGetBoolean(string name, out bool value)
+        {
+            value = default(bool);
+            JToken body = mParameterData[name];
+            if (body != null)
+            {
+                var str = body.CreateReader().ReadAsString();
+                return bool.TryParse(str, out value);
+            }
+            return false;
+        }
+
         internal bool AsyncResult { get; set; }
 
         public bool WebSocket => true;
@@ -279,6 +291,8 @@ namespace BeetleX.FastHttpApi
             DataFrame frame = Server.CreateDataFrame(data);
             Server.SendToWebSocket(frame, filter);
         }
+
+
     }
 
     class HttpContext : IHttpContext, IDataContext
@@ -311,7 +325,7 @@ namespace BeetleX.FastHttpApi
 
         public object GetBody(Type type)
         {
-            return Request.GetBody(type);
+            return Server.GetRequestBody(this.Request, null, type);
         }
 
         public bool TryGetDateTime(string name, out DateTime value)
@@ -337,6 +351,11 @@ namespace BeetleX.FastHttpApi
         public bool TryGetInt(string name, out int value)
         {
             return Request.QueryString.TryGetInt(name, out value);
+        }
+
+        public bool TryGetBoolean(string name, out bool value)
+        {
+            return Request.QueryString.TryGetBoolean(name, out value);
         }
 
         public bool TryGetLong(string name, out long value)
@@ -412,5 +431,7 @@ namespace BeetleX.FastHttpApi
             DataFrame frame = Server.CreateDataFrame(data);
             Server.SendToWebSocket(frame, filter);
         }
+
+
     }
 }

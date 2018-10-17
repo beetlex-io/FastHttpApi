@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.Buffers;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,4 +20,13 @@ namespace BeetleX.FastHttpApi
         public bool Cancel { get; set; }
     }
 
+
+    public class EventHttpRequestArgs : System.EventArgs
+    {
+        public HttpRequest Request { get; internal set; }
+
+        public HttpResponse Response { get; internal set; }
+
+        public bool Cancel { get; set; }
+    }
 }

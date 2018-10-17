@@ -9,15 +9,12 @@ namespace BeetleX.FastHttpApi
     public class HttpResponse
     {
 
-        public HttpResponse(IBodySerializer formater)
+        public HttpResponse()
         {
             Header = new Header();
-            Header[HeaderType.SERVER] = "BeetleX-Fast-HttpServer";
-            if (formater != null)
-            {
-                Header[HeaderType.CONTENT_TYPE] = formater.ContentType;
-                Serializer = formater;
-            }
+            Header[HeaderTypeFactory.SERVER] = "BeetleX-Fast-HttpServer";
+            Header[HeaderTypeFactory.CONTENT_TYPE] = "text/html";
+
             AsyncResult = false;
 
         }
@@ -30,13 +27,11 @@ namespace BeetleX.FastHttpApi
 
         private object mBody;
 
-        public string Code { get { return mCode; } }
+        public string Code { get { return mCode; } set { mCode = value; } }
 
-        public string CodeMsg { get { return mCodeMsg; } }
+        public string CodeMsg { get { return mCodeMsg; } set { mCodeMsg = value; } }
 
         public Header Header { get; set; }
-
-        public IBodySerializer Serializer { get; set; }
 
         internal ISession Session { get; set; }
 
@@ -49,13 +44,6 @@ namespace BeetleX.FastHttpApi
         public void Async()
         {
             AsyncResult = true;
-        }
-
-        public void InnerError(Exception e, bool outputStackTrace)
-        {
-            mCode = "500";
-            mCodeMsg = "Internal Server Error";
-            Completed(Serializer.GetInnerError(e, this, outputStackTrace));
         }
 
         public void SetCookie(string name, string value, DateTime? expires = null)
@@ -81,57 +69,19 @@ namespace BeetleX.FastHttpApi
             mSetCookies.Add(cookie);
         }
 
-        public void NotFound()
-        {
-            mCode = "404";
-            mCodeMsg = "Not found";
-            Completed(Serializer.GetNotFoundData(this));
-        }
-
-        public void NoModify()
-        {
-            mCode = "304";
-            mCodeMsg = "Not Modified";
-            Completed(null);
-        }
-
-        public void NotSupport()
-        {
-            mCode = "403";
-            mCodeMsg = Request.Method + " method type not support!";
-            Completed(Serializer.GetNotSupport(this));
-        }
-
-        public void ConnectionUpgradeWebsocket(string websocketkey)
-        {
-            mCode = "101";
-            mCodeMsg = "Switching Protocols";
-            Header.Add(HeaderType.CONNECTION, "Upgrade");
-            Header.Add(HeaderType.UPGRADE, "websocket");
-            Header.Add(HeaderType.SEC_WEBSOCKET_VERSION, "13");
-            SHA1 sha1 = new SHA1CryptoServiceProvider();
-            byte[] bytes_sha1_in = Encoding.UTF8.GetBytes(websocketkey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-            byte[] bytes_sha1_out = sha1.ComputeHash(bytes_sha1_in);
-            string str_sha1_out = Convert.ToBase64String(bytes_sha1_out);
-            Header.Add(HeaderType.SEC_WEBSOCKT_ACCEPT, str_sha1_out);
-        }
-
         public void Result(object data)
         {
             if (data is StaticResurce.FileBlock)
             {
                 Completed(data);
             }
+            else if (data is IResult)
+            {
+                Completed(data);
+            }
             else
             {
-                ActionResult result = data as ActionResult;
-                if (result == null)
-                {
-                    result = new ActionResult();
-                    result.Data = data;
-                }
-                result.Url = this.Request.BaseUrl;
-                result.ID = RequestID;
+                IResult result = Request.Server.GetResponseResult(this, data);
                 Completed(result);
             }
         }
@@ -154,12 +104,7 @@ namespace BeetleX.FastHttpApi
 
         public void SetContentType(string type)
         {
-            Header[HeaderType.CONTENT_TYPE] = type;
-        }
-
-        public void SetETag(string id)
-        {
-
+            Header[HeaderTypeFactory.CONTENT_TYPE] = type;
         }
 
         public string HttpVersion { get; set; }
@@ -172,39 +117,56 @@ namespace BeetleX.FastHttpApi
 
         internal void Write(PipeStream stream)
         {
+            IResult result = mBody as IResult;
+            if (result != null)
+            {
+                this.Header[HeaderTypeFactory.CONTENT_TYPE] = result.ContentType;
+                result.Setting(this);
+            }
             stream.Write(HttpVersion);
-            stream.Write(HeaderType.SPACE_BYTES[0]);
+            stream.Write(HeaderTypeFactory.SPACE_BYTES[0]);
             stream.Write(mCode);
-            stream.Write(HeaderType.SPACE_BYTES[0]);
+            stream.Write(HeaderTypeFactory.SPACE_BYTES[0]);
             stream.Write(CodeMsg);
-            stream.Write(HeaderType.LINE_BYTES);
+            stream.Write(HeaderTypeFactory.LINE_BYTES);
+          
             Header.Write(stream);
             for (int i = 0; i < mSetCookies.Count; i++)
             {
-                HeaderType.Write(HeaderType.SET_COOKIE, stream);
+                HeaderTypeFactory.Write(HeaderTypeFactory.SET_COOKIE, stream);
                 stream.Write(mSetCookies[i]);
-                stream.Write(HeaderType.LINE_BYTES);
+                stream.Write(HeaderTypeFactory.LINE_BYTES);
             }
             if (mBody != null)
             {
                 StaticResurce.FileBlock fb = mBody as StaticResurce.FileBlock;
                 if (fb != null)
                 {
-                    stream.Write(HeaderType.LINE_BYTES);
+                    stream.Write(HeaderTypeFactory.LINE_BYTES);
                     fb.Write(stream);
                 }
                 else
                 {
-                    MemoryBlockCollection contentLength = stream.Allocate(28);
-                    stream.Write(HeaderType.LINE_BYTES);
-                    int count = Serializer.Serialize(stream, mBody);
-                    contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n", stream.Encoding);
+                    if (result.HasBody)
+                    {
+                        MemoryBlockCollection contentLength = stream.Allocate(28);
+                        stream.Write(HeaderTypeFactory.LINE_BYTES);
+                        int len = stream.CacheLength;
+                        result.Write(stream, this);
+                        int count = stream.CacheLength - len;
+                        contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n", stream.Encoding);
+                    }
+                    else
+                    {
+                        stream.Write(HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES);
+                        stream.Write(HeaderTypeFactory.LINE_BYTES);
+                    }
                 }
             }
             else
             {
-                stream.Write(HeaderType.NULL_CONTENT_LENGTH_BYTES);
-                stream.Write(HeaderType.LINE_BYTES);
+                stream.Write(HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES);
+                stream.Write(HeaderTypeFactory.LINE_BYTES);
             }
 
             if (Session.Server.EnableLog(EventArgs.LogType.Debug))

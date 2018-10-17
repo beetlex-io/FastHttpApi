@@ -57,15 +57,6 @@ function $_admin$LogDisConnect$async(useHttp)
 {
     return api($_admin$LogDisConnect$url,{},useHttp);
 }
-var $_admin$GetApiScript$url='/_admin/getapiscript';
-function $_admin$GetApiScript(useHttp)
-{
-    return api($_admin$GetApiScript$url,{},useHttp).sync();
-}
-function $_admin$GetApiScript$async(useHttp)
-{
-    return api($_admin$GetApiScript$url,{},useHttp);
-}
 var $_admin$CloseSession$url='/_admin/closesession';
 function $_admin$CloseSession(body,useHttp)
 {

@@ -27,3 +27,10 @@ samples/HttpApiServer.Chat/bin/
 samples/HttpApiServer.Chat/obj/
 samples/HttpApiServer.HttpAndWebsocketApi/bin/
 samples/HttpApiServer.HttpAndWebsocketApi/obj/
+Extend/BeetleX.FastHttpApi.Admin/Properties/
+Extend/BeetleX.FastHttpApi.Admin/bin/
+Extend/BeetleX.FastHttpApi.Admin/obj/
+HttpApiServer.Admin/bin/
+HttpApiServer.Admin/obj/
+samples/HttpApiServer.Admin/bin/
+samples/HttpApiServer.Admin/obj/

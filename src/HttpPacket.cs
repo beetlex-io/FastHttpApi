@@ -11,9 +11,8 @@ namespace BeetleX.FastHttpApi
     public class HttpPacket : IPacket
     {
 
-        public HttpPacket(IBodySerializer bodySerializer, HttpConfig serverConfig, IDataFrameSerializer dataPacketSerializer)
+        public HttpPacket(HttpConfig serverConfig, IDataFrameSerializer dataPacketSerializer)
         {
-            Serializer = bodySerializer;
             mServerConfig = serverConfig;
             mDataPacketSerializer = dataPacketSerializer;
         }
@@ -22,7 +21,7 @@ namespace BeetleX.FastHttpApi
 
         public IPacket Clone()
         {
-            return new HttpPacket(this.Serializer, mServerConfig, this.mDataPacketSerializer);
+            return new HttpPacket(mServerConfig, this.mDataPacketSerializer);
         }
 
         private HttpConfig mServerConfig;
@@ -39,36 +38,30 @@ namespace BeetleX.FastHttpApi
 
         private WebSockets.IDataFrameSerializer mDataPacketSerializer;
 
-        public IBodySerializer Serializer { get; set; }
-
         private void OnHttpDecode(ISession session, PipeStream pstream)
         {
         START:
             if (mRequest == null)
             {
-                mRequest = new HttpRequest(session, this.Serializer);
+                mRequest = new HttpRequest(session);
             }
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {
                 int length = mRequest.Length;
-                int slength = (int)pstream.Length;
                 if (string.Compare(mRequest.Method, "GET", true) == 0 || string.Compare(mRequest.Method, "POST", true) == 0)
                 {
                     Completed?.Invoke(this, mCompletedArgs.SetInfo(session, mRequest));
-                    if (pstream.Length == slength)
-                    {
-                        pstream.ReadFree(length);
-                    }
                 }
                 else
                 {
-                    mRequest.CreateResponse().NotSupport();
                     if (session.Server.EnableLog(LogType.Warring))
                     {
-                        session.Server.Log(LogType.Warring, session, "{0} {1} {2} not support", session.RemoteEndPoint,  mRequest.Method, mRequest.Url);
+                        session.Server.Log(LogType.Warring, session, "{0} {1} {2} not support", session.RemoteEndPoint, mRequest.Method, mRequest.Url);
                     }
                     HttpToken token = (HttpToken)session.Tag;
                     token.KeepAlive = false;
+                    NotSupportResult notSupport = new NotSupportResult("Method:" + mRequest.Method + " not supper");
+                    mRequest.CreateResponse().Result(notSupport);
                 }
                 mRequest = null;
                 if (pstream.Length == 0)
@@ -184,7 +177,7 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                WebSockets.DataFrame dataPacket = data as WebSockets.DataFrame;
+                DataFrame dataPacket = data as DataFrame;
                 if (dataPacket != null)
                 {
                     dataPacket.Write(pstream);

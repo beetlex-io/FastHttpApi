@@ -11,11 +11,10 @@ namespace BeetleX.FastHttpApi
             Port = 9090;
             SSL = false;
             MaxBodyLength = 1024 * 1024;
-            BodySerializer = new JsonBodySerializer();
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
             Filters = new List<FilterAttribute>();
-            StaticResurceType = @"jpg=image/jpeg;jpeg=image/jpeg;gif=image/gif;png=image/png;js=application/x-javascript;html=text/html;htm=text/html;css=text/css;txt=text/plain;ico=application/x-ico";
+            StaticResurceType = @"jpg;jpeg;gif;png;js;html;htm;css;txt;ico;xml";
             StaticResourcePath = System.IO.Directory.GetCurrentDirectory() +
                 System.IO.Path.DirectorySeparatorChar + "views";
             DefaultPage = "index.html;index.htm";
@@ -31,13 +30,23 @@ namespace BeetleX.FastHttpApi
             LogLevel = EventArgs.LogType.Warring;
             this.LogToConsole = false;
             NotLoadFolder = @"\Files;\Images";
+            FileManager = false;
+            CacheFileSize = 500;
         }
+
+
+
+        public bool FileManager { get; set; }
+
+        public string FileManagerPath { get; set; }
 
         public bool LogToConsole { get; set; }
 
         public string NotLoadFolder { get; set; }
 
         public string CacheFiles { get; set; }
+
+        public int CacheFileSize { get; set; }
 
         public BeetleX.EventArgs.LogType LogLevel { get; set; }
 
@@ -69,8 +78,6 @@ namespace BeetleX.FastHttpApi
 
         public int MaxBodyLength { get; set; }
 
-        public IBodySerializer BodySerializer { get; set; }
-
         public System.Text.Encoding Encoding { get; set; }
 
         public bool OutputStackTrace { get; set; }
@@ -94,7 +101,7 @@ namespace BeetleX.FastHttpApi
         public object Clone()
         {
             HttpConfig config = new HttpConfig();
-            config.BodySerializer = this.BodySerializer;
+
             config.CertificateFile = this.CertificateFile;
             config.CertificatePassword = this.CertificatePassword;
             config.Debug = this.Debug;

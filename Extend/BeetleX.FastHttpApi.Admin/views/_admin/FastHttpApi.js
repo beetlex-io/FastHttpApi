@@ -92,7 +92,7 @@ FastHttpApi.prototype.execute = function (callback, http) {
         this.http = true;
     var id = ++__id;
     if (__id > 1024)
-        __id = 1024;
+        __id = 0;
     var httpurl;
     var keys;
     var index;

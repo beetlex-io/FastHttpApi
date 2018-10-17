@@ -41,10 +41,9 @@ namespace BeetleX.FastHttpApi
             }
             if (offset < result.Length)
             {
-                
+
             Next:
                 memory = result.Start.NextMemory;
-               
                 int count;
                 if (memory.ID == result.End.ID)
                 {

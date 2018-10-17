@@ -7,7 +7,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    class ActionHandlerFactory
+    public class ActionHandlerFactory
     {
         static ActionHandlerFactory()
         {
@@ -29,6 +29,15 @@ namespace BeetleX.FastHttpApi
                         Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server);
                     }
                 }
+            }
+        }
+
+        public ICollection<ActionHandler> Handlers
+        {
+            get
+            {
+                return mMethods.Values;
+
             }
         }
 
@@ -122,22 +131,6 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        private List<Admin.UrlInfo> mUrlsInfo;
-
-        internal List<Admin.UrlInfo> GetUrlInfos()
-        {
-            if (mUrlsInfo == null)
-            {
-                mUrlsInfo = new List<Admin.UrlInfo>();
-                foreach (ActionHandler handler in mMethods.Values)
-                {
-                    mUrlsInfo.Add(new Admin.UrlInfo(handler));
-                }
-                mUrlsInfo.Sort();
-            }
-            return mUrlsInfo;
-        }
-
 
         private ActionHandler GetAction(string url)
         {
@@ -185,7 +178,7 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    WebsocketContext dc = new WebsocketContext(server, request, data);
+                    WebsocketJsonContext dc = new WebsocketJsonContext(server, request, data);
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
                     ActionContext context = new ActionContext(handler, dc);
@@ -205,7 +198,7 @@ namespace BeetleX.FastHttpApi
                             result.Data = context.Result;
                         }
                         dataFrame.Send(request.Session);
-                        //request.Session.Send(dataFrame);
+
                     }
                 }
                 catch (Exception e_)
@@ -219,7 +212,6 @@ namespace BeetleX.FastHttpApi
                         result.StackTrace = e_.StackTrace;
                     }
                     dataFrame.Send(request.Session);
-                    //request.Session.Send(dataFrame);
                 }
             }
             return result;
@@ -231,16 +223,18 @@ namespace BeetleX.FastHttpApi
             ActionHandler handler = GetAction(request.BaseUrl);
             if (handler == null)
             {
-                if(server.EnableLog(EventArgs.LogType.Warring))
+                if (server.EnableLog(EventArgs.LogType.Warring))
                     server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} execute {1} action  not found", request.ClientIPAddress, request.Url);
-                response.NotFound();
-                
+                if (!server.OnHttpRequesNotfound(request, response).Cancel)
+                {
+                    NotFoundResult notFoundResult = new NotFoundResult("{0} action not found", request.Url);
+                    response.Result(notFoundResult);
+                }
             }
             else
             {
                 try
                 {
-
                     HttpContext pc = new HttpContext(server, request, response);
                     pc.ActionUrl = request.BaseUrl;
                     ActionContext context = new ActionContext(handler, pc);
@@ -253,7 +247,9 @@ namespace BeetleX.FastHttpApi
                 }
                 catch (Exception e_)
                 {
-                    response.InnerError(e_, server.ServerConfig.OutputStackTrace);
+                    InnerErrorResult result = new InnerErrorResult(e_, server.ServerConfig.OutputStackTrace);
+                    response.Result(result);
+
                     if (server.EnableLog(EventArgs.LogType.Error))
                         response.Session.Server.Log(EventArgs.LogType.Error, response.Session, "{0} execute {1} action inner error {2}@{3}", request.ClientIPAddress, request.Url, e_.Message, e_.StackTrace);
                 }

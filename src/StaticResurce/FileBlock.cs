@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi.StaticResurce
 {
-    class FileBlock
+    public class FileBlock
     {
         public FileBlock(FileResource rec)
         {
@@ -61,12 +61,22 @@ namespace BeetleX.FastHttpApi.StaticResurce
             if (GZip)
             {
                 var mb = stream.Allocate(16);
-                stream.Write(HeaderType.LINE_BYTES);
+                stream.Write(HeaderTypeFactory.LINE_BYTES);
                 int len = stream.CacheLength;
                 if (gZipStream == null)
-                    gZipStream = new GZipStream(stream, CompressionMode.Compress);
+                    gZipStream = new GZipStream(stream, CompressionMode.Compress, true);
                 gZipStream.Write(Data.Array, Data.Offset, Data.Count);
                 gZipStream.Flush();
+                if (Offset == mFileResource.Length)
+                {
+                    if (gZipStream != null)
+                    {
+                        using (stream.LockFree())
+                        {
+                            gZipStream.Dispose();
+                        }
+                    }
+                }
                 string lenstr = (stream.CacheLength - len).ToString("X");
                 mb.Full(Encoding.UTF8.GetBytes(lenstr.PadRight(16)));
 
@@ -75,20 +85,13 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
                 int len = Data.Count;
                 stream.Write(len.ToString("X"));
-                stream.Write(HeaderType.LINE_BYTES);
+                stream.Write(HeaderTypeFactory.LINE_BYTES);
                 stream.Write(Data.Array, Data.Offset, Data.Count);
             }
             stream.WriteLine("");
             if (Offset == mFileResource.Length)
             {
-                stream.Write(HeaderType.CHUNKED_BYTES);
-                if (gZipStream != null)
-                {
-                    using (stream.LockFree())
-                    {
-                        gZipStream.Dispose();
-                    }
-                }
+                stream.Write(HeaderTypeFactory.CHUNKED_BYTES);
             }
         }
     }

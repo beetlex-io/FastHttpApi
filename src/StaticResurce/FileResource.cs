@@ -7,7 +7,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi.StaticResurce
 {
-    class FileResource
+    public class FileResource
     {
         public FileResource(string filename, string urlname, bool innerResource = false)
         {
@@ -23,8 +23,6 @@ namespace BeetleX.FastHttpApi.StaticResurce
         private bool mInnerResource;
 
         public string UrlName { get; set; }
-
-
 
         public long CreateTime { get; set; }
 
@@ -97,8 +95,6 @@ namespace BeetleX.FastHttpApi.StaticResurce
         public void Load()
         {
             Name = System.IO.Path.GetFileName(FullName);
-
-            FileMD5 = FMD5(FullName, this.Assembly);
             if (!InnerResource)
             {
                 FileInfo fi = new FileInfo(FullName);
@@ -110,6 +106,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 {
                     Length = (int)stream.Length;
                 }
+            }
+            if (Length < 1024 * 1024 && !string.IsNullOrEmpty(UrlName))
+            {
+                FileMD5 = FMD5(FullName, this.Assembly);
             }
             LoadFile();
         }

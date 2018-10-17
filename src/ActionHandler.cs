@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
-using BeetleX.FastHttpApi.Admin;
 
 namespace BeetleX.FastHttpApi
 {
-    class ActionHandler : IComparable
+    public class ActionHandler : IComparable
     {
         public ActionHandler(object controller, System.Reflection.MethodInfo method)
         {
@@ -19,10 +19,7 @@ namespace BeetleX.FastHttpApi
             Controller = controller;
             LoadParameter();
             Filters = new List<FilterAttribute>();
-
         }
-
-
 
         public string Remark { get; set; }
 
@@ -48,6 +45,10 @@ namespace BeetleX.FastHttpApi
                 if (customPB != null && customPB.Length > 0)
                 {
                     pb = customPB[0];
+                }
+                else if (pi.ParameterType == typeof(Boolean))
+                {
+                    pb = new BooleanParameter();
                 }
                 else if (pi.ParameterType == typeof(string))
                 {
@@ -170,11 +171,34 @@ namespace BeetleX.FastHttpApi
 
         public abstract object GetValue(IHttpContext context);
 
-        public abstract Admin.ParameterInfo GetInfo();
+        public abstract object DefaultValue();
+
+
+
+    }
+
+    class BooleanParameter : ParameterBinder
+    {
+        public override object DefaultValue()
+        {
+            return true;
+        }
+
+        public override object GetValue(IHttpContext context)
+        {
+            bool result;
+            context.Data.TryGetBoolean(this.Name, out result);
+            return result;
+        }
     }
 
     class IntParameter : ParameterBinder
     {
+        public override object DefaultValue()
+        {
+            return 0;
+        }
+
         public override object GetValue(IHttpContext context)
         {
             int result;
@@ -182,10 +206,7 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
-        public override Admin.ParameterInfo GetInfo()
-        {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
-        }
+
     }
 
     class ShortParameter : ParameterBinder
@@ -196,10 +217,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetShort(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0;
         }
+
     }
 
     class LongParameter : ParameterBinder
@@ -210,10 +232,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetLong(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0;
         }
+
     }
 
     class UIntParameter : ParameterBinder
@@ -224,10 +247,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetUInt(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0;
         }
+
     }
 
     class UShortParameter : ParameterBinder
@@ -238,10 +262,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetUShort(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0;
         }
+
     }
 
     class ULongParameter : ParameterBinder
@@ -252,10 +277,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetULong(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0;
         }
+
     }
 
     class FloatParameter : ParameterBinder
@@ -266,10 +292,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetFloat(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0.0f;
         }
+
     }
 
     class DoubleParameter : ParameterBinder
@@ -280,10 +307,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetDouble(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0.0d;
         }
+
     }
 
     class StringParameter : ParameterBinder
@@ -294,10 +322,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetString(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = "" };
+            return "";
         }
+
     }
 
     class DecimalParameter : ParameterBinder
@@ -308,10 +337,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetDecimal(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = 0 };
+            return 0;
         }
+
     }
 
     class DateTimeParameter : ParameterBinder
@@ -322,10 +352,11 @@ namespace BeetleX.FastHttpApi
             context.Data.TryGetDateTime(this.Name, out result);
             return result;
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = DateTime.Now };
+            return DateTime.Now;
         }
+
     }
 
     public class BodyParameter : ParameterBinder
@@ -334,14 +365,22 @@ namespace BeetleX.FastHttpApi
         {
             return context.Data.GetBody(this.Type);
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            object value = null;
+            object value = new object();
             try
             {
                 if (Type.IsArray)
                 {
                     value = Array.CreateInstance(Type, 0);
+                }
+                else if (Type.GetInterface("IEnumerable") != null && Type.IsGenericType)
+                {
+                    System.Collections.ArrayList list = new ArrayList();
+                    Type[] subtype = Type.GetGenericArguments();
+                    list.Add(Activator.CreateInstance(subtype[0]));
+                    list.Add(Activator.CreateInstance(subtype[0]));
+                    value = list;
                 }
                 else
                 {
@@ -349,7 +388,7 @@ namespace BeetleX.FastHttpApi
                 }
             }
             catch { }
-            return new Admin.ParameterInfo { IsBody = true, Name = this.Name, Type = this.Type, Value = value };
+            return value;
         }
     }
 
@@ -361,10 +400,11 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new object();
         }
+
     }
 
 
@@ -376,10 +416,11 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new object();
         }
+
     }
 
 
@@ -391,10 +432,11 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new object();
         }
+
     }
 
 
@@ -407,10 +449,11 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new object();
         }
+
     }
 
     public class DataContextParameter : ParameterBinder
@@ -421,11 +464,12 @@ namespace BeetleX.FastHttpApi
         }
 
         public override bool DataParameter => false;
-
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new object();
         }
+
+
     }
 
     class DefaultParameter : ParameterBinder
@@ -434,10 +478,11 @@ namespace BeetleX.FastHttpApi
         {
             return context.Data.GetObject(this.Name, this.Type);
         }
-        public override Admin.ParameterInfo GetInfo()
+        public override object DefaultValue()
         {
-            return new Admin.ParameterInfo { Name = this.Name, Type = this.Type, Value = Activator.CreateInstance(Type) };
+            return new object();
         }
+
     }
 
 

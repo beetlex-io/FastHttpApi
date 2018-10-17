@@ -5,7 +5,6 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi.Admin
 {
-
     class UrlInfo : IComparable
     {
         public UrlInfo(ActionHandler handler)
@@ -63,30 +62,16 @@ namespace BeetleX.FastHttpApi.Admin
             {
                 if (!item.DataParameter)
                     continue;
-                ParameterInfo pi = item.GetInfo();
-                if (pi.IsBody)
+
+                if (item is BodyParameter)
                 {
                     try
                     {
-                        Body = Newtonsoft.Json.JsonConvert.SerializeObject(pi.Value);
+                        Body = Newtonsoft.Json.JsonConvert.SerializeObject(item.DefaultValue());
                     }
                     catch (Exception e_)
                     {
                         Body = "{ }";
-                    }
-                    if (pi.Value is IEnumerable && pi.Value.GetType().IsGenericType)
-                    {
-                        try
-                        {
-                            System.Collections.ArrayList list = new ArrayList();
-                            Type[] subtype = pi.Value.GetType().GetGenericArguments();
-                            list.Add(Activator.CreateInstance(subtype[0]));
-                            list.Add(Activator.CreateInstance(subtype[0]));
-                            Body = Newtonsoft.Json.JsonConvert.SerializeObject(list);
-                        }
-                        catch
-                        { }
-
                     }
                 }
                 else
@@ -99,7 +84,7 @@ namespace BeetleX.FastHttpApi.Admin
                     {
                         Url += "&";
                     }
-                    Url += pi.Name + "=" + pi.Value.ToString();
+                    Url += item.Name + "=" + item.DefaultValue().ToString();
                     k++;
                 }
             }
@@ -117,29 +102,13 @@ namespace BeetleX.FastHttpApi.Admin
             {
                 if (item.DataParameter)
                 {
-                    ParameterInfo pi = item.GetInfo();
-
-                    if (pi.IsBody)
+                    if (item is BodyParameter)
                     {
-                        mParams["body"] = pi.Value;
-                        if (pi.Value is IEnumerable && pi.Value.GetType().IsGenericType)
-                        {
-                            try
-                            {
-                                System.Collections.ArrayList list = new ArrayList();
-                                Type[] subtype = pi.Value.GetType().GetGenericArguments();
-                                list.Add(Activator.CreateInstance(subtype[0]));
-                                list.Add(Activator.CreateInstance(subtype[0]));
-                                mParams["body"] = list;
-                            }
-                            catch
-                            { }
-
-                        }
+                        mParams["body"] = item.DefaultValue(); ;
                     }
                     else
                     {
-                        mParams[pi.Name] = pi.Value;
+                        mParams[item.Name] = item.DefaultValue();
                     }
                 }
             }

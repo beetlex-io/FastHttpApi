@@ -50,10 +50,15 @@
         <div class="row">
             <div slot="mainBar">
             </div>
+
             <div id="apis" class="list-group">
             </div>
         </div>
     </div>
+    <br />
+    <br />
+    <br />
+    <br />
     <div class="navbar navbar-inverse navbar-fixed-bottom">
         <div class="container" style="color:aliceblue;text-align:center;" slot="footer">
         </div>
@@ -79,15 +84,15 @@
                     html += '<div id="api' + i + '" style="display:none;padding-left:20px;">'
 
                         + '<div class="bs-callout bs-callout-warning" id="callout-inputgroup-container-body"> \
-                                                                                             <h4>http请求</h4 > \
+                                                                                                         <h4>http请求</h4 > \
 <span class="label label-default">Url:</span> \
-                                                            <pre>'+ v.Http.Url + '</pre>  \
-                                                              <span class="label label-default">Post:</span> \
+                                                                        <pre>'+ v.Http.Url + '</pre> \
+                                                                          <span class="label label-default">Post:</span> \
 <pre>'+ (v.Http.Body ? v.Http.Body : '无') + '</pre> \
 <h4>WebSocket请求</h4 > \
 <span class="label label-default">Send:</span> \
 <pre>'+ v.WebSocket.Body + '</pre> \
-                                                                                                                                                                                      </div > '
+                                                                                                                                                                                                  </div > '
                         + '</div >';
 
                     i++;
@@ -105,7 +110,7 @@
             if (typeof json != 'string') {
                 json = JSON.stringify(json);
             }
-            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            //json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
             return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
                 var cls = 'number';

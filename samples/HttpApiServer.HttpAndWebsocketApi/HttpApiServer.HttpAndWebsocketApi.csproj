@@ -58,6 +58,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Controller.cs</DependentUpon>
     </None>
+    <None Update="HttpConfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

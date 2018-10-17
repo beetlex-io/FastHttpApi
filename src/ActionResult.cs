@@ -10,6 +10,7 @@ namespace BeetleX.FastHttpApi
         {
             Code = 200;
         }
+
         public ActionResult(object data)
         {
             Code = 200;
