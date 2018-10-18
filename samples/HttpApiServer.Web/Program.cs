@@ -10,7 +10,6 @@ namespace HttpApiServer.Web
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.BodySerializer = new JsonBodySerializer();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

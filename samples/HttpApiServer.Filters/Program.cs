@@ -9,7 +9,7 @@ namespace HttpApiServer.Filters
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();   
-            mApiServer.ServerConfig.BodySerializer = new BeetleX.FastHttpApi.JsonBodySerializer();
+     
             mApiServer.ServerConfig.AddFilter<GlobalFilter>();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();

@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <script src="js/jquery_2_1_min.js"></script><!--jquery-->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script><!-- vuejs-->
+    <script src="js/FastHttpApi.js"></script><!-- 组件基础通讯脚本-->
+    <script src="js/Controller.js"></script><!-- 控制器生成的脚本-->
+    <title>hello world</title>
+</head>
+<body>
+    <div id="hello">
+        <p>
+            Enter you name: <input type="text" v-model:value="Data.Name" placeholder="输入你的名称">
+            <button type="button" onclick="Submit()">提交</button>
+        </p>
+        <p><span>{{Data.Hello}}</span>  <span>{{Data.Time}}</span></p>
+    </div>
+    <script>
+        var helloControl;
+        $(document).ready(function () {
+            helloControl = new Vue({ el: '#hello', data: { Data: { Name: '', Hello: '', Time: '' } } });
+        });
+        async function Submit() {
+            var result = await $Hello(helloControl.Data.Name);
+            helloControl.Data.Hello = result.Data.Hello;
+            helloControl.Data.Time = result.Data.Time;
+        }
+    </script>
+</body>
+</html>

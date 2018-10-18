@@ -6,6 +6,8 @@
     <link href="css/bootstrap.css" rel="stylesheet" />
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/FastHttpApi.js"></script>
+    <script src="js/api.js"></script>
     <title>FastHttpApi Cookie Sample</title>
 </head>
 <body>
@@ -59,19 +61,14 @@
     </div>
 </body>
 <script>
-    function setCookie() {
-        $.get("/setcookie?name=" + $('#cookieName').val() + "&value=" + $('#cookieValue').val(),
-            function (result) {
-                if (result == true) {
-                    alert('设置成功!')
-                }
-            });
+    async function setCookie() {
+        var result = await $setCookie($('#cookieName').val(), $('#cookieValue').val(),true);
+        if (result.Data == true)
+            alert('设置成功!')
     }
-    function getCookie() {
-        $('#getcookieValue').val('');
-        $.get("/getcookie?name=" + $('#getcookieName').val(), function (result) {
-            $('#getcookieValue').val(result);
-        });
+    async function getCookie() {
+        var result = await $getCookie($('#getcookieName').val(), true);
+        $('#getcookieValue').val(result.Data);
     }
 </script>
 </html>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>0.5</Version>
+    <Version>0.5.2</Version>
     <Authors>henryfan</Authors>
     <Company>ikende.com</Company>
     <Description>dotnet core fast http api server manager
@@ -32,6 +32,7 @@
     <None Remove="views\_admin\LogOutput.html" />
     <None Remove="views\_admin\md5.js" />
     <None Remove="views\_admin\ModuleLoader.js" />
+    <None Remove="views\_admin\Monitor.js" />
     <None Remove="views\_admin\PublicModule.html" />
     <None Remove="views\_admin\ReadFileHandler.js" />
     <None Remove="views\_admin\vue.js" />
@@ -67,6 +68,7 @@
     <EmbeddedResource Include="views\_admin\ModuleLoader.js">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="views\_admin\Monitor.js" />
     <EmbeddedResource Include="views\_admin\PublicModule.html">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>

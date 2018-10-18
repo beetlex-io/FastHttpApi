@@ -54,13 +54,27 @@ namespace BeetleX.FastHttpApi
 
         private IServer mServer;
 
+        private ServerCounter mServerCounter;
+
+        public ServerCounter ServerCounter => mServerCounter;
+
         private FileLog mFileLog;
 
-        private long mRequests;
+        private long mCurrentHttpRequests;
+
+        private long mCurrentWebSocketRequests;
+
+        private long mTotalRequests;
+
+        private long mTotalConnections;
 
         private ActionHandlerFactory mActionFactory;
 
         private System.Collections.Concurrent.ConcurrentDictionary<string, object> mProperties = new System.Collections.Concurrent.ConcurrentDictionary<string, object>();
+
+        public long CurrentHttpRequests => mCurrentHttpRequests;
+
+        public long CurrentWebSocketRequests => mCurrentWebSocketRequests;
 
         public StaticResurce.ResourceCenter ResourceCenter => mResourceCenter;
 
@@ -90,7 +104,9 @@ namespace BeetleX.FastHttpApi
 
         public DateTime StartTime { get; set; }
 
-        public long Request => mRequests;
+        public long TotalRequest => mTotalRequests;
+
+        public long TotalConnections => mTotalConnections;
 
         public EventHandler<WebSocketReceiveArgs> WebSocketReceive { get; set; }
 
@@ -166,6 +182,7 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Load();
             StartTime = DateTime.Now;
             mServer.Open();
+            mServerCounter = new ServerCounter(this);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
@@ -225,6 +242,7 @@ namespace BeetleX.FastHttpApi
 
         public override void Connected(IServer server, ConnectedEventArgs e)
         {
+            System.Threading.Interlocked.Increment(ref mTotalConnections);
             e.Session.Tag = new HttpToken();
             e.Session.SocketProcessHandler = this;
             HttpConnected?.Invoke(server, e);
@@ -384,45 +402,51 @@ namespace BeetleX.FastHttpApi
             return dp;
         }
 
-        protected virtual void OnReceiveWebSocketData(ISession session, DataFrame data)
+        protected virtual void OnWebSocketRequest(ISession session, DataFrame data)
         {
-            if (EnableLog(LogType.Info))
+            System.Threading.Interlocked.Increment(ref mCurrentWebSocketRequests);
+            try
             {
-                mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());
-            }
-            HttpToken token = (HttpToken)session.Tag;
-            if (data.Type == DataPacketType.ping)
-            {
-                DataFrame pong = CreateDataFrame();
-                pong.Type = DataPacketType.pong;
-                pong.FIN = true;
-                session.Send(pong);
-            }
-            else if (data.Type == DataPacketType.connectionClose)
-            {
-                session.Dispose();
-            }
-            else
-            {
-
-                if (WebSocketReceive == null)
+                if (EnableLog(LogType.Info))
                 {
-                    if (data.Type == DataPacketType.text)
-                    {
-                        ActionResult result = ExecuteWS(token.WebSocketRequest, data);
-                    }
-
+                    mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());
+                }
+                HttpToken token = (HttpToken)session.Tag;
+                if (data.Type == DataPacketType.ping)
+                {
+                    DataFrame pong = CreateDataFrame();
+                    pong.Type = DataPacketType.pong;
+                    pong.FIN = true;
+                    session.Send(pong);
+                }
+                else if (data.Type == DataPacketType.connectionClose)
+                {
+                    session.Dispose();
                 }
                 else
                 {
-                    var args = new WebSocketReceiveArgs();
-                    args.Frame = data;
-                    args.Sesson = session;
-                    args.Server = this;
-                    args.Request = token.WebSocketRequest;
-                    WebSocketReceive?.Invoke(this, args);
-                }
+                    if (WebSocketReceive == null)
+                    {
+                        if (data.Type == DataPacketType.text)
+                        {
+                            ActionResult result = ExecuteWS(token.WebSocketRequest, data);
+                        }
+                    }
+                    else
+                    {
+                        var args = new WebSocketReceiveArgs();
+                        args.Frame = data;
+                        args.Sesson = session;
+                        args.Server = this;
+                        args.Request = token.WebSocketRequest;
+                        WebSocketReceive?.Invoke(this, args);
+                    }
 
+                }
+            }
+            finally
+            {
+                System.Threading.Interlocked.Decrement(ref mCurrentWebSocketRequests);
             }
         }
 
@@ -477,11 +501,11 @@ namespace BeetleX.FastHttpApi
 
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
-            System.Threading.Interlocked.Increment(ref mRequests);
+            System.Threading.Interlocked.Increment(ref mTotalRequests);
             HttpToken token = (HttpToken)e.Session.Tag;
             if (token.WebSocket)
             {
-                OnReceiveWebSocketData(e.Session, (WebSockets.DataFrame)e.Message);
+                OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
             }
             else
             {
@@ -538,16 +562,24 @@ namespace BeetleX.FastHttpApi
 
         protected virtual void OnHttpRequest(HttpRequest request, HttpResponse response)
         {
-            if (!OnHttpRequesting(request, response).Cancel)
+            System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
+            try
             {
-                if (string.IsNullOrEmpty(request.Ext) && request.BaseUrl != "/")
+                if (!OnHttpRequesting(request, response).Cancel)
                 {
-                    mActionFactory.Execute(request, response, this);
+                    if (string.IsNullOrEmpty(request.Ext) && request.BaseUrl != "/")
+                    {
+                        mActionFactory.Execute(request, response, this);
+                    }
+                    else
+                    {
+                        OnProcessResource(request, response);
+                    }
                 }
-                else
-                {
-                    OnProcessResource(request, response);
-                }
+            }
+            finally
+            {
+                System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
             }
         }
 

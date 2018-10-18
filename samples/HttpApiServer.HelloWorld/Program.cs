@@ -1,22 +1,28 @@
 ﻿using BeetleX.FastHttpApi;
 using System;
 
-namespace HttpApiServer.WebApplication
+namespace HttpApiServer.HelloWorld
 {
     class Program
     {
-
         private static BeetleX.FastHttpApi.HttpApiServer mApiServer;
 
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.BodySerializer = new JsonBodySerializer();
-            mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Debug();
+            mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();
+        }
+    }
+    [Controller]
+    public class Controller
+    {
+        public object Hello(string name)
+        {
+            return new { Hello = "hello " + name, Time = DateTime.Now };
         }
     }
 }

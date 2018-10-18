@@ -178,10 +178,12 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
+
                     WebsocketJsonContext dc = new WebsocketJsonContext(server, request, data);
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
                     ActionContext context = new ActionContext(handler, dc);
+                    long startTime = server.BaseServer.GetRunTime();
                     context.Execute();
                     if (!dc.AsyncResult)
                     {
@@ -198,6 +200,9 @@ namespace BeetleX.FastHttpApi
                             result.Data = context.Result;
                         }
                         dataFrame.Send(request.Session);
+                        if (server.EnableLog(EventArgs.LogType.Info))
+                            server.BaseServer.Log(EventArgs.LogType.Info, request.Session, "{0} ws execute {1} action use time:{2}ms", request.ClientIPAddress,
+                                request.BaseUrl, server.BaseServer.GetRunTime() - startTime);
 
                     }
                 }
@@ -236,6 +241,7 @@ namespace BeetleX.FastHttpApi
                 try
                 {
                     HttpContext pc = new HttpContext(server, request, response);
+                    long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;
                     ActionContext context = new ActionContext(handler, pc);
                     context.Execute();
@@ -243,6 +249,9 @@ namespace BeetleX.FastHttpApi
                     {
                         object result = context.Result;
                         response.Result(result);
+                        if (server.EnableLog(EventArgs.LogType.Info))
+                            server.BaseServer.Log(EventArgs.LogType.Info, request.Session, "{0} http execute {1} action use time:{2}ms", request.ClientIPAddress,
+                                request.BaseUrl, server.BaseServer.GetRunTime() - startTime);
                     }
                 }
                 catch (Exception e_)

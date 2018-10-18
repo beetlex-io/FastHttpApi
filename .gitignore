@@ -34,3 +34,5 @@ HttpApiServer.Admin/bin/
 HttpApiServer.Admin/obj/
 samples/HttpApiServer.Admin/bin/
 samples/HttpApiServer.Admin/obj/
+samples/HttpApiServer.HelloWorld/bin/
+samples/HttpApiServer.HelloWorld/obj/

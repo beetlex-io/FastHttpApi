@@ -12,11 +12,17 @@
     <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
+    <script src="Monitor.js"></script>
     <title>FastHttpApi后台服务管理</title>
     <style>
         .values {
-            min-width: 120px;
-            text-align: right;
+            min-width: 80px;
+        }
+
+        .pline {
+            border-bottom: solid;
+            border-bottom-width: 1px;
+            border-bottom-color: darkgray;
         }
 
         .valueLabel {
@@ -24,8 +30,6 @@
             min-width: 100px;
             text-align: right;
         }
-
-        
     </style>
 </head>
 <body>
@@ -38,100 +42,136 @@
         <div slot="mainBar">
         </div>
         <div class="row" style="padding-top:4px;">
-            <div style="text-align:center;margin:auto;width:600px">
-                <div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading">服务状态</div>
-                        <div class="panel-body">
+            <div class="col-sm-7 col-md-7">
 
-                            <div id="serverStatus">
-                                <p><span class="valueLabel">服务名称:</span> <span class="badge values">{{Data.Name}}</span></p>
-                                <p>
-                                    <span class="valueLabel">服务地址:</span> <span class="badge values">{{Data.Host}}@{{Data.Port}}</span>
-                                    <span class="valueLabel">运行时长:</span><span class="badge values">{{Data.RunTime}}</span>
-                                </p>
-                                <p>
-                                    <span class="valueLabel">在线连接:</span> <span class="badge values">{{Data.Count}}</span>
-                                    <span class="valueLabel">处理请求数:</span><span class="badge values">{{Data.Request}}</span>
-                                </p>
+                <div class="panel panel-default">
+                    <div class="panel-heading">服务状态</div>
+                    <div class="panel-body">
 
-                                <p>
-                                    <span class="valueLabel">接收IO数:</span>
-                                    <span class="badge values">{{Data.ReceiveQuantity}}</span>
-                                    <span class="valueLabel">接收字节数:</span>
-                                    <span class="badge values">{{Data.ReceivBytes}}</span>
-                                </p>
-                                <p>
-                                <p>
-                                    <span class="valueLabel">发送IO数:</span>
-                                    <span class="badge values">{{Data.SendQuantity}}</span>
-                                    <span class="valueLabel">发送字节数:</span>
-                                    <span class="badge values">{{Data.SendBytes}}</span>
-                                </p>
+                        <div id="serverStatus">
+                            <p class="pline"><span class="valueLabel">服务名称:</span> <label class="values"> <span class="badge ">{{Data.ServerName}}</span></label></p>
 
-                            </div>
+                            <p class="pline">
+                                <span class="valueLabel">服务地址:</span>  <label class="values">
+                                    <span class="badge ">{{Data.Host}}@{{Data.Port}}</span>
+                                </label>
+                                <span class="valueLabel">运行时长:</span><span class="badge ">{{Data.RunTime}}</span>
+                            </p>
+                            <p class="pline">
+                                <span class="valueLabel">CPU:</span>  <label class="values">
+                                    <span class="badge ">{{Data.Cpu}}%</span>
+                                </label>
+                                <span class="valueLabel">内存:</span><span class="badge ">{{Data.Memory}}KB</span>
+                            </p>
+                            <p class="pline">
+                                <span class="valueLabel">总处理连接:</span>  <label class="values">
+                                    <span class="badge ">{{Data.TotalConnections}}</span>
+                                </label>
+                                <span class="valueLabel">活跃连接:</span> <span class="badge ">{{Data.CurrentConnectinos}}</span>
+                                <span class="valueLabel">处理连接:</span> <span class="badge ">{{Data.ConnectionsPer}}/秒</span>
+                            </p>
+                            <p class="pline">
+                                <span class="valueLabel">处理请求:</span>
+                                <label class="values">
+                                    <span class="badge "> {{Data.RequestPer}}/秒</span>
+                                </label>
+                                <span class="valueLabel">总处理请求:</span>
+                                <span class="badge ">{{Data.TotalRequest}}</span>
+                            </p>
+                            <p class="pline">
+                                <span class="valueLabel">接收字节:</span>
+                                <label class="values">
+                                    <span class="badge ">{{Data.ReceiveBytesPer}}MB/秒</span>
+                                </label>
+                                <span class="valueLabel">总接收字节:</span>
+                                <span class="badge ">{{Data.TotalReceiveBytes}}MB</span>
+                            </p>
+                            <p>
+                            <p>
+                                <span class="valueLabel">发送字节:</span>
+                                <label class="values">
+                                    <span class="badge ">{{Data.SendBytesPer}}MB/秒</span>
+                                </label>
+                                <span class="valueLabel">总发送字节:</span>
+                                <span class="badge ">{{Data.TotalSendBytes}}MB</span>
+                            </p>
+
                         </div>
                     </div>
 
-
-                </div>
-
-                <div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading">信息设置</div>
-                        <div class="panel-body">
-                            <form class="form-horizontal" id="setting">
-                                <div class="form-group">
-                                    <label for="inputEmail3" class="col-sm-4 control-label">最大连接数</label>
-                                    <div class="col-sm-5">
-                                        <input type="number" v-model:value="MaxConn" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputPassword3" class="col-sm-4 control-label">WS秒最大请求数</label>
-                                    <div class="col-sm-5">
-                                        <input type="number" v-model:value="WSMaxRPS" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputPassword3" class="col-sm-4 control-label">日志级别</label>
-                                    <div class="col-sm-5">
-                                        <select v-model:value="LogLevel" class="form-control">
-                                            <option value="All">All</option>
-                                            <option value="Trace">Trace</option>
-                                            <option value="Debug">Debug</option>
-                                            <option value="Info">Info</option>
-                                            <option value="Warring">Warring</option>
-                                            <option value="Error">Error</option>
-                                            <option value="Fatal">Fatal</option>
-                                            <option value="Off">Off</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputPassword3" class="col-sm-4 control-label">日志是否写文件</label>
-                                    <div class="col-sm-5">
-                                        <input type="checkbox" v-model:value="WriteLog" class="checkbox">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputPassword3" class="col-sm-4 control-label">日志输出Console</label>
-                                    <div class="col-sm-5">
-                                        <input type="checkbox" v-model:value="LogToConsole" class="checkbox">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-offset-2 col-sm-10">
-                                        <button type="button" onclick="UpSetting()" class="btn btn-default">设置</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+                    <div class="panel-body" style="height:100px;padding:1px;">
+                        <canvas width="600" height="100" id="cpuCanavas" style="width:100%;height:100%;"></canvas>
                     </div>
 
+                    <div class="panel-body" style="height:100px;padding:1px;">
+                        <canvas width="600" height="100" id="requestCanvas" style="width:100%;height:100%;"></canvas>
+                    </div>
 
+                    <div class="panel-body" style="height:100px;padding:1px;">
+                        <canvas width="600" height="100" id="networkCanvas" style="width:100%;height:100%;"></canvas>
+                    </div>
                 </div>
+
+
             </div>
+            <div class="col-sm-6 col-md-5">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">信息设置</div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" id="setting" style="font-size:14px;">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="col-sm-4 control-label">最大连接数</label>
+                                <div class="col-sm-5">
+                                    <input type="number" v-model:value="MaxConn" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-4 control-label">WS秒最大请求数</label>
+                                <div class="col-sm-5">
+                                    <input type="number" v-model:value="WSMaxRPS" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-4 control-label">日志级别</label>
+                                <div class="col-sm-5">
+                                    <select v-model:value="LogLevel" class="form-control">
+                                        <option value="All">All</option>
+                                        <option value="Trace">Trace</option>
+                                        <option value="Debug">Debug</option>
+                                        <option value="Info">Info</option>
+                                        <option value="Warring">Warring</option>
+                                        <option value="Error">Error</option>
+                                        <option value="Fatal">Fatal</option>
+                                        <option value="Off">Off</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-4 control-label">日志是否写文件</label>
+                                <div class="col-sm-5">
+                                    <input type="checkbox" v-model:value="WriteLog" class="checkbox">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword3" class="col-sm-4 control-label">日志输出Console</label>
+                                <div class="col-sm-5">
+                                    <input type="checkbox" v-model:value="LogToConsole" class="checkbox">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <button type="button" onclick="UpSetting()" class="btn btn-default">设置</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+
+            </div>
+
         </div>
         <br />
         <br />
@@ -147,8 +187,15 @@
         var statusControl;
         var settingControl;
         var lstLogControl;
-
         var logs = new Array();
+        var cpuMonitor;
+        var cpu;
+        var requestMonitor;
+        var request;
+        var networkMonitor;
+        var netInput;
+        var netOutput;
+
         var setting = {
             MaxConn: 0,
             WSMaxRPS: 0,
@@ -157,9 +204,7 @@
             WriteLog: false
         }
         api_receive(function (data) {
-
             if (data.Data.LogType) {
-
                 logs.splice(0, 0, data.Data);
                 if (logs.length > 500)
                     logs.pop();
@@ -170,9 +215,28 @@
             statusControl = new Vue({ el: '#serverStatus', data: { Data: {} } });
             settingControl = new Vue({ el: '#setting', data: setting });
             lstLogControl = new Vue({ el: '#lstLog', data: { Data: logs } });
+            cpuMonitor = new Monitor('cpuCanavas');
+            cpu = cpuMonitor.create();
+            cpu.label = "Cpu";
+            requestMonitor = new Monitor('requestCanvas');
+            request = requestMonitor.create();
+            request.maxValue = 5000;
+            request.changeMaxValue = true;
+            request.label = "Request";
+
+            networkMonitor = new Monitor('networkCanvas');
+            netInput = networkMonitor.create();
+            netInput.maxValue =  10;
+            netInput.label = "Network Input(MB)";
+
+            netOutput = networkMonitor.create();
+            netOutput.maxValue = 10;
+            netOutput.label = "Network Output(MB)";
+
             GetStatus();
             GetSettingInfo();
-            setInterval(GetStatus, 2000);
+            setInterval(GetStatus, 1000);
+
         });
         async function LogConnect() {
             var result = await $_admin$LogConnect();
@@ -210,8 +274,16 @@
             if (result.Code == 403)
                 window.location.href = result.Data;
             statusControl.Data = result.Data;
+            cpu.push(result.Data.Cpu);
+            cpuMonitor.draw();
+            request.push(result.Data.RequestPer);
+            requestMonitor.draw();
 
+            netInput.push(result.Data.ReceiveBytesPer);
+            netOutput.push(result.Data.SendBytesPer);
+            networkMonitor.draw();
         }
     </script>
+
 </body>
 </html>

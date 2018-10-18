@@ -11,8 +11,10 @@
     <None Remove="views\EmployeeEditor.html" />
     <None Remove="views\Employees.html" />
     <None Remove="views\index.html" />
+    <None Remove="views\js\api.js" />
     <None Remove="views\js\bootstrap.bundle.js" />
     <None Remove="views\js\bootstrap.js" />
+    <None Remove="views\js\FastHttpApi.js" />
     <None Remove="views\js\jquery_2_1_min.js" />
     <None Remove="views\js\npm.js" />
   </ItemGroup>
@@ -23,8 +25,10 @@
     <EmbeddedResource Include="views\EmployeeEditor.html" />
     <EmbeddedResource Include="views\Employees.html" />
     <EmbeddedResource Include="views\index.html" />
+    <EmbeddedResource Include="views\js\api.js" />
     <EmbeddedResource Include="views\js\bootstrap.bundle.js" />
     <EmbeddedResource Include="views\js\bootstrap.js" />
+    <EmbeddedResource Include="views\js\FastHttpApi.js" />
     <EmbeddedResource Include="views\js\jquery_2_1_min.js" />
     <EmbeddedResource Include="views\js\npm.js" />
   </ItemGroup>

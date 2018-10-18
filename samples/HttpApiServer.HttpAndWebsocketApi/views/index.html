@@ -8,6 +8,7 @@
     <script src="js/jquery_2_1_min.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="js/FastHttpApi.js"></script>
     <script src="js/api.js"></script>
     <title>FastHttpApi WebApplication</title>
 </head>
@@ -105,76 +106,77 @@
             </div>
         </div>
     </div>
+    <script>
+        var app6;
+        $(document).ready(function () {
+            app6 = new Vue({
+                el: '#lstbody',
+                data: { Data: [] }
+            });
+            init();
+        });
+
+        async function init() {
+            var result = await $GetEmployeesName();
+            var app4 = new Vue({
+                el: '#lstEmployees',
+                data: result
+            });
+
+            result = await $GetCustomersName();
+            var app5 = new Vue({
+                el: '#lstCustomers',
+                data: result
+            });
+            searchOrder(0);
+        }
+
+        async function searchOrder(index) {
+            var result = await $ListOrders($('#lstEmployees').val(), $('#lstCustomers').val(), index);
+            app6.Data = result.Data;
+            pagination(index, result.Data.Pages);
+        }
+
+        function pagination(index, pages) {
+            $('#pagination').empty();
+            if (pages < 10) {
+                for (i = 0; i < pages; i++) {
+                    var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
+                    $('#pagination').append(item);
+                }
+            }
+            else {
+                var item = '<li><a page="' + 0 + '" href="javascript:void(0)" onclick="searchOrder(0)">1</a></li>'
+                $('#pagination').append(item);
+
+
+                for (i = index - 5; i < index + 1; i++) {
+                    if (i > 0 && i < pages - 1) {
+                        var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
+                        $('#pagination').append(item);
+                    }
+                }
+
+
+                for (i = index + 1; i < index + 5; i++) {
+                    if (i < (pages - 1)) {
+                        var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
+                        $('#pagination').append(item);
+                    }
+                }
+                if (pages > 1) {
+                    var item = '<li><a page="' + (pages - 1) + '" href="javascript:void(0)" onclick="searchOrder(' + (pages - 1) + ')">' + (pages) + '</a></li>'
+                    $('#pagination').append(item);
+                }
+            }
+            $('a').each(function () {
+                if ($(this).attr('page') == index) {
+                    $(this).html('<span class="badge">' + (index + 1) + '</span>')
+                }
+            })
+        }
+
+    </script>
 </body>
-<script>
-    var app6;
-    $(document).ready(function () {
-        app6 = new Vue({
-            el: '#lstbody',
-            data: { Data: [] }
-        });
-        init();
-    });
 
-    async function init() {
-        var result = await $GetEmployeesName();
-        var app4 = new Vue({
-            el: '#lstEmployees',
-            data: result
-        });
-
-        result = await $GetCustomersName();
-        var app5 = new Vue({
-            el: '#lstCustomers',
-            data: result
-        });
-        searchOrder(0);
-    }
-
-    async function searchOrder(index) {
-        var result = await $ListOrders($('#lstEmployees').val(), $('#lstCustomers').val(), index);
-        app6.Data = result.Data;
-        pagination(index, result.Data.Pages);
-    }
-
-    function pagination(index, pages) {
-        $('#pagination').empty();
-        if (pages < 10) {
-            for (i = 0; i < pages; i++) {
-                var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
-                $('#pagination').append(item);
-            }
-        }
-        else {
-            var item = '<li><a page="' + 0 + '" href="javascript:void(0)" onclick="searchOrder(0)">1</a></li>'
-            $('#pagination').append(item);
-
-
-            for (i = index - 5; i < index + 1; i++) {
-                if (i > 0 && i < pages - 1) {
-                    var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
-                    $('#pagination').append(item);
-                }
-            }
-
-
-            for (i = index + 1; i < index + 5; i++) {
-                if (i < (pages - 1)) {
-                    var item = '<li><a page="' + i + '" href="javascript:void(0)" onclick="searchOrder(' + i + ')">' + (i + 1) + '</a></li>'
-                    $('#pagination').append(item);
-                }
-            }
-            if (pages > 1) {
-                var item = '<li><a page="' + (pages - 1) + '" href="javascript:void(0)" onclick="searchOrder(' + (pages - 1) + ')">' + (pages) + '</a></li>'
-                $('#pagination').append(item);
-            }
-        }
-        $('a').each(function () {
-            if ($(this).attr('page') == index) {
-                $(this).html('<span class="badge">' + (index + 1) + '</span>')
-            }
-        })
-    }
-
-</script>
 </html>

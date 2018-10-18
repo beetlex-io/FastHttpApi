@@ -117,24 +117,14 @@ namespace BeetleX.FastHttpApi.Admin
 
             public string IPAddress { get; set; }
         }
-
+        [SkipFilter(typeof(LoginFilter))]
         public object GetServerInfo(IHttpContext context)
         {
-            HttpApiServer server = context.Server;
-            var info = new
+            if (context.Server.ServerCounter != null)
             {
-                server.Name,
-                RunTime = DateTime.Now - server.StartTime,
-                server.ServerConfig.Host,
-                server.ServerConfig.Port,
-                server.Request,
-                server.BaseServer.Count,
-                server.BaseServer.ReceivBytes,
-                server.BaseServer.ReceiveQuantity,
-                server.BaseServer.SendBytes,
-                server.BaseServer.SendQuantity
-            };
-            return info;
+                return context.Server.ServerCounter.Next();
+            }
+            return new ServerCounter.Info();
         }
 
         public object ListConnection(int index, IHttpContext context)
