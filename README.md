@@ -12,7 +12,7 @@
 7. 支持外置或内嵌到DLL的静态资源输出（默认对html,js,css资源进行GZIP处理）
 8. 支持SSL和Https
 
-**[官方网站和帮助文档](http://www.ikende.com/)**
+**[详情查看官网](http://www.ikende.com/)**
 组件内置的后台监控页面`/_admin/index.html`访问
 
 ![](https://i.imgur.com/LkW5VM0.png)
