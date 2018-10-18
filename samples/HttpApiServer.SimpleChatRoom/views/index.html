@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/bootstrap-theme.css" rel="stylesheet" />
+    <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/FastHttpApi.js"></script>
+    <script src="js/api.js"></script>
+    <title>FastHttpApi WebApplication</title>
+</head>
+<body>
+
+    <div class="container bs-docs-container">
+
+
+        <div class="row" style="width:100%">
+            <div style="margin:auto; width:600px;text-align:center;" role="main">
+                <nav class="navbar navbar-default">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">Simple Chatroom</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+
+                    </div><!-- /.container-fluid -->
+                </nav>
+
+                <div id="connectStatus" style="display:flex;padding-bottom:10px;"> </div>
+                <div id="lstTalk" style="height:400px;width:100%;text-align:left;">
+
+                </div>
+                <form class="navbar-form navbar-left" role="search" style="text-align:right;">
+                    <div class="form-group">
+                        <input id="name" type="text" style="width:160px;" class="form-control" placeholder="name">
+                    </div>
+                    <div class="form-group">
+                        <input id="msg" type="text" style="min-width:320px" class="form-control" placeholder="message">
+                    </div>
+                    <button type="button" onclick="sendMessage()" class="btn btn-default">Talk</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function onreceive(result) {
+            $('<p><span class="label label-default">' + result.Data.name + '</span>:' + result.Data.message + '</p>').appendTo('#lstTalk')
+        }
+
+        async function sendMessage() {
+            var name = $('#name').val();
+            var message = $('#msg').val();
+            if (!name) {
+                alert("enter name!");
+                return;
+            }
+            if (!message) {
+                alert('enter messgae');
+                return;
+            }
+            var result = await $Talk(name, message);
+            if (result.Code != 200) {
+                alert(result.Error);
+            }
+            else
+                $('#msg').val('');
+        }
+        $(document).ready(function () {
+            api_receive(onreceive);
+        });
+    </script>
+</body>
+
+</html>

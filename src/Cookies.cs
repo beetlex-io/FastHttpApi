@@ -27,7 +27,7 @@ namespace BeetleX.FastHttpApi
         {
             name = System.Web.HttpUtility.UrlDecode(name);
             value = System.Web.HttpUtility.UrlDecode(value);
-            mItems.Add(name, value);
+            mItems[name] = value;
         }
         public override string ToString()
         {

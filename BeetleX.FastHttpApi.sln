@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.Admin", "samp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.HelloWorld", "samples\HttpApiServer.HelloWorld\HttpApiServer.HelloWorld.csproj", "{D84C813C-A815-4186-9BB7-C2EC33AB0913}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.SimpleChatRoom", "samples\HttpApiServer.SimpleChatRoom\HttpApiServer.SimpleChatRoom.csproj", "{305CE559-7CD5-45AB-B828-0BF29D71AF93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{D84C813C-A815-4186-9BB7-C2EC33AB0913}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D84C813C-A815-4186-9BB7-C2EC33AB0913}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D84C813C-A815-4186-9BB7-C2EC33AB0913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -84,6 +90,7 @@ Global
 		{40A7A601-DF18-4B4F-BA31-F06F96D58736} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{4FEF2F5E-47E9-44F0-A71A-72E5EDDC9334} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{D84C813C-A815-4186-9BB7-C2EC33AB0913} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
+		{305CE559-7CD5-45AB-B828-0BF29D71AF93} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {988EEA11-1C48-44A4-9DF0-1C3D08600A4F}

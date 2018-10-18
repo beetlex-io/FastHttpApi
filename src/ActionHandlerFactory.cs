@@ -202,7 +202,7 @@ namespace BeetleX.FastHttpApi
                         dataFrame.Send(request.Session);
                         if (server.EnableLog(EventArgs.LogType.Info))
                             server.BaseServer.Log(EventArgs.LogType.Info, request.Session, "{0} ws execute {1} action use time:{2}ms", request.ClientIPAddress,
-                                request.BaseUrl, server.BaseServer.GetRunTime() - startTime);
+                                dc.ActionUrl, server.BaseServer.GetRunTime() - startTime);
 
                     }
                 }

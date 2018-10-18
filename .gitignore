@@ -36,3 +36,5 @@ samples/HttpApiServer.Admin/bin/
 samples/HttpApiServer.Admin/obj/
 samples/HttpApiServer.HelloWorld/bin/
 samples/HttpApiServer.HelloWorld/obj/
+samples/HttpApiServer.SimpleChatRoom/bin/
+samples/HttpApiServer.SimpleChatRoom/obj/
