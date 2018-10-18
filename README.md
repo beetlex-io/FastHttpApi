@@ -13,10 +13,7 @@
 8. 支持SSL和Https
 
 **[详情查看官网](http://www.ikende.com/)**
-组件内置的后台监控页面`/_admin/index.html`访问
 
-![](https://i.imgur.com/LkW5VM0.png)
-![](https://i.imgur.com/z5J8WOU.png)
 ## 更新日志
 #### 2018-10-2 ActionResul添加一个ID用于匹配websocket请求应用使用,集成一个后台管理，增加API调用JS，同一方式兼容ajax和websocket
 可以通过管理端生成所有接口调用的API脚本
