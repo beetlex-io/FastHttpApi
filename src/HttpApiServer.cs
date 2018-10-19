@@ -643,20 +643,26 @@ namespace BeetleX.FastHttpApi
             {
                 if (System.Threading.Interlocked.CompareExchange(ref mGetWebsocketStatus, 1, 0) == 0)
                 {
-                    if (mVersion != BaseServer.Version)
+                    try
                     {
-                        ISession[] items = BaseServer.GetOnlines();
-                        List<HttpRequest> lst = new List<HttpRequest>();
-                        for (int i = 0; i < items.Length; i++)
+                        if (mVersion != BaseServer.Version)
                         {
-                            HttpToken token = (HttpToken)items[i].Tag;
-                            if (token != null && token.WebSocket)
-                                lst.Add(token.WebSocketRequest);
+                            ISession[] items = BaseServer.GetOnlines();
+                            List<HttpRequest> lst = new List<HttpRequest>();
+                            for (int i = 0; i < items.Length; i++)
+                            {
+                                HttpToken token = (HttpToken)items[i].Tag;
+                                if (token != null && token.WebSocket)
+                                    lst.Add(token.WebSocketRequest);
+                            }
+                            mOnlines = lst;
+                            mVersion = BaseServer.Version;
                         }
-                        mOnlines = lst;
-                        mVersion = BaseServer.Version;
                     }
-                    System.Threading.Interlocked.Exchange(ref mGetWebsocketStatus, 0);
+                    finally
+                    {
+                        System.Threading.Interlocked.Exchange(ref mGetWebsocketStatus, 0);
+                    }
 
                 }
             }
