@@ -1,6 +1,6 @@
 ﻿using BeetleX.FastHttpApi;
 using System;
-
+using System.Linq;
 namespace HttpApiServer.SimpleChatRoom
 {
     class Program
@@ -18,15 +18,45 @@ namespace HttpApiServer.SimpleChatRoom
         }
     }
     [Controller]
-    public class Controller
+    public class Controller : IController
     {
-        public bool Talk(string name,string message, IHttpContext context)
+        public bool Login(string nickName, IHttpContext context)
         {
+            context.Session.Name = nickName;
             ActionResult result = new ActionResult();
-            result.Data = new { name, message };
+            result.Data = new { name = nickName, message = "login", type = "login", time = DateTime.Now.ToString("T") };
             context.SendToWebSocket(result);
             return true;
+        }
 
+        public object ListOnlines(IHttpContext context)
+        {
+            return from r in context.Server.GetWebSockets()
+                   where r.Session.Name != null
+                   select new { r.Session.Name, IP = r.Session.RemoteEndPoint.ToString() };
+        }
+
+
+        public bool Talk(string nickName, string message, IHttpContext context)
+        {
+            ActionResult result = new ActionResult();
+            result.Data = new { name = nickName, message, type = "talk", time = DateTime.Now.ToString("T") };
+            context.SendToWebSocket(result);
+            return true;
+        }
+        [NotAction]
+        public void Init(BeetleX.FastHttpApi.HttpApiServer server)
+        {
+            server.HttpDisconnect += (o, e) =>
+            {
+                if (e.Session.Name != null)
+                {
+                    ActionResult result = new ActionResult();
+                    result.Data = new { name = e.Session.Name, message = "quit", type = "quit", time = DateTime.Now.ToString("T") };
+                    var data = server.CreateDataFrame(result);
+                    server.SendToWebSocket(data);
+                }
+            };
         }
     }
 }

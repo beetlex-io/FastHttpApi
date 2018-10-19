@@ -163,6 +163,7 @@ namespace BeetleX.FastHttpApi
             config.CertificatePassword = ServerConfig.CertificatePassword;
             config.BufferSize = ServerConfig.BufferSize;
             config.LogLevel = ServerConfig.LogLevel;
+            config.Combined = ServerConfig.PacketCombined;
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
@@ -218,20 +219,43 @@ namespace BeetleX.FastHttpApi
 
         public void SendToWebSocket(DataFrame data, Func<ISession, HttpRequest, bool> filter = null)
         {
-            foreach (HttpRequest item in GetWebSockets())
+            IList<HttpRequest> items = GetWebSockets();
+
+            if (items.Count > 0)
             {
-                if ((filter == null || filter(item.Session, item)))
-                    SendToWebSocket(data, item);
+                List<ISession> receiveRequest = new List<ISession>();
+                IServer server = items[0].Server.BaseServer;
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    if ((filter == null || filter(item.Session, item)))
+                    {
+                        receiveRequest.Add(item.Session);
+                    }
+
+                }
+                server.Send(data, receiveRequest.ToArray());
             }
+            //foreach (HttpRequest item in GetWebSockets())
+            //{
+            //    if ((filter == null || filter(item.Session, item)))
+            //        SendToWebSocket(data, item);
+            //}
         }
 
         public void SendToWebSocket(DataFrame data, params HttpRequest[] request)
         {
             if (request != null)
-                foreach (HttpRequest item in request)
+            {
+                IServer server = request[0].Server.BaseServer;
+                ISession[] sessions = new ISession[request.Length];
+                for (int i = 0; i < request.Length; i++)
                 {
-                    OnSendToWebSocket(data, item);
+                    sessions[i] = request[i].Session;
                 }
+                server.Send(data, sessions);
+
+            }
         }
 
         private void OnSendToWebSocket(DataFrame data, HttpRequest request)
@@ -609,17 +633,32 @@ namespace BeetleX.FastHttpApi
 
         private long mVersion;
 
-        private IEnumerable<HttpRequest> mOnlines = new HttpRequest[0];
+        private IList<HttpRequest> mOnlines = new List<HttpRequest>();
 
-        public IEnumerable<HttpRequest> GetWebSockets()
+        private int mGetWebsocketStatus = 0;
+
+        public IList<HttpRequest> GetWebSockets()
         {
             if (mVersion != BaseServer.Version)
             {
-                mVersion = BaseServer.Version;
-                ISession[] items = BaseServer.GetOnlines();
-                mOnlines = from s in items
-                           where ((HttpToken)s.Tag).WebSocket
-                           select ((HttpToken)s.Tag).WebSocketRequest;
+                if (System.Threading.Interlocked.CompareExchange(ref mGetWebsocketStatus, 1, 0) == 0)
+                {
+                    if (mVersion != BaseServer.Version)
+                    {
+                        ISession[] items = BaseServer.GetOnlines();
+                        List<HttpRequest> lst = new List<HttpRequest>();
+                        for (int i = 0; i < items.Length; i++)
+                        {
+                            HttpToken token = (HttpToken)items[i].Tag;
+                            if (token != null && token.WebSocket)
+                                lst.Add(token.WebSocketRequest);
+                        }
+                        mOnlines = lst;
+                        mVersion = BaseServer.Version;
+                    }
+                    System.Threading.Interlocked.Exchange(ref mGetWebsocketStatus, 0);
+
+                }
             }
             return mOnlines;
         }

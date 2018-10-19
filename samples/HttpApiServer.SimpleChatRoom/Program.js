@@ -3,12 +3,30 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $Talk$url='/talk';
-function $Talk(name,message,useHttp)
+var $Login$url='/login';
+function $Login(nickName,useHttp)
 {
-    return api($Talk$url,{name:name,message:message},useHttp).sync();
+    return api($Login$url,{nickName:nickName},useHttp).sync();
 }
-function $Talk$async(name,message,useHttp)
+function $Login$async(nickName,useHttp)
 {
-    return api($Talk$url,{name:name,message:message},useHttp);
+    return api($Login$url,{nickName:nickName},useHttp);
+}
+var $ListOnlines$url='/listonlines';
+function $ListOnlines(useHttp)
+{
+    return api($ListOnlines$url,{},useHttp).sync();
+}
+function $ListOnlines$async(useHttp)
+{
+    return api($ListOnlines$url,{},useHttp);
+}
+var $Talk$url='/talk';
+function $Talk(nickName,message,useHttp)
+{
+    return api($Talk$url,{nickName:nickName,message:message},useHttp).sync();
+}
+function $Talk$async(nickName,message,useHttp)
+{
+    return api($Talk$url,{nickName:nickName,message:message},useHttp);
 }

@@ -14,7 +14,7 @@ namespace BeetleX.FastHttpApi.WebSockets
 
         void SendToWebSocket(DataFrame data, params HttpRequest[] request);
 
-        IEnumerable<HttpRequest> GetWebSockets();
+        IList<HttpRequest> GetWebSockets();
     }
 
    

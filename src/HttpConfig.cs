@@ -32,9 +32,11 @@ namespace BeetleX.FastHttpApi
             NotLoadFolder = @"\Files;\Images";
             FileManager = false;
             CacheFileSize = 500;
+            PacketCombined = 0;
         }
 
 
+        public int PacketCombined { get; set; }
 
         public bool FileManager { get; set; }
 
