@@ -4,6 +4,7 @@
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/bootstrap-theme.css" rel="stylesheet" />
     <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/FastHttpApi.js"></script>
     <script src="js/apis.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -37,7 +38,6 @@
                 <li role="presentation" class="active"><a href="#">聊天室</a></li>
                 <li role="presentation"><a href="admin.html">管理</a></li>
 
-                <li role="presentation"><a href="/_admin/index.html" target="_blank">服务后台</a></li>
             </ul>
 
             <form class="form-inline" style="padding-top:10px;" id="loginBar">
@@ -155,7 +155,7 @@
                 alert('请输入创建房间名称!');
                 return;
             }
-            var result = await $CreateRoom($('#roomName').val());
+            var result = await ChatCreateRoom($('#roomName').val());
             if (result.Code != 200) {
                 alert(result.Error);
             }
@@ -167,7 +167,7 @@
                 alert('请输入发言的内容！');
                 return;
             }
-            var result = await $SendMessage($('#talkMsg').val());
+            var result = await ChatSendMessage($('#talkMsg').val());
             if (result.Code == 200) {
                 $('#talkMsg').val('');
             }
@@ -181,7 +181,7 @@
                 alert('登陆名称无效！');
                 return;
             }
-            var result = await $Login($('#userName').val());
+            var result = await ChatLogin($('#userName').val());
             if (result.Code != 200) {
                 alert(result.Error);
             }
@@ -198,7 +198,7 @@
 
         async function listRoomUsers() {
             if (loginStatus == true && activeRoom) {
-                var result = await $GetRoomOnlines(activeRoom);
+                var result = await ChatGetRoomOnlines(activeRoom);
                 lstUserControl.Data = result.Data;
             }
         }
@@ -211,12 +211,12 @@
                 console.log("select room " + name);
                 if (activeRoom) {
                     console.log("checkout " + activeRoom);
-                    await $CheckOutRoom(activeRoom);
+                    await ChatCheckOutRoom(activeRoom);
                 }
                 activeRoom = name;
                 $('#roomTitle').html('进入房间:' + activeRoom);
                 lstTalkControl.Data = [];
-                var result = await $CheckInRoom(name);
+                var result = await ChatCheckInRoom(name);
                 if (result.Code == 200) {
                     $('#talkBar').show();
 
@@ -228,7 +228,7 @@
             }
         }
         async function listRoom() {
-            var result = await $ListRooms();
+            var result = await ChatListRooms();
             lstRoomControl.Data = result.Data;
         }
 

@@ -117,13 +117,13 @@
         });
 
         async function init() {
-            var result = await $GetEmployeesName();
+            var result = await HomeGetEmployeesName();
             var app4 = new Vue({
                 el: '#lstEmployees',
                 data: result
             });
 
-            result = await $GetCustomersName();
+            result = await HomeGetCustomersName();
             var app5 = new Vue({
                 el: '#lstCustomers',
                 data: result
@@ -132,7 +132,7 @@
         }
 
         async function searchOrder(index) {
-            var result = await $ListOrders($('#lstEmployees').val(), $('#lstCustomers').val(), index);
+            var result = await HomeListOrders($('#lstEmployees').val(), $('#lstCustomers').val(), index);
             app6.Data = result.Data;
             pagination(index, result.Data.Pages);
         }

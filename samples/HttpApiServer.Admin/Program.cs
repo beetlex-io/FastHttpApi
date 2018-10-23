@@ -11,11 +11,11 @@ namespace HttpApiServer.Admin
         {         
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
             mApiServer.Debug();
-            mApiServer.Register(typeof(BeetleX.FastHttpApi.Admin.AdminController).Assembly);
+            mApiServer.Register(typeof(BeetleX.FastHttpApi.Admin._Admin).Assembly);
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.HttpRequestNotfound += (o, e) =>
             {
-                BeetleX.FastHttpApi.Move301Result result = new BeetleX.FastHttpApi.Move301Result("/_admin/index.html");
+                BeetleX.FastHttpApi.Move302Result result = new BeetleX.FastHttpApi.Move302Result("/_admin/index.html");
                 e.Response.Result(result);
                 e.Cancel = true;
             };

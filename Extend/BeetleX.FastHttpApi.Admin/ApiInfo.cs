@@ -62,31 +62,17 @@ namespace BeetleX.FastHttpApi.Admin
             {
                 if (!item.DataParameter)
                     continue;
-
-                if (item is BodyParameter)
+                if (k == 0)
                 {
-                    try
-                    {
-                        Body = Newtonsoft.Json.JsonConvert.SerializeObject(item.DefaultValue());
-                    }
-                    catch (Exception e_)
-                    {
-                        Body = "{ }";
-                    }
+                    Url += "?";
                 }
                 else
                 {
-                    if (k == 0)
-                    {
-                        Url += "?";
-                    }
-                    else
-                    {
-                        Url += "&";
-                    }
-                    Url += item.Name + "=" + item.DefaultValue().ToString();
-                    k++;
+                    Url += "&";
                 }
+                Url += item.Name + "=" + item.DefaultValue().ToString();
+                k++;
+
             }
             Response = Newtonsoft.Json.JsonConvert.SerializeObject(new ActionResult());
         }
@@ -102,14 +88,9 @@ namespace BeetleX.FastHttpApi.Admin
             {
                 if (item.DataParameter)
                 {
-                    if (item is BodyParameter)
-                    {
-                        mParams["body"] = item.DefaultValue(); ;
-                    }
-                    else
-                    {
-                        mParams[item.Name] = item.DefaultValue();
-                    }
+
+                    mParams[item.Name] = item.DefaultValue();
+
                 }
             }
             Dictionary<string, object> msg = new Dictionary<string, object>();

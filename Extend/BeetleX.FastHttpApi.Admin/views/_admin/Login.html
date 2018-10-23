@@ -46,13 +46,13 @@
             GetKey();
         });
         async function GetKey() {
-            var result = await $_admin$GetKey(true);
+            var result = await _AdminGetKey(true);
             key = result.Data;
         }
         async function login() {
             var name = md5($('#name').val());
             var pwd = md5($('#pwd').val() + key);
-            var result = await $_admin$Login(name, pwd, true);
+            var result = await _AdminLogin(name, pwd, true);
             if (result.Data == true) {
                 window.location.href = 'index.html';
             }

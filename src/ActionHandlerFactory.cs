@@ -98,6 +98,13 @@ namespace BeetleX.FastHttpApi
             }
             foreach (MethodInfo mi in controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
+                Data.DecodeType decodeType = Data.DecodeType.Json;
+                if (controllerType.GetCustomAttribute<Data.FormUrlDecodeAttribute>(false) != null)
+                    decodeType = Data.DecodeType.FormUrl;
+                if (mi.GetCustomAttribute<Data.FormUrlDecodeAttribute>(false) != null)
+                    decodeType = Data.DecodeType.FormUrl;
+                if (mi.GetCustomAttribute<Data.NoDecodeAttribute>(false) != null)
+                    decodeType = Data.DecodeType.None;
                 if (string.Compare("Equals", mi.Name, true) == 0
                     || string.Compare("GetHashCode", mi.Name, true) == 0
                     || string.Compare("GetType", mi.Name, true) == 0
@@ -106,9 +113,11 @@ namespace BeetleX.FastHttpApi
                     continue;
                 if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
                     continue;
+
                 string sourceUrl = rooturl + mi.Name;
                 string url = sourceUrl.ToLower();
                 ActionHandler handler = GetAction(url);
+
                 if (handler != null)
                 {
                     server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controllerType.Name,
@@ -116,6 +125,9 @@ namespace BeetleX.FastHttpApi
                     continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.DecodeType = decodeType;
+                if (mi.GetCustomAttribute<PostAttribute>(false) != null)
+                    handler.Method = "POST";
                 handler.SourceUrl = sourceUrl;
                 handler.Filters.AddRange(filters);
                 fas = mi.GetCustomAttributes<FilterAttribute>(false);
@@ -179,7 +191,7 @@ namespace BeetleX.FastHttpApi
                 try
                 {
 
-                    WebsocketJsonContext dc = new WebsocketJsonContext(server, request, data);
+                    WebsocketJsonContext dc = new WebsocketJsonContext(server, request, new Data.JsonDataConext(data));
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
                     ActionContext context = new ActionContext(handler, dc);
@@ -240,7 +252,42 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    HttpContext pc = new HttpContext(server, request, response);
+                    if (string.Compare(request.Method, handler.Method, true) != 0)
+                    {
+                        if (server.EnableLog(EventArgs.LogType.Warring))
+                            server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} execute {1} action  {1} not support", request.ClientIPAddress, request.Url, request.Method);
+                        NotSupportResult notSupportResult = new NotSupportResult("{0} action not support {1}", request.Url, request.Method);
+                        response.Result(notSupportResult);
+                        return;
+                    }
+
+                    Data.IDataContext datacontext;
+                   
+                    string bodyValue;
+                    if (handler.DecodeType == Data.DecodeType.Json)
+                    {
+                        if (request.Length > 0)
+                            bodyValue = request.Stream.ReadString(request.Length);
+                        else
+                            bodyValue = "{}";
+                        JToken token = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(bodyValue);
+                        datacontext = new Data.JsonDataConext(token);
+                    }
+                    else if (handler.DecodeType == Data.DecodeType.FormUrl)
+                    {
+                        if (request.Length > 0)
+                            bodyValue = request.Stream.ReadString(request.Length);
+                        else
+                            bodyValue = "";
+                        datacontext = new Data.UrlEncodeDataContext(bodyValue);
+                    }
+                    else
+                    {
+                        datacontext = new Data.DataContxt();
+                    }
+
+                    request.QueryString.CopyTo(datacontext);
+                    HttpContext pc = new HttpContext(server, request, response, datacontext);
                     long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;
                     ActionContext context = new ActionContext(handler, pc);

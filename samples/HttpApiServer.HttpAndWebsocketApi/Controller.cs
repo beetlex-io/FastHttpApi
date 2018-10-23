@@ -9,9 +9,9 @@ using BeetleX.EventArgs;
 namespace HttpApiServer.HttpAndWebsocketApi
 {
     [BeetleX.FastHttpApi.Controller]
-    public class Controller : IController
+    public class Home : IController
     {
-        public Controller()
+        public Home()
         {
             mEmployees = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Employee>>(Datas.Employees);
             mCustomers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Customer>>(Datas.Customers);
@@ -40,7 +40,8 @@ namespace HttpApiServer.HttpAndWebsocketApi
         /// <param name="id">雇员ID</param>
         /// <param name="emp">雇员信息:{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}</param>
         /// <returns>bool</returns>
-        public bool EditEmployee(int id, [BodyParameter]Employee emp, IHttpContext context)
+        [Post]
+        public bool EditEmployee(int id,Employee emp, IHttpContext context)
         {
             Employee record = mEmployees.Find(e => e.EmployeeID == id);
             if (record != null)

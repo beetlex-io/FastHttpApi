@@ -62,12 +62,12 @@
 </body>
 <script>
     async function setCookie() {
-        var result = await $setCookie($('#cookieName').val(), $('#cookieValue').val(),true);
+        var result = await HomesetCookie($('#cookieName').val(), $('#cookieValue').val(), true);
         if (result.Data == true)
             alert('设置成功!')
     }
     async function getCookie() {
-        var result = await $getCookie($('#getcookieName').val(), true);
+        var result = await HomegetCookie($('#getcookieName').val(), true);
         $('#getcookieValue').val(result.Data);
     }
 </script>

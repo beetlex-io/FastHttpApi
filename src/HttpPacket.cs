@@ -11,20 +11,23 @@ namespace BeetleX.FastHttpApi
     public class HttpPacket : IPacket
     {
 
-        public HttpPacket(HttpConfig serverConfig, IDataFrameSerializer dataPacketSerializer)
+        public HttpPacket(HttpApiServer server, IDataFrameSerializer dataPacketSerializer)
         {
-            mServerConfig = serverConfig;
+            mServerConfig = server.ServerConfig;
             mDataPacketSerializer = dataPacketSerializer;
+            mServer = server;
         }
 
         public EventHandler<PacketDecodeCompletedEventArgs> Completed { get; set; }
 
         public IPacket Clone()
         {
-            return new HttpPacket(mServerConfig, this.mDataPacketSerializer);
+            return new HttpPacket(mServer, this.mDataPacketSerializer);
         }
 
         private HttpConfig mServerConfig;
+
+        private HttpApiServer mServer;
 
         private PacketDecodeCompletedEventArgs mCompletedArgs = new PacketDecodeCompletedEventArgs();
 
@@ -43,7 +46,7 @@ namespace BeetleX.FastHttpApi
         START:
             if (mRequest == null)
             {
-                mRequest = new HttpRequest(session);
+                mRequest = new HttpRequest(session,mServer);
             }
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {

@@ -23,7 +23,7 @@
             helloControl = new Vue({ el: '#hello', data: { Data: { Name: '', Hello: '', Time: '' } } });
         });
         async function Submit() {
-            var result = await $Hello(helloControl.Data.Name);
+            var result = await HomeHello(helloControl.Data.Name);
             helloControl.Data.Hello = result.Data.Hello;
             helloControl.Data.Time = result.Data.Time;
         }

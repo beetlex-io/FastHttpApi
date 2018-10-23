@@ -34,7 +34,7 @@ FastHttpApiWebSocket.prototype.onClose = function (evt) {
     if (evt.code == 1006) {
         setTimeout(function () {
             _this.Connect();
-        }, 1000);
+        }, 2000);
     }
 
 }
@@ -62,63 +62,68 @@ FastHttpApiWebSocket.prototype.Connect = function () {
 }
 
 
-function FastHttpApi(url, params, http) {
+function FastHttpApi(url, params, http, post) {
     if (http == true)
         this.http = true;
     else
         this.http = false;
     this.url = url;
+    this.post = false;
+    if (post == true)
+        this.post = true;
     this.params = params;
     if (!this.params)
         this.params = new Object();
 
 }
-FastHttpApi.prototype.execute = function (callback) {
+
+FastHttpApi.prototype.sync = function () {
+    var _this = this;
+    return new Promise(resolve => {
+        _this.execute(function (result) {
+            resolve(result);
+        });
+    });
+}
+FastHttpApi.prototype.httpRequest = function () {
+    this.http = true;
+    return this.sync();
+}
+
+FastHttpApi.prototype.execute = function (callback, http) {
+    if (http == true)
+        this.http = true;
     var id = ++__id;
     if (__id > 1024)
-        __id = 1024;
+        __id = 0;
+    var httpurl;
+    var keys;
+    var index;
     this.params['_requestid'] = id;
     if (this.http || __websocket.status == false) {
-        if (this.params['body']) {
-            //post
-            var body;
-            var httpurl = this.url;
-            var keys = Object.keys(this.params);
-            var index = 0;
-            for (i = 0; i < keys.length; i++) {
-                if (keys[i] == 'body') {
-                    body = this.params[keys[i]];
-                }
-                else {
-                    if (index == 0) {
-                        httpurl += "?";
-                    }
-                    else {
-                        httpurl += "&";
-                    }
-                    httpurl += keys[i] + '=' + this.params[keys[i]];
-                    index++;
-                }
-            }
-            $.post(httpurl, JSON.stringify(body), function (result) {
+        if (this.post) {
+            httpurl = this.url;
+            $.post(httpurl, JSON.stringify(this.params), function (result) {
                 if (callback)
                     callback(result);
             });
         }
         else {
             //get
-            var httpurl = this.url;
-            var keys = Object.keys(this.params);
-            var index = 0;
+            httpurl = this.url;
+            keys = Object.keys(this.params);
+            index = 0;
             for (i = 0; i < keys.length; i++) {
-                if (index == 0) {
-                    httpurl += "?";
+                if (this.params[keys[i]]) {
+                    if (index == 0) {
+                        httpurl += "?";
+                    }
+                    else {
+                        httpurl += "&";
+                    }
+                    httpurl += keys[i] + '=' + encodeURIComponent(this.params[keys[i]]);
+                    index++;
                 }
-                else {
-                    httpurl += "&";
-                }
-                httpurl += keys[i] + '=' + this.params[keys[i]];
-                index++;
             }
             $.get(httpurl, function (result) {
                 if (callback)
@@ -141,8 +146,8 @@ function api_disconnect(callback) {
     __disconnect = callback;
 }
 
-function api(url, params, http) {
-    return new FastHttpApi(url, params, http);
+function api(url, params, http, post) {
+    return new FastHttpApi(url, params, http, post);
 }
 
 function api_receive(callback) {
@@ -151,3 +156,4 @@ function api_receive(callback) {
 
 var __websocket = new FastHttpApiWebSocket();
 __websocket.Connect();
+

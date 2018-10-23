@@ -22,7 +22,8 @@ namespace HttpApiServer.Filters
             return string.Format("{0}+{1}={2}", a, b, a + b);
         }
         // /post?name=
-        public object Post(string name, [BodyParameter] UserInfo data)
+        [Post]
+        public object Post(string name, UserInfo data)
         {
             return data;
         }
@@ -37,7 +38,8 @@ namespace HttpApiServer.Filters
             return Employee.List(count);
         }
         // post /AddEmployee 
-        public Employee AddEmployee([BodyParameter]Employee item)
+        [Post]
+        public Employee AddEmployee(Employee item)
         {
             return item;
         }

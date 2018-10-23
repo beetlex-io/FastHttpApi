@@ -85,7 +85,7 @@
     });
     async function Modify() {
 
-        var result = await $EditEmployee(employeeID, empInfoBlock.Data);
+        var result = await HomeEditEmployee(employeeID, empInfoBlock.Data, true);
         if (result.Code == 200)
             window.location.href = "employees.html";
         else
@@ -93,7 +93,7 @@
 
     }
     async function GetEmployee() {
-        var result = await $GetEmployee(employeeID);
+        var result = await HomeGetEmployee(employeeID);
         empInfoBlock = new Vue({
             el: '#empInfo',
             data: result

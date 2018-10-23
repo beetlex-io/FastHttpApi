@@ -5,8 +5,8 @@
     <meta charset="utf-8" />
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/bootstrap-theme.css" rel="stylesheet" />
-
     <script src="js/jquery_2_1_min.js"></script>
+    <script src="js/FastHttpApi.js"></script>
     <script src="js/apis.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -36,7 +36,7 @@
 
                 <li role="presentation"><a href="index.html">聊天室</a></li>
                 <li role="presentation" class="active"><a href="#">管理</a></li>
-                <li role="presentation"><a href="/_admin/index.html" target="_blank">服务后台</a></li>
+            
             </ul>
             <br />
             <div class="col-md-3" role="main">
@@ -151,7 +151,7 @@
                 var items = getSelectItems();
                 if (items.length > 0) {
                     if (confirm('是否要清除告诉的连接?')) {
-                        var result = await $CloseSession(items);
+                        var result = await ChatCloseSession(items);
                     }
                 }
             }
@@ -163,7 +163,7 @@
 
             async function listRoomUsers() {
 
-                var result = await $GetRoomOnlines(activeRoom);
+                var result = await ChatGetRoomOnlines(activeRoom);
                 lstUserControl.Data = result.Data;
 
 
@@ -171,12 +171,12 @@
             }
 
             async function listRoom() {
-                var result = await $ListRooms();
+                var result = await ChatListRooms();
                 lstRoomControl.Data = result.Data;
             }
             async function closeRoom(name) {
                 if (confirm('是否要关闭房间?')) {
-                    var result = await $CloseRoom(name);
+                    var result = await ChatCloseRoom(name);
                     if (result.Code == 200) {
                         listRoom();
                     }
@@ -189,7 +189,7 @@
             api_connect(async function () {
                 listRoom();
                 $('#lstbody').empty();
-                await $Login('admin');
+                await ChatLogin('admin');
             });
             function GetTime() {
                 var now = new Date();

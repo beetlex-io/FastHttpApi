@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.FastHttpApi.Data;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,7 +20,15 @@ namespace BeetleX.FastHttpApi
             Controller = controller;
             LoadParameter();
             Filters = new List<FilterAttribute>();
+            Method = "GET";
+            DecodeType = DecodeType.Json;
         }
+
+
+        public Data.DecodeType DecodeType { get; set; }
+
+
+        public string Method { get; set; }
 
         public string Remark { get; set; }
 
@@ -118,15 +127,8 @@ namespace BeetleX.FastHttpApi
                 else
                 {
 
+                    pb = new DefaultParameter();
 
-                    if (pi.ParameterType.GetInterface("BeetleX.HttpExtend.IBodyFlag") != null)
-                    {
-                        pb = new BodyParameter();
-                    }
-                    else
-                    {
-                        pb = new DefaultParameter();
-                    }
                 }
                 pb.Name = pi.Name;
                 pb.Type = pi.ParameterType;
@@ -171,7 +173,10 @@ namespace BeetleX.FastHttpApi
 
         public abstract object GetValue(IHttpContext context);
 
-        public abstract object DefaultValue();
+        public virtual object DefaultValue()
+        {
+            return null;
+        }
 
 
 
@@ -359,38 +364,6 @@ namespace BeetleX.FastHttpApi
 
     }
 
-    public class BodyParameter : ParameterBinder
-    {
-        public override object GetValue(IHttpContext context)
-        {
-            return context.Data.GetBody(this.Type);
-        }
-        public override object DefaultValue()
-        {
-            object value = new object();
-            try
-            {
-                if (Type.IsArray)
-                {
-                    value = Array.CreateInstance(Type, 0);
-                }
-                else if (Type.GetInterface("IEnumerable") != null && Type.IsGenericType)
-                {
-                    System.Collections.ArrayList list = new ArrayList();
-                    Type[] subtype = Type.GetGenericArguments();
-                    list.Add(Activator.CreateInstance(subtype[0]));
-                    list.Add(Activator.CreateInstance(subtype[0]));
-                    value = list;
-                }
-                else
-                {
-                    value = Activator.CreateInstance(Type);
-                }
-            }
-            catch { }
-            return value;
-        }
-    }
 
     class RequestParameter : ParameterBinder
     {
@@ -462,13 +435,11 @@ namespace BeetleX.FastHttpApi
         {
             return context.Data;
         }
-
         public override bool DataParameter => false;
         public override object DefaultValue()
         {
             return new object();
         }
-
 
     }
 

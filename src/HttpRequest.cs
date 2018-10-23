@@ -16,13 +16,16 @@ namespace BeetleX.FastHttpApi
 
     public class HttpRequest
     {
-        public HttpRequest(ISession session)
+        public HttpRequest(ISession session, HttpApiServer httpApiServer)
         {
             Header = new Header();
             this.Session = session;
             mState = LoadedState.None;
             WebSocket = false;
+            this.Server = httpApiServer;
         }
+
+
 
         public bool WebSocket { get; set; }
 
@@ -38,7 +41,7 @@ namespace BeetleX.FastHttpApi
 
         internal LoadedState State => mState;
 
-        internal PipeStream Stream => mStream;
+        public PipeStream Stream => mStream;
 
         public bool KeepAlive { get; set; }
 
@@ -99,6 +102,17 @@ namespace BeetleX.FastHttpApi
                     Url = result.Item2;
                     BaseUrl = HttpParse.GetBaseUrlToLower(Url);
                     Ext = HttpParse.GetBaseUrlExt(BaseUrl);
+                    string rewriteUrl = null;
+                    if (Server.UrlRewrite.Match(this, out rewriteUrl))
+                    {
+                        if (Server.EnableLog(EventArgs.LogType.Info))
+                        {
+                            Server.BaseServer.Log(EventArgs.LogType.Info, Session, "request rewrite {0}  to {1}", Url, rewriteUrl);
+                        }
+                        Url = rewriteUrl;
+                        BaseUrl = HttpParse.GetBaseUrlToLower(Url);
+                        Ext = HttpParse.GetBaseUrlExt(BaseUrl);
+                    }
                     HttpVersion = result.Item3;
                     HttpParse.AnalyzeQueryString(Url, mQueryString);
                     mState = LoadedState.Method;
@@ -114,7 +128,7 @@ namespace BeetleX.FastHttpApi
                 {
                     mState = LoadedState.Header;
                     int.TryParse(Header[HeaderTypeFactory.CONTENT_LENGTH], out mLength);
-                    KeepAlive = string.Compare(Header[HeaderTypeFactory.CONNECTION], "Keep-Alive", true) == 0;
+                    KeepAlive = string.Compare(Header[HeaderTypeFactory.CONNECTION], "close", true) != 0;
                 }
             }
         }

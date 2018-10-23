@@ -101,7 +101,7 @@
     <script>
         function receive(result) {
             if (result.Data.type == 'login' || result.Data.type == 'quit') {
-                $ListOnlines$async().execute(function (result) {
+                ChatListOnlinesAsync().execute(function (result) {
                     listUserControl.Data = result.Data;
                 });
             }
@@ -117,22 +117,20 @@
                 return;
             }
 
-            var result = await $Talk(nickName, msg);
+            var result = await ChatTalk(nickName, msg);
             if (result.Code != 200)
                 alert(result.Error);
             else
                 $('#talkMsg').val('');
 
         }
-        var nickName;
-
         async function login() {
             nickName = $('#userName').val();
             if (!nickName) {
                 alert("enter you name!")
                 return;
             }
-            var result = await $Login(nickName);
+            var result = await ChatLogin(nickName);
             if (result.Code == 200) {
                 $('#loginBar').hide();
                 $('#talkBar').show();
@@ -141,7 +139,7 @@
                 alert(result.Error);
             }
         }
-
+        var nickName;
         var messages = Array();
         var lstMessageControl;
         var listUserControl;

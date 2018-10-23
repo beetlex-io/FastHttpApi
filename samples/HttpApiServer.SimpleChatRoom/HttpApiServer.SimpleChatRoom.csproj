@@ -6,6 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="views\js\FastHttpApi.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="views\js\FastHttpApi.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
   </ItemGroup>
 

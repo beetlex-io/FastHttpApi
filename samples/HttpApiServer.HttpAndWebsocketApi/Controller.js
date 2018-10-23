@@ -3,87 +3,138 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $GetEmployee$url='/getemployee';
-///<summary>
-/// 获取雇员信息
-/// </summary>
-/// <param name="id">雇员ID</param>
-/// <returns>{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}</returns>
-function $GetEmployee(id,useHttp)
+
+
+
+/** 
+获取雇员信息 url 
+**/
+var HomeGetEmployeeUrl='/getemployee';
+/** 获取雇员信息 'var result=await HomeGetEmployee(params)'
+/* @param id 雇员ID
+/* @param useHttp only http request
+/* @return {"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}
+**/
+function HomeGetEmployee(id,useHttp)
 {
-    return api($GetEmployee$url,{id:id},useHttp).sync();
+    return api(HomeGetEmployeeUrl,{id:id},useHttp).sync();
 }
-function $GetEmployee$async(id,useHttp)
+/** 获取雇员信息 'HomeGetEmployeeAsync(params).execute(function(result){},useHttp)'
+/* @param id 雇员ID
+/* @param useHttp only http request
+/* @return {"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}
+**/
+function HomeGetEmployeeAsync(id,useHttp)
 {
-    return api($GetEmployee$url,{id:id},useHttp);
+    return api(HomeGetEmployeeUrl,{id:id},useHttp);
 }
-var $EditEmployee$url='/editemployee';
-///<summary>
-/// 修改雇员信息
-/// </summary>
-/// <param name="id">雇员ID</param>
-/// <param name="emp">雇员信息:{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}</param>
-/// <returns>bool</returns>
-function $EditEmployee(id,body,useHttp)
+/** 
+修改雇员信息 url 
+**/
+var HomeEditEmployeeUrl='/editemployee';
+/** 修改雇员信息 'var result=await HomeEditEmployee(params)'
+/* @param id 雇员ID
+/* @param emp 雇员信息:{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}
+/* @param useHttp only http request
+/* @return bool
+**/
+function HomeEditEmployee(id,emp,useHttp)
 {
-    return api($EditEmployee$url,{id:id,body:body},useHttp).sync();
+    return api(HomeEditEmployeeUrl,{id:id,emp:emp},useHttp,true).sync();
 }
-function $EditEmployee$async(id,body,useHttp)
+/** 修改雇员信息 'HomeEditEmployeeAsync(params).execute(function(result){},useHttp)'
+/* @param id 雇员ID
+/* @param emp 雇员信息:{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}
+/* @param useHttp only http request
+/* @return bool
+**/
+function HomeEditEmployeeAsync(id,emp,useHttp)
 {
-    return api($EditEmployee$url,{id:id,body:body},useHttp);
+    return api(HomeEditEmployeeUrl,{id:id,emp:emp},useHttp,true);
 }
-var $ListEmployees$url='/listemployees';
-///<summary>
-/// 获取所有雇员信息
-/// </summary>
-/// <returns>[{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}]</returns>
-function $ListEmployees(useHttp)
+/** 
+获取所有雇员信息 url 
+**/
+var HomeListEmployeesUrl='/listemployees';
+/** 获取所有雇员信息 'var result=await HomeListEmployees(params)'
+/* @param useHttp only http request
+/* @return [{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}]
+**/
+function HomeListEmployees(useHttp)
 {
-    return api($ListEmployees$url,{},useHttp).sync();
+    return api(HomeListEmployeesUrl,{},useHttp).sync();
 }
-function $ListEmployees$async(useHttp)
+/** 获取所有雇员信息 'HomeListEmployeesAsync(params).execute(function(result){},useHttp)'
+/* @param useHttp only http request
+/* @return [{"employeeID":0,"lastName":null,"firstName":null,"title":null,"titleOfCourtesy":null,"birthDate":"0001-01-01T00:00:00","hireDate":"0001-01-01T00:00:00","address":null,"city":null,"region":null,"postalCode":null,"country":null,"homePhone":null,"extension":null,"photo":null,"notes":null}]
+**/
+function HomeListEmployeesAsync(useHttp)
 {
-    return api($ListEmployees$url,{},useHttp);
+    return api(HomeListEmployeesUrl,{},useHttp);
 }
-var $GetEmployeesName$url='/getemployeesname';
-///<summary>
-/// 获取雇员名称列表
-/// </summary>
-/// <returns>[{ID="",Name=""}]</returns>
-function $GetEmployeesName(useHttp)
+/** 
+获取雇员名称列表 url 
+**/
+var HomeGetEmployeesNameUrl='/getemployeesname';
+/** 获取雇员名称列表 'var result=await HomeGetEmployeesName(params)'
+/* @param useHttp only http request
+/* @return [{ID="",Name=""}]
+**/
+function HomeGetEmployeesName(useHttp)
 {
-    return api($GetEmployeesName$url,{},useHttp).sync();
+    return api(HomeGetEmployeesNameUrl,{},useHttp).sync();
 }
-function $GetEmployeesName$async(useHttp)
+/** 获取雇员名称列表 'HomeGetEmployeesNameAsync(params).execute(function(result){},useHttp)'
+/* @param useHttp only http request
+/* @return [{ID="",Name=""}]
+**/
+function HomeGetEmployeesNameAsync(useHttp)
 {
-    return api($GetEmployeesName$url,{},useHttp);
+    return api(HomeGetEmployeesNameUrl,{},useHttp);
 }
-var $GetCustomersName$url='/getcustomersname';
-///<summary>
-/// 获取客户名称列表
-/// </summary>
-/// <returns>[{ID="",Name=""}]</returns>
-function $GetCustomersName(useHttp)
+/** 
+获取客户名称列表 url 
+**/
+var HomeGetCustomersNameUrl='/getcustomersname';
+/** 获取客户名称列表 'var result=await HomeGetCustomersName(params)'
+/* @param useHttp only http request
+/* @return [{ID="",Name=""}]
+**/
+function HomeGetCustomersName(useHttp)
 {
-    return api($GetCustomersName$url,{},useHttp).sync();
+    return api(HomeGetCustomersNameUrl,{},useHttp).sync();
 }
-function $GetCustomersName$async(useHttp)
+/** 获取客户名称列表 'HomeGetCustomersNameAsync(params).execute(function(result){},useHttp)'
+/* @param useHttp only http request
+/* @return [{ID="",Name=""}]
+**/
+function HomeGetCustomersNameAsync(useHttp)
 {
-    return api($GetCustomersName$url,{},useHttp);
+    return api(HomeGetCustomersNameUrl,{},useHttp);
 }
-var $ListOrders$url='/listorders';
-///<summary>
-/// 订单查询
-/// </summary>
-/// <param name="employeeid">雇员ID</param>
-/// <param name="customerid">客户ID</param>
-/// <param name="index">分页索引</param>
-/// <returns>{Index:0,Pages:0,Items:[order],Count:0}</returns>
-function $ListOrders(employeeid,customerid,index,useHttp)
+/** 
+订单查询 url 
+**/
+var HomeListOrdersUrl='/listorders';
+/** 订单查询 'var result=await HomeListOrders(params)'
+/* @param employeeid 雇员ID
+/* @param customerid 客户ID
+/* @param index 分页索引
+/* @param useHttp only http request
+/* @return {Index:0,Pages:0,Items:[order],Count:0}
+**/
+function HomeListOrders(employeeid,customerid,index,useHttp)
 {
-    return api($ListOrders$url,{employeeid:employeeid,customerid:customerid,index:index},useHttp).sync();
+    return api(HomeListOrdersUrl,{employeeid:employeeid,customerid:customerid,index:index},useHttp).sync();
 }
-function $ListOrders$async(employeeid,customerid,index,useHttp)
+/** 订单查询 'HomeListOrdersAsync(params).execute(function(result){},useHttp)'
+/* @param employeeid 雇员ID
+/* @param customerid 客户ID
+/* @param index 分页索引
+/* @param useHttp only http request
+/* @return {Index:0,Pages:0,Items:[order],Count:0}
+**/
+function HomeListOrdersAsync(employeeid,customerid,index,useHttp)
 {
-    return api($ListOrders$url,{employeeid:employeeid,customerid:customerid,index:index},useHttp);
+    return api(HomeListOrdersUrl,{employeeid:employeeid,customerid:customerid,index:index},useHttp);
 }

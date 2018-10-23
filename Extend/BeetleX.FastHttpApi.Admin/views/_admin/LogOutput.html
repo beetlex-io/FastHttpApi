@@ -15,7 +15,7 @@
     <style>
         .log_Debug {
             color: powderblue;
-            margin:2px;
+            margin: 2px;
         }
 
         .log_None {
@@ -90,12 +90,12 @@
             }
         });
         async function ConnectLog() {
-            var result = await $_admin$LogConnect();
+            var result = await _AdminLogConnect();
             if (result.Code == 403)
                 window.location.href = result.Data;
         }
         async function DisconnectLog() {
-            var result = await $_admin$LogDisConnect();
+            var result = await _AdminLogDisConnect();
             if (result.Code == 403)
                 window.location.href = result.Data;
         }

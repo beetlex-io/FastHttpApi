@@ -18,8 +18,13 @@ namespace HttpApiServer.HelloWorld
         }
     }
     [Controller]
-    public class Controller
+    public class Home
     {
+        /// <summary>
+        /// Hello Word
+        /// </summary>
+        /// <param name="name">string:  you name</param>
+        /// <returns>string</returns>
         public object Hello(string name)
         {
             return new { Hello = "hello " + name, Time = DateTime.Now };

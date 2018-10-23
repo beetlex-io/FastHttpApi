@@ -168,8 +168,6 @@
                     </div>
                 </div>
 
-
-
             </div>
 
         </div>
@@ -226,7 +224,7 @@
 
             networkMonitor = new Monitor('networkCanvas');
             netInput = networkMonitor.create();
-            netInput.maxValue =  10;
+            netInput.maxValue = 10;
             netInput.label = "Network Input(MB)";
 
             netOutput = networkMonitor.create();
@@ -239,18 +237,18 @@
 
         });
         async function LogConnect() {
-            var result = await $_admin$LogConnect();
+            var result = await _AdminLogConnect();
             if (result.Code == 403)
                 window.location.href = result.Data;
         }
         async function LogDisConnect() {
-            var result = await $_admin$LogDisConnect();
+            var result = await _AdminLogDisConnect();
             if (result.Code == 403)
                 window.location.href = result.Data;
         }
 
         async function GetSettingInfo() {
-            var result = await $_admin$GetSettingInfo();
+            var result = await _AdminGetSettingInfo();
             if (result.Code == 403)
                 window.location.href = result.Data;
             setting.MaxConn = result.Data.MaxConn;
@@ -262,7 +260,7 @@
 
         async function UpSetting() {
             if (confirm('是否要更改设置？')) {
-                var result = await $_admin$Setting(setting);
+                var result = await _AdminSetting(setting);
                 if (result.Code == 403)
                     window.location.href = result.Data;
                 if (result.Code == 200)
@@ -270,7 +268,7 @@
             }
         }
         async function GetStatus() {
-            var result = await $_admin$GetServerInfo();
+            var result = await _AdminGetServerInfo();
             if (result.Code == 403)
                 window.location.href = result.Data;
             statusControl.Data = result.Data;

@@ -81,16 +81,20 @@
             return items;
         }
 
-        function disconnect() {
+        async function disconnect() {
             var items = getSelectItems();
             if (items.length > 0) {
                 if (confirm('是否要断开选择的连接?')) {
                     var url = "/_admin/CloseSession";
                     var sessions = getSelectItems();
                     if (sessions.length > 0) {
-                        $.post(url, JSON.stringify(sessions), function (result) {
+                        var result = await _AdminCloseSession(sessions, true);
+                        if (result.Code == 200) {
                             searchConn(0);
-                        });
+                        }
+                        else {
+                            alert(result.Error);
+                        }
                     }
                 }
             }
@@ -103,7 +107,7 @@
 
 
         async function searchConn(index) {
-            var result = await $_admin$ListConnection(index);
+            var result = await _AdminListConnection(index);
             if (result.Code == 403) {
                 window.location.href = result.Data;
                 return;

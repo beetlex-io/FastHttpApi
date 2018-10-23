@@ -19,7 +19,7 @@ namespace HttpApiServer.Cookies
     }
 
     [Controller]
-    public class Test
+    public class Home
     {
         public bool setCookie(string name, string value, IHttpContext context)
         {

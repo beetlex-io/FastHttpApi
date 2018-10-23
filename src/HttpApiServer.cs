@@ -48,13 +48,18 @@ namespace BeetleX.FastHttpApi
                 }
             }
             mResourceCenter = new StaticResurce.ResourceCenter(this);
+            mUrlRewrite = new Route.RouteRewrite(this);
         }
+
+        private Route.RouteRewrite mUrlRewrite;
 
         private StaticResurce.ResourceCenter mResourceCenter;
 
         private IServer mServer;
 
         private ServerCounter mServerCounter;
+
+        public Route.RouteRewrite UrlRewrite => mUrlRewrite;
 
         public ServerCounter ServerCounter => mServerCounter;
 
@@ -167,7 +172,7 @@ namespace BeetleX.FastHttpApi
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
-            HttpPacket hp = new HttpPacket(this.ServerConfig, this);
+            HttpPacket hp = new HttpPacket(this, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             Name = "FastHttpApi Http Server";
             if (mAssemblies != null)
@@ -184,6 +189,7 @@ namespace BeetleX.FastHttpApi
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
+            mUrlRewrite.AddRegion(this.ServerConfig.Routes);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {

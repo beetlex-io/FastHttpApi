@@ -154,6 +154,39 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        public static void AsynczeFromUrlEncoded(ReadOnlySpan<char> url, Data.IDataContext context)
+        {
+            int offset = 0;
+            string name = null, value = null;
+            for (int i = 0; i < url.Length; i++)
+            {
+                if (url[i] == '=')
+                {
+                    name = new string(url.Slice(offset, i - offset));
+                    offset = i + 1;
+                }
+                if (name != null && url[i] == '&')
+                {
+                    if (i > offset)
+                    {
+                        value = new string(url.Slice(offset, i - offset));
+                        context.Add(name, value);
+                        offset = i + 1;
+                    }
+                    name = null;
+
+                }
+            }
+            if (name != null)
+            {
+                if (url.Length > offset)
+                {
+                    value = new string(url.Slice(offset, url.Length - offset));
+                    context.Add(name, value);
+                }
+            }
+        }
+
         public static void AnalyzeQueryString(ReadOnlySpan<char> url, QueryString qs)
         {
             int offset = 0;

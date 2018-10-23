@@ -18,7 +18,7 @@ namespace HttpApiServer.SimpleChatRoom
         }
     }
     [Controller]
-    public class Controller : IController
+    public class Chat : IController
     {
         public bool Login(string nickName, IHttpContext context)
         {

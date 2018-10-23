@@ -113,12 +113,10 @@
 
         async function uploadFile(rf) {
             if (rf.completed() != true) {
-                // console.log(rf.name + " updating:" + rf.index);
+              
                 var data = await rf.read();
                 if (!data.errCode) {
-                    var result = await $_admin$files$UploadFile(root, data);
-                    // console.log(rf.name + " uploadstate " + result.Code);
-
+                    var result = await _FileManagerUploadFile(root, data);
                     if (result.Code != 200) {
                         alert(result.Error);
                         removeUpload(rf);
@@ -154,7 +152,7 @@
 
         async function DeleteResource(name, isfile) {
             if (confirm('是否要删除文件（' + name + '）')) {
-                var result = await $_admin$files$DeleteResource(root, name, isfile);
+                var result = await _FileManagerDeleteResource(root, name, isfile);
                 if (result.Code == 403) {
                     window.location.href = result.Data;
                 }
@@ -170,7 +168,7 @@
                 alert("请输入文件夹名称!")
                 return;
             }
-            var result = await $_admin$files$CreateFolder(root, $('#folderName').val());
+            var result = await _FileManagerCreateFolder(root, $('#folderName').val());
             if (result.Code == 403) {
                 window.location.href = result.Data;
             }
@@ -181,7 +179,7 @@
         }
 
         async function listResource() {
-            var result = await $_admin$files$List(root);
+            var result = await _FileManagerList(root);
             if (result.Code == 403) {
                 window.location.href = result.Data;
             }

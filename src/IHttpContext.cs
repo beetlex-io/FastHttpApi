@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.FastHttpApi.Data;
+using System;
 using System.Collections.Generic;
 using System.Text;
 

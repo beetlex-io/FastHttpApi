@@ -9,7 +9,7 @@ using System.ComponentModel;
 namespace HttpApiServer.Chat
 {
     [Controller]
-    public class Controller : IController
+    public class Chat : IController
     {
         /// <summary>
         ///  获取在线人数
@@ -74,7 +74,8 @@ namespace HttpApiServer.Chat
         /// </summary>
         /// <param name="sessions">[id1,id2,id3]</param>
         [Description("关闭连接")]
-        public void CloseSession([BodyParameter]List<int> sessions, IHttpContext context)
+        [Post]
+        public void CloseSession(List<int> sessions, IHttpContext context)
         {
             foreach (int i in sessions)
             {
@@ -248,7 +249,7 @@ namespace HttpApiServer.Chat
         public class Room : IComparable
         {
 
-            public Controller Controller
+            public Chat Controller
             {
                 get; set;
             }

@@ -9,10 +9,10 @@ namespace BeetleX.FastHttpApi.Admin
 {
     [Controller(BaseUrl = "/_admin/")]
     [LoginFilter]
-    public class AdminController : IController
+    public class _Admin : IController
     {
 
-        public AdminController()
+        public _Admin()
         {
 
         }
@@ -67,8 +67,8 @@ namespace BeetleX.FastHttpApi.Admin
             public bool LogToConsole { get; set; }
             public bool WriteLog { get; set; }
         }
-
-        public void Setting([BodyParameter] SettingInfo setting, IHttpContext context)
+        [Post]
+        public void Setting(SettingInfo setting, IHttpContext context)
         {
             Server.ServerConfig.MaxConnections = setting.MaxConn;
             Server.ServerConfig.WebSocketMaxRPS = setting.WSMaxRPS;
@@ -100,8 +100,8 @@ namespace BeetleX.FastHttpApi.Admin
         }
 
 
-
-        public void CloseSession([BodyParameter]List<SessionItem> items, IHttpContext context)
+        [Post]
+        public void CloseSession(List<SessionItem> items, IHttpContext context)
         {
             foreach (SessionItem item in items)
             {
@@ -197,7 +197,7 @@ namespace BeetleX.FastHttpApi.Admin
 
         public override void Execute(ActionContext context)
         {
-            string tokey = context.HttpContext.Request.Cookies[AdminController.LOGIN_TOKEN];
+            string tokey = context.HttpContext.Request.Cookies[_Admin.LOGIN_TOKEN];
             string ip = context.HttpContext.Request.ClientIPAddress.Split(':')[0];
             string stokey = HttpParse.MD5Encrypt(context.HttpContext.Server.ServerConfig.Manager
                 + DateTime.Now.Day

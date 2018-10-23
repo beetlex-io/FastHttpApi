@@ -9,7 +9,7 @@ namespace BeetleX.FastHttpApi.Admin
     [Controller(BaseUrl = "/_admin/files")]
     [LoginFilter]
     [FileManagerFilter]
-    public class FileManagerController : BeetleX.FastHttpApi.IController
+    public class _FileManager : BeetleX.FastHttpApi.IController
     {
         private string mPath;
         public const string FILE_UPLOAE_MANAGER = "_FILE_UPLOAD_MANAGER";
@@ -22,7 +22,8 @@ namespace BeetleX.FastHttpApi.Admin
                 System.IO.Directory.CreateDirectory(newFolder);
 
         }
-        public void UploadFile(string folder, [BodyParameter]UploadInfo info, IHttpContext context)
+        [Post]
+        public void UploadFile(string folder, UploadInfo info, IHttpContext context)
         {
             if (string.IsNullOrEmpty(folder))
                 folder = System.IO.Path.DirectorySeparatorChar.ToString();
@@ -114,7 +115,7 @@ namespace BeetleX.FastHttpApi.Admin
             {
                 if (mPath[mPath.Length - 1] == System.IO.Path.DirectorySeparatorChar)
                 {
-                    e.File= mPath + e.Url.Substring(1, e.Url.Length - 1);
+                    e.File = mPath + e.Url.Substring(1, e.Url.Length - 1);
                 }
                 else
                 {

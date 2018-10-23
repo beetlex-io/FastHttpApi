@@ -3,21 +3,36 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $setCookie$url='/setcookie';
-function $setCookie(name,value,useHttp)
+
+
+
+var HomesetCookieUrl='/setcookie';
+/**
+* 'var result= await HomesetCookie(params);'
+**/
+function HomesetCookie(name,value,useHttp)
 {
-    return api($setCookie$url,{name:name,value:value},useHttp).sync();
+    return api(HomesetCookieUrl,{name:name,value:value},useHttp).sync();
 }
-function $setCookie$async(name,value,useHttp)
+/**
+* 'HomesetCookieAsync(params).execute(function(result){},useHttp);'
+**/
+function HomesetCookieAsync(name,value,useHttp)
 {
-    return api($setCookie$url,{name:name,value:value},useHttp);
+    return api(HomesetCookieUrl,{name:name,value:value},useHttp);
 }
-var $getCookie$url='/getcookie';
-function $getCookie(name,useHttp)
+var HomegetCookieUrl='/getcookie';
+/**
+* 'var result= await HomegetCookie(params);'
+**/
+function HomegetCookie(name,useHttp)
 {
-    return api($getCookie$url,{name:name},useHttp).sync();
+    return api(HomegetCookieUrl,{name:name},useHttp).sync();
 }
-function $getCookie$async(name,useHttp)
+/**
+* 'HomegetCookieAsync(params).execute(function(result){},useHttp);'
+**/
+function HomegetCookieAsync(name,useHttp)
 {
-    return api($getCookie$url,{name:name},useHttp);
+    return api(HomegetCookieUrl,{name:name},useHttp);
 }

@@ -75,7 +75,7 @@
     });
 
     async function Init() {
-        var result = await $ListEmployees();
+        var result = await HomeListEmployees();
         var empsBlock = new Vue({
             el: '#lstbody',
             data: result

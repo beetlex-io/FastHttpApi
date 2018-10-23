@@ -3,39 +3,66 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $_admin$files$CreateFolder$url='/_admin/files/createfolder';
-function $_admin$files$CreateFolder(folder,name,useHttp)
+
+
+
+var _FileManagerCreateFolderUrl='/_admin/files/createfolder';
+/**
+* 'var result= await _FileManagerCreateFolder(params);'
+**/
+function _FileManagerCreateFolder(folder,name,useHttp)
 {
-    return api($_admin$files$CreateFolder$url,{folder:folder,name:name},useHttp).sync();
+    return api(_FileManagerCreateFolderUrl,{folder:folder,name:name},useHttp).sync();
 }
-function $_admin$files$CreateFolder$async(folder,name,useHttp)
+/**
+* '_FileManagerCreateFolderAsync(params).execute(function(result){},useHttp);'
+**/
+function _FileManagerCreateFolderAsync(folder,name,useHttp)
 {
-    return api($_admin$files$CreateFolder$url,{folder:folder,name:name},useHttp);
+    return api(_FileManagerCreateFolderUrl,{folder:folder,name:name},useHttp);
 }
-var $_admin$files$UploadFile$url='/_admin/files/uploadfile';
-function $_admin$files$UploadFile(folder,body,useHttp)
+var _FileManagerUploadFileUrl='/_admin/files/uploadfile';
+/**
+* 'var result= await _FileManagerUploadFile(params);'
+**/
+function _FileManagerUploadFile(folder,info,useHttp)
 {
-    return api($_admin$files$UploadFile$url,{folder:folder,body:body},useHttp).sync();
+    return api(_FileManagerUploadFileUrl,{folder:folder,info:info},useHttp,true).sync();
 }
-function $_admin$files$UploadFile$async(folder,body,useHttp)
+/**
+* '_FileManagerUploadFileAsync(params).execute(function(result){},useHttp);'
+**/
+function _FileManagerUploadFileAsync(folder,info,useHttp)
 {
-    return api($_admin$files$UploadFile$url,{folder:folder,body:body},useHttp);
+    return api(_FileManagerUploadFileUrl,{folder:folder,info:info},useHttp,true);
 }
-var $_admin$files$DeleteResource$url='/_admin/files/deleteresource';
-function $_admin$files$DeleteResource(folder,name,file,useHttp)
+var _FileManagerDeleteResourceUrl='/_admin/files/deleteresource';
+/**
+* 'var result= await _FileManagerDeleteResource(params);'
+**/
+function _FileManagerDeleteResource(folder,name,file,useHttp)
 {
-    return api($_admin$files$DeleteResource$url,{folder:folder,name:name,file:file},useHttp).sync();
+    return api(_FileManagerDeleteResourceUrl,{folder:folder,name:name,file:file},useHttp).sync();
 }
-function $_admin$files$DeleteResource$async(folder,name,file,useHttp)
+/**
+* '_FileManagerDeleteResourceAsync(params).execute(function(result){},useHttp);'
+**/
+function _FileManagerDeleteResourceAsync(folder,name,file,useHttp)
 {
-    return api($_admin$files$DeleteResource$url,{folder:folder,name:name,file:file},useHttp);
+    return api(_FileManagerDeleteResourceUrl,{folder:folder,name:name,file:file},useHttp);
 }
-var $_admin$files$List$url='/_admin/files/list';
-function $_admin$files$List(folder,useHttp)
+var _FileManagerListUrl='/_admin/files/list';
+/**
+* 'var result= await _FileManagerList(params);'
+**/
+function _FileManagerList(folder,useHttp)
 {
-    return api($_admin$files$List$url,{folder:folder},useHttp).sync();
+    return api(_FileManagerListUrl,{folder:folder},useHttp).sync();
 }
-function $_admin$files$List$async(folder,useHttp)
+/**
+* '_FileManagerListAsync(params).execute(function(result){},useHttp);'
+**/
+function _FileManagerListAsync(folder,useHttp)
 {
-    return api($_admin$files$List$url,{folder:folder},useHttp);
+    return api(_FileManagerListUrl,{folder:folder},useHttp);
 }

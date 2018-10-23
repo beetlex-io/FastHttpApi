@@ -3,138 +3,222 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $Onlines$url='/onlines';
-///<summary>
-///  获取在线人数
-/// </summary>
-/// <returns>{ID, Name, IPAddress}</returns>
-function $Onlines(useHttp)
+
+
+
+/** 
+获取在线人数 url 
+**/
+var ChatOnlinesUrl='/onlines';
+/** 获取在线人数 'var result=await ChatOnlines(params)'
+/* @param useHttp only http request
+/* @return {ID, Name, IPAddress}
+**/
+function ChatOnlines(useHttp)
 {
-    return api($Onlines$url,{},useHttp).sync();
+    return api(ChatOnlinesUrl,{},useHttp).sync();
 }
-function $Onlines$async(useHttp)
+/** 获取在线人数 'ChatOnlinesAsync(params).execute(function(result){},useHttp)'
+/* @param useHttp only http request
+/* @return {ID, Name, IPAddress}
+**/
+function ChatOnlinesAsync(useHttp)
 {
-    return api($Onlines$url,{},useHttp);
+    return api(ChatOnlinesUrl,{},useHttp);
 }
-var $GetRoomOnlines$url='/getroomonlines';
-///<summary>
-/// 获取房间在线人数
-/// </summary>
-/// <param name="roomName">房间名称</param>
-/// <returns>{ID, Name, IPAddress}</returns>
-function $GetRoomOnlines(roomName,useHttp)
+/** 
+获取房间在线人数 url 
+**/
+var ChatGetRoomOnlinesUrl='/getroomonlines';
+/** 获取房间在线人数 'var result=await ChatGetRoomOnlines(params)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return {ID, Name, IPAddress}
+**/
+function ChatGetRoomOnlines(roomName,useHttp)
 {
-    return api($GetRoomOnlines$url,{roomName:roomName},useHttp).sync();
+    return api(ChatGetRoomOnlinesUrl,{roomName:roomName},useHttp).sync();
 }
-function $GetRoomOnlines$async(roomName,useHttp)
+/** 获取房间在线人数 'ChatGetRoomOnlinesAsync(params).execute(function(result){},useHttp)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return {ID, Name, IPAddress}
+**/
+function ChatGetRoomOnlinesAsync(roomName,useHttp)
 {
-    return api($GetRoomOnlines$url,{roomName:roomName},useHttp);
+    return api(ChatGetRoomOnlinesUrl,{roomName:roomName},useHttp);
 }
-var $Login$url='/login';
-///<summary>
-/// 用户登陆
-/// </summary>
-/// <param name="userName">用户名</param>
-/// <returns>true|false</returns>
-function $Login(userName,useHttp)
+/** 
+用户登陆 url 
+**/
+var ChatLoginUrl='/login';
+/** 用户登陆 'var result=await ChatLogin(params)'
+/* @param userName 用户名
+/* @param useHttp only http request
+/* @return true|false
+**/
+function ChatLogin(userName,useHttp)
 {
-    return api($Login$url,{userName:userName},useHttp).sync();
+    return api(ChatLoginUrl,{userName:userName},useHttp).sync();
 }
-function $Login$async(userName,useHttp)
+/** 用户登陆 'ChatLoginAsync(params).execute(function(result){},useHttp)'
+/* @param userName 用户名
+/* @param useHttp only http request
+/* @return true|false
+**/
+function ChatLoginAsync(userName,useHttp)
 {
-    return api($Login$url,{userName:userName},useHttp);
+    return api(ChatLoginUrl,{userName:userName},useHttp);
 }
-var $ListRooms$url='/listrooms';
-///<summary>
-/// 获取所有房间信息
-/// </summary>
-/// <returns>{Name,Count}</returns>
-function $ListRooms(useHttp)
+/** 
+获取所有房间信息 url 
+**/
+var ChatListRoomsUrl='/listrooms';
+/** 获取所有房间信息 'var result=await ChatListRooms(params)'
+/* @param useHttp only http request
+/* @return {Name,Count}
+**/
+function ChatListRooms(useHttp)
 {
-    return api($ListRooms$url,{},useHttp).sync();
+    return api(ChatListRoomsUrl,{},useHttp).sync();
 }
-function $ListRooms$async(useHttp)
+/** 获取所有房间信息 'ChatListRoomsAsync(params).execute(function(result){},useHttp)'
+/* @param useHttp only http request
+/* @return {Name,Count}
+**/
+function ChatListRoomsAsync(useHttp)
 {
-    return api($ListRooms$url,{},useHttp);
+    return api(ChatListRoomsUrl,{},useHttp);
 }
-var $CloseSession$url='/closesession';
-///<summary>
-/// 关闭连接
-/// </summary>
-/// <param name="sessions">[id1,id2,id3]</param>
-function $CloseSession(body,useHttp)
+/** 
+关闭连接 url 
+**/
+var ChatCloseSessionUrl='/closesession';
+/** 关闭连接 'var result=await ChatCloseSession(params)'
+/* @param sessions [id1,id2,id3]
+/* @param useHttp only http request
+/* @return 
+**/
+function ChatCloseSession(sessions,useHttp)
 {
-    return api($CloseSession$url,{body:body},useHttp).sync();
+    return api(ChatCloseSessionUrl,{sessions:sessions},useHttp,true).sync();
 }
-function $CloseSession$async(body,useHttp)
+/** 关闭连接 'ChatCloseSessionAsync(params).execute(function(result){},useHttp)'
+/* @param sessions [id1,id2,id3]
+/* @param useHttp only http request
+/* @return 
+**/
+function ChatCloseSessionAsync(sessions,useHttp)
 {
-    return api($CloseSession$url,{body:body},useHttp);
+    return api(ChatCloseSessionUrl,{sessions:sessions},useHttp,true);
 }
-var $CloseRoom$url='/closeroom';
-///<summary>
-/// 关闭房间
-/// </summary>
-/// <param name="roomName">房间名称</param>
-function $CloseRoom(roomName,useHttp)
+/** 
+关闭房间 url 
+**/
+var ChatCloseRoomUrl='/closeroom';
+/** 关闭房间 'var result=await ChatCloseRoom(params)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return 
+**/
+function ChatCloseRoom(roomName,useHttp)
 {
-    return api($CloseRoom$url,{roomName:roomName},useHttp).sync();
+    return api(ChatCloseRoomUrl,{roomName:roomName},useHttp).sync();
 }
-function $CloseRoom$async(roomName,useHttp)
+/** 关闭房间 'ChatCloseRoomAsync(params).execute(function(result){},useHttp)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return 
+**/
+function ChatCloseRoomAsync(roomName,useHttp)
 {
-    return api($CloseRoom$url,{roomName:roomName},useHttp);
+    return api(ChatCloseRoomUrl,{roomName:roomName},useHttp);
 }
-var $CheckOutRoom$url='/checkoutroom';
-///<summary>
-/// 退出房间
-/// </summary>
-/// <param name="roomName">房间名称</param>
-/// <returns>{Code:200,Error}</returns>
-function $CheckOutRoom(roomName,useHttp)
+/** 
+退出房间 url 
+**/
+var ChatCheckOutRoomUrl='/checkoutroom';
+/** 退出房间 'var result=await ChatCheckOutRoom(params)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return {Code:200,Error}
+**/
+function ChatCheckOutRoom(roomName,useHttp)
 {
-    return api($CheckOutRoom$url,{roomName:roomName},useHttp).sync();
+    return api(ChatCheckOutRoomUrl,{roomName:roomName},useHttp).sync();
 }
-function $CheckOutRoom$async(roomName,useHttp)
+/** 退出房间 'ChatCheckOutRoomAsync(params).execute(function(result){},useHttp)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return {Code:200,Error}
+**/
+function ChatCheckOutRoomAsync(roomName,useHttp)
 {
-    return api($CheckOutRoom$url,{roomName:roomName},useHttp);
+    return api(ChatCheckOutRoomUrl,{roomName:roomName},useHttp);
 }
-var $CheckInRoom$url='/checkinroom';
-///<summary>
-/// 进入房间
-/// </summary>
-/// <param name="roomName">进入房间</param>
-/// <returns>{Code:200,Error}</returns>
-function $CheckInRoom(roomName,useHttp)
+/** 
+进入房间 url 
+**/
+var ChatCheckInRoomUrl='/checkinroom';
+/** 进入房间 'var result=await ChatCheckInRoom(params)'
+/* @param roomName 进入房间
+/* @param useHttp only http request
+/* @return {Code:200,Error}
+**/
+function ChatCheckInRoom(roomName,useHttp)
 {
-    return api($CheckInRoom$url,{roomName:roomName},useHttp).sync();
+    return api(ChatCheckInRoomUrl,{roomName:roomName},useHttp).sync();
 }
-function $CheckInRoom$async(roomName,useHttp)
+/** 进入房间 'ChatCheckInRoomAsync(params).execute(function(result){},useHttp)'
+/* @param roomName 进入房间
+/* @param useHttp only http request
+/* @return {Code:200,Error}
+**/
+function ChatCheckInRoomAsync(roomName,useHttp)
 {
-    return api($CheckInRoom$url,{roomName:roomName},useHttp);
+    return api(ChatCheckInRoomUrl,{roomName:roomName},useHttp);
 }
-var $CreateRoom$url='/createroom';
-///<summary>
-/// 创建记房间
-/// </summary>
-/// <param name="roomName">房间名称</param>
-/// <returns>{Code:200,Error}</returns>
-function $CreateRoom(roomName,useHttp)
+/** 
+创建记房间 url 
+**/
+var ChatCreateRoomUrl='/createroom';
+/** 创建记房间 'var result=await ChatCreateRoom(params)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return {Code:200,Error}
+**/
+function ChatCreateRoom(roomName,useHttp)
 {
-    return api($CreateRoom$url,{roomName:roomName},useHttp).sync();
+    return api(ChatCreateRoomUrl,{roomName:roomName},useHttp).sync();
 }
-function $CreateRoom$async(roomName,useHttp)
+/** 创建记房间 'ChatCreateRoomAsync(params).execute(function(result){},useHttp)'
+/* @param roomName 房间名称
+/* @param useHttp only http request
+/* @return {Code:200,Error}
+**/
+function ChatCreateRoomAsync(roomName,useHttp)
 {
-    return api($CreateRoom$url,{roomName:roomName},useHttp);
+    return api(ChatCreateRoomUrl,{roomName:roomName},useHttp);
 }
-var $SendMessage$url='/sendmessage';
-///<summary>
-/// 发送消息
-/// </summary>
-/// <param name="message">消息内容</param>
-function $SendMessage(message,useHttp)
+/** 
+发送消息 url 
+**/
+var ChatSendMessageUrl='/sendmessage';
+/** 发送消息 'var result=await ChatSendMessage(params)'
+/* @param message 消息内容
+/* @param useHttp only http request
+/* @return 
+**/
+function ChatSendMessage(message,useHttp)
 {
-    return api($SendMessage$url,{message:message},useHttp).sync();
+    return api(ChatSendMessageUrl,{message:message},useHttp).sync();
 }
-function $SendMessage$async(message,useHttp)
+/** 发送消息 'ChatSendMessageAsync(params).execute(function(result){},useHttp)'
+/* @param message 消息内容
+/* @param useHttp only http request
+/* @return 
+**/
+function ChatSendMessageAsync(message,useHttp)
 {
-    return api($SendMessage$url,{message:message},useHttp);
+    return api(ChatSendMessageUrl,{message:message},useHttp);
 }

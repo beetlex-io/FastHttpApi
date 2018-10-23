@@ -3,93 +3,156 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $_admin$ListApi$url='/_admin/listapi';
-function $_admin$ListApi(useHttp)
+
+
+
+var _AdminListApiUrl='/_admin/listapi';
+/**
+* 'var result= await _AdminListApi(params);'
+**/
+function _AdminListApi(useHttp)
 {
-    return api($_admin$ListApi$url,{},useHttp).sync();
+    return api(_AdminListApiUrl,{},useHttp).sync();
 }
-function $_admin$ListApi$async(useHttp)
+/**
+* '_AdminListApiAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminListApiAsync(useHttp)
 {
-    return api($_admin$ListApi$url,{},useHttp);
+    return api(_AdminListApiUrl,{},useHttp);
 }
-var $_admin$GetKey$url='/_admin/getkey';
-function $_admin$GetKey(useHttp)
+var _AdminGetKeyUrl='/_admin/getkey';
+/**
+* 'var result= await _AdminGetKey(params);'
+**/
+function _AdminGetKey(useHttp)
 {
-    return api($_admin$GetKey$url,{},useHttp).sync();
+    return api(_AdminGetKeyUrl,{},useHttp).sync();
 }
-function $_admin$GetKey$async(useHttp)
+/**
+* '_AdminGetKeyAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminGetKeyAsync(useHttp)
 {
-    return api($_admin$GetKey$url,{},useHttp);
+    return api(_AdminGetKeyUrl,{},useHttp);
 }
-var $_admin$GetSettingInfo$url='/_admin/getsettinginfo';
-function $_admin$GetSettingInfo(useHttp)
+var _AdminGetSettingInfoUrl='/_admin/getsettinginfo';
+/**
+* 'var result= await _AdminGetSettingInfo(params);'
+**/
+function _AdminGetSettingInfo(useHttp)
 {
-    return api($_admin$GetSettingInfo$url,{},useHttp).sync();
+    return api(_AdminGetSettingInfoUrl,{},useHttp).sync();
 }
-function $_admin$GetSettingInfo$async(useHttp)
+/**
+* '_AdminGetSettingInfoAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminGetSettingInfoAsync(useHttp)
 {
-    return api($_admin$GetSettingInfo$url,{},useHttp);
+    return api(_AdminGetSettingInfoUrl,{},useHttp);
 }
-var $_admin$Setting$url='/_admin/setting';
-function $_admin$Setting(body,useHttp)
+var _AdminSettingUrl='/_admin/setting';
+/**
+* 'var result= await _AdminSetting(params);'
+**/
+function _AdminSetting(setting,useHttp)
 {
-    return api($_admin$Setting$url,{body:body},useHttp).sync();
+    return api(_AdminSettingUrl,{setting:setting},useHttp,true).sync();
 }
-function $_admin$Setting$async(body,useHttp)
+/**
+* '_AdminSettingAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminSettingAsync(setting,useHttp)
 {
-    return api($_admin$Setting$url,{body:body},useHttp);
+    return api(_AdminSettingUrl,{setting:setting},useHttp,true);
 }
-var $_admin$LogConnect$url='/_admin/logconnect';
-function $_admin$LogConnect(useHttp)
+var _AdminLogConnectUrl='/_admin/logconnect';
+/**
+* 'var result= await _AdminLogConnect(params);'
+**/
+function _AdminLogConnect(useHttp)
 {
-    return api($_admin$LogConnect$url,{},useHttp).sync();
+    return api(_AdminLogConnectUrl,{},useHttp).sync();
 }
-function $_admin$LogConnect$async(useHttp)
+/**
+* '_AdminLogConnectAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminLogConnectAsync(useHttp)
 {
-    return api($_admin$LogConnect$url,{},useHttp);
+    return api(_AdminLogConnectUrl,{},useHttp);
 }
-var $_admin$LogDisConnect$url='/_admin/logdisconnect';
-function $_admin$LogDisConnect(useHttp)
+var _AdminLogDisConnectUrl='/_admin/logdisconnect';
+/**
+* 'var result= await _AdminLogDisConnect(params);'
+**/
+function _AdminLogDisConnect(useHttp)
 {
-    return api($_admin$LogDisConnect$url,{},useHttp).sync();
+    return api(_AdminLogDisConnectUrl,{},useHttp).sync();
 }
-function $_admin$LogDisConnect$async(useHttp)
+/**
+* '_AdminLogDisConnectAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminLogDisConnectAsync(useHttp)
 {
-    return api($_admin$LogDisConnect$url,{},useHttp);
+    return api(_AdminLogDisConnectUrl,{},useHttp);
 }
-var $_admin$CloseSession$url='/_admin/closesession';
-function $_admin$CloseSession(body,useHttp)
+var _AdminCloseSessionUrl='/_admin/closesession';
+/**
+* 'var result= await _AdminCloseSession(params);'
+**/
+function _AdminCloseSession(items,useHttp)
 {
-    return api($_admin$CloseSession$url,{body:body},useHttp).sync();
+    return api(_AdminCloseSessionUrl,{items:items},useHttp,true).sync();
 }
-function $_admin$CloseSession$async(body,useHttp)
+/**
+* '_AdminCloseSessionAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminCloseSessionAsync(items,useHttp)
 {
-    return api($_admin$CloseSession$url,{body:body},useHttp);
+    return api(_AdminCloseSessionUrl,{items:items},useHttp,true);
 }
-var $_admin$GetServerInfo$url='/_admin/getserverinfo';
-function $_admin$GetServerInfo(useHttp)
+var _AdminGetServerInfoUrl='/_admin/getserverinfo';
+/**
+* 'var result= await _AdminGetServerInfo(params);'
+**/
+function _AdminGetServerInfo(useHttp)
 {
-    return api($_admin$GetServerInfo$url,{},useHttp).sync();
+    return api(_AdminGetServerInfoUrl,{},useHttp).sync();
 }
-function $_admin$GetServerInfo$async(useHttp)
+/**
+* '_AdminGetServerInfoAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminGetServerInfoAsync(useHttp)
 {
-    return api($_admin$GetServerInfo$url,{},useHttp);
+    return api(_AdminGetServerInfoUrl,{},useHttp);
 }
-var $_admin$ListConnection$url='/_admin/listconnection';
-function $_admin$ListConnection(index,useHttp)
+var _AdminListConnectionUrl='/_admin/listconnection';
+/**
+* 'var result= await _AdminListConnection(params);'
+**/
+function _AdminListConnection(index,useHttp)
 {
-    return api($_admin$ListConnection$url,{index:index},useHttp).sync();
+    return api(_AdminListConnectionUrl,{index:index},useHttp).sync();
 }
-function $_admin$ListConnection$async(index,useHttp)
+/**
+* '_AdminListConnectionAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminListConnectionAsync(index,useHttp)
 {
-    return api($_admin$ListConnection$url,{index:index},useHttp);
+    return api(_AdminListConnectionUrl,{index:index},useHttp);
 }
-var $_admin$Login$url='/_admin/login';
-function $_admin$Login(name,pwd,useHttp)
+var _AdminLoginUrl='/_admin/login';
+/**
+* 'var result= await _AdminLogin(params);'
+**/
+function _AdminLogin(name,pwd,useHttp)
 {
-    return api($_admin$Login$url,{name:name,pwd:pwd},useHttp).sync();
+    return api(_AdminLoginUrl,{name:name,pwd:pwd},useHttp).sync();
 }
-function $_admin$Login$async(name,pwd,useHttp)
+/**
+* '_AdminLoginAsync(params).execute(function(result){},useHttp);'
+**/
+function _AdminLoginAsync(name,pwd,useHttp)
 {
-    return api($_admin$Login$url,{name:name,pwd:pwd},useHttp);
+    return api(_AdminLoginUrl,{name:name,pwd:pwd},useHttp);
 }

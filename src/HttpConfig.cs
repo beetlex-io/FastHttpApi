@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.FastHttpApi.Route;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -35,6 +36,8 @@ namespace BeetleX.FastHttpApi
             PacketCombined = 0;
         }
 
+
+        public UrlRoute[] Routes { get; set; }
 
         public int PacketCombined { get; set; }
 

@@ -12,9 +12,9 @@ namespace HttpApiServer.Chat
         {
 
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.Debug();
-            mApiServer.Register(typeof(Program).Assembly);
            
+            mApiServer.Register(typeof(Program).Assembly);
+            mApiServer.Debug();
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();

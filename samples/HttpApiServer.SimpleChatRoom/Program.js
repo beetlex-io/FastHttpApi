@@ -3,30 +3,51 @@ FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@m
 https://github.com/IKende/FastHttpApi
 **************************************************************************************/
 
-var $Login$url='/login';
-function $Login(nickName,useHttp)
+
+
+
+var ChatLoginUrl='/login';
+/**
+* 'var result= await ChatLogin(params);'
+**/
+function ChatLogin(nickName,useHttp)
 {
-    return api($Login$url,{nickName:nickName},useHttp).sync();
+    return api(ChatLoginUrl,{nickName:nickName},useHttp).sync();
 }
-function $Login$async(nickName,useHttp)
+/**
+* 'ChatLoginAsync(params).execute(function(result){},useHttp);'
+**/
+function ChatLoginAsync(nickName,useHttp)
 {
-    return api($Login$url,{nickName:nickName},useHttp);
+    return api(ChatLoginUrl,{nickName:nickName},useHttp);
 }
-var $ListOnlines$url='/listonlines';
-function $ListOnlines(useHttp)
+var ChatListOnlinesUrl='/listonlines';
+/**
+* 'var result= await ChatListOnlines(params);'
+**/
+function ChatListOnlines(useHttp)
 {
-    return api($ListOnlines$url,{},useHttp).sync();
+    return api(ChatListOnlinesUrl,{},useHttp).sync();
 }
-function $ListOnlines$async(useHttp)
+/**
+* 'ChatListOnlinesAsync(params).execute(function(result){},useHttp);'
+**/
+function ChatListOnlinesAsync(useHttp)
 {
-    return api($ListOnlines$url,{},useHttp);
+    return api(ChatListOnlinesUrl,{},useHttp);
 }
-var $Talk$url='/talk';
-function $Talk(nickName,message,useHttp)
+var ChatTalkUrl='/talk';
+/**
+* 'var result= await ChatTalk(params);'
+**/
+function ChatTalk(nickName,message,useHttp)
 {
-    return api($Talk$url,{nickName:nickName,message:message},useHttp).sync();
+    return api(ChatTalkUrl,{nickName:nickName,message:message},useHttp).sync();
 }
-function $Talk$async(nickName,message,useHttp)
+/**
+* 'ChatTalkAsync(params).execute(function(result){},useHttp);'
+**/
+function ChatTalkAsync(nickName,message,useHttp)
 {
-    return api($Talk$url,{nickName:nickName,message:message},useHttp);
+    return api(ChatTalkUrl,{nickName:nickName,message:message},useHttp);
 }
