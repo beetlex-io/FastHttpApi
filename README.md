@@ -15,25 +15,26 @@
 **[详情查看官网](http://www.ikende.com/)**
 
 ## 更新日志
-#### 2018-10-2 ActionResul添加一个ID用于匹配websocket请求应用使用,集成一个后台管理，增加API调用JS，同一方式兼容ajax和websocket
-可以通过管理端生成所有接口调用的API脚本
-```
-var result = await $GetRoomOnlines(activeRoom);
-                $('#lstbody').empty();
-                result.Data.forEach(function (v, i) {
-                    $('#lstbody').append('<tr><td>' + v.Name + '</td><td>' + v.IPAddress + '</td></tr>');
-                });
-```
-#### 2018-9-27 优化控制器上下文处理，集成API查询页面
-优化后action无缝支持HTTP和WebSocket协议，内嵌 api查询页通过/_info/api.html 查询所有api信息包括在http和websocket下的数据格式
-#### 2018-9-25 添加对websocket协议的支持
-在同一端口服务中默认支持HTTP和WebSocket协议，所定义的控制器方法同时支持两种协议方式调用
-#### 2018-9-21 增加Debug方式
-由于在开发过程修改静态资源需要编译导致调试麻烦，在Debug模式下资源目录会指向项目的资源目录，修改静态资源不需要重新编译项目。
-#### 2018-9-20 支持静态资源嵌入到程序中，支持Cookies。
-可以把静态资源打包到程序中，组件支持URL直接访问嵌入的静态资源，实现对Cookies的读写。
-#### 2018-9-18 增加了对静态资源的支持，优化了Header写入的性能。
-对Image类静态资源加入本地缓存标记；对HTML,CSS,JS资源加入了缓存修改标签，方便文件变更后刷新缓存；对HTML,CSS,JS等文件使用GZIP输出。
+#### 2018-10-23(FastHttpApi)
+重写控制器参数绑定功能，支持json,x-www-form-urlencoded和自定义流读取，默认是JSON。修改javascript生成插件，把控制器注释转议到javascript下并提供vs提示支持。
+#### 2018-10-17(FastHttpApi)
+新增IResult接口，所有Response输出内容都基于接口实现，方便扩展自定义输出内容；新增一些http requesting,http notfound事件，方便重定向一些内容; 把集成的管理模块移出，通过扩展组件的方式集成并集成文件管理；
+#### 2018-10-13(FastHttpApi)
+服务监控后台增加连接数限制，日志等级设置，并可提供在线查看当前服务运行的日志
+#### 2018-10-11(FastHttpApi)
+修复websocket在大数据包情况的问题，修改静态资源缓存配置，对不缓存资源也启用GZIP输出
+#### 2018-10-8(FastHttpApi)
+增加javascript脚本，无缝兼容ajax和websocket,添加VS插件自动为控制器生成调用的javascript脚本.把samples改用vuejs整合
+#### 2018-10-2(FastHttpApi)
+优化一下控制器数据协议，以更于更方便地给websocket和ajax调用，增加一个后台管理端可查看服务基础信息和API调用信息
+#### 2018-9-25(FastHttpApi)
+增加对websocket的支持，同一控制器支持ajax和websocket访问
+#### 2018-9-12(FastHttpApi)
+新增Debug模式设置，在Debug模式下静态资源目录指向项目文件目录，便于修改和调试
+#### 2018-9-20(FastHttpApi)
+支持静态资源嵌入程序集中，并支持url访问；实现Cookie的读写
+#### 2018-9-18(FastHttpApi)
+增加对静态资源支持，默认对html,css,js文件进行变更缓存管理和gzip压缩处理
 ## 稳定性测试
 #### 10000k次连接创建和断开的QPS测试,运行和运行后的资源情况
 ![](https://i.imgur.com/u1cynsb.png)
