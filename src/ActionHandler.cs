@@ -25,6 +25,9 @@ namespace BeetleX.FastHttpApi
         }
 
 
+        public RouteTemplateAttribute Route { get; set; }
+
+
         public Data.DecodeType DecodeType { get; set; }
 
 

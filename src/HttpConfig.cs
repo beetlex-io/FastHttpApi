@@ -1,4 +1,4 @@
-﻿using BeetleX.FastHttpApi.Route;
+﻿using BeetleX.FastHttpApi;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -34,8 +34,11 @@ namespace BeetleX.FastHttpApi
             FileManager = false;
             CacheFileSize = 500;
             PacketCombined = 0;
+            MaxAcceptThreads = 20;
         }
 
+
+        public int MaxAcceptThreads { get; set; }
 
         public UrlRoute[] Routes { get; set; }
 

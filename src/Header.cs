@@ -190,6 +190,8 @@ namespace BeetleX.FastHttpApi
 
         public void Add(string name, string value)
         {
+            if (value == null)
+                value = string.Empty;
             Find(name).Value = value;
         }
 
@@ -210,11 +212,27 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
+        private HeaderValue FindOnly(string name)
+        {
+            HeaderValue result;
+            for (int i = 0; i < mValues.Count; i++)
+            {
+                result = mValues[i];
+                if (result.Type.Compare(name))
+                    return result;
+            }
+            return null;
+        }
+
         public string this[string name]
         {
             get
             {
-                return Find(name).Value;
+                HeaderValue headerValue = FindOnly(name);
+                if (headerValue != null)
+                    return headerValue.Value;
+                else
+                    return null;
             }
             set
             {

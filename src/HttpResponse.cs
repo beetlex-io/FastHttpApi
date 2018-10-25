@@ -149,6 +149,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (result.HasBody)
                     {
+                      
                         MemoryBlockCollection contentLength = stream.Allocate(28);
                         stream.Write(HeaderTypeFactory.LINE_BYTES);
                         int len = stream.CacheLength;

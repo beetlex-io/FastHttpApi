@@ -48,10 +48,10 @@ namespace BeetleX.FastHttpApi
                 }
             }
             mResourceCenter = new StaticResurce.ResourceCenter(this);
-            mUrlRewrite = new Route.RouteRewrite(this);
+            mUrlRewrite = new RouteRewrite(this);
         }
 
-        private Route.RouteRewrite mUrlRewrite;
+        private RouteRewrite mUrlRewrite;
 
         private StaticResurce.ResourceCenter mResourceCenter;
 
@@ -59,7 +59,7 @@ namespace BeetleX.FastHttpApi
 
         private ServerCounter mServerCounter;
 
-        public Route.RouteRewrite UrlRewrite => mUrlRewrite;
+        public RouteRewrite UrlRewrite => mUrlRewrite;
 
         public ServerCounter ServerCounter => mServerCounter;
 
@@ -138,7 +138,7 @@ namespace BeetleX.FastHttpApi
             }
             catch (Exception e_)
             {
-                Log(LogType.Error, " http api server load controller error " + e_.Message);
+                Log(LogType.Error, " http api server load controller error " + e_.Message + "[" + e_.StackTrace + "]");
             }
         }
 
@@ -169,6 +169,7 @@ namespace BeetleX.FastHttpApi
             config.BufferSize = ServerConfig.BufferSize;
             config.LogLevel = ServerConfig.LogLevel;
             config.Combined = ServerConfig.PacketCombined;
+            config.MaxAcceptThreads = ServerConfig.MaxAcceptThreads;
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
@@ -242,11 +243,6 @@ namespace BeetleX.FastHttpApi
                 }
                 server.Send(data, receiveRequest.ToArray());
             }
-            //foreach (HttpRequest item in GetWebSockets())
-            //{
-            //    if ((filter == null || filter(item.Session, item)))
-            //        SendToWebSocket(data, item);
-            //}
         }
 
         public void SendToWebSocket(DataFrame data, params HttpRequest[] request)
@@ -315,6 +311,12 @@ namespace BeetleX.FastHttpApi
                 e.Cancel = true;
             }
         }
+
+        public override void Error(IServer server, ServerErrorEventArgs e)
+        {
+            base.Error(server, e);
+        }
+
 
         #region body process
         public IBodyProcessHandler BodyProcessHandler { get; set; }

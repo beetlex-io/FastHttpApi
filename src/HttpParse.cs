@@ -250,12 +250,17 @@ namespace BeetleX.FastHttpApi
             return new Tuple<string, string>(name, value);
         }
 
-        public static Tuple<string, string, string> AnalyzeRequestLine(ReadOnlySpan<char> line)
+        public static Tuple<string, string, string> AnalyzeRequestLine(ReadOnlySpan<char> line, QueryString queryString, HttpRequest rquest)
         {
             string[] value = new string[3];
+            int qsOffset = 0;
+            string qname = null;
+            string qvalue;
             int offset = 0;
             int items = 0;
             int length = line.Length - 1;
+            int pathStart = 0;
+            int pathEnd = 0;
             for (int i = 0; i < line.Length; i++)
             {
                 if (line[i] == ' ')
@@ -263,11 +268,53 @@ namespace BeetleX.FastHttpApi
                     value[items] = new string(line.Slice(offset, i - offset));
                     offset = i + 1;
                     items++;
-
+                    if (items == 2)
+                    {
+                        if (qname != null)
+                        {
+                            qvalue = new string(line.Slice(qsOffset, i - qsOffset));
+                            qsOffset++;
+                            queryString.Add(qname, qvalue);
+                            qname = null;
+                        }
+                        break;
+                    }
                 }
-                if (items == 2)
-                    break;
+                else if (line[i] == '?')
+                {
+                    qsOffset = i + 1;
+                }
+                else if (line[i] == '=')
+                {
+                    if (qsOffset > 0)
+                    {
+                        qname = new string(line.Slice(qsOffset, i - qsOffset));
+                        qsOffset = i + 1;
+                    }
+                }
+                else if (line[i] == '&')
+                {
+                    if (qname != null)
+                    {
+                        qvalue = new string(line.Slice(qsOffset, i - qsOffset));
+                        qsOffset = i + 1;
+                        queryString.Add(qname, qvalue);
+                        qname = null;
+                    }
+                }
+                else if (line[i] == '/')
+                {
+                    if (pathStart == 0)
+                        pathStart = i;
+                    else
+                        pathEnd = i;
+                }
+
             }
+            if (pathEnd > pathStart)
+                rquest.Path = CharToLower(line.Slice(pathStart, pathEnd - pathStart + 1));
+            else
+                rquest.Path = "/";
             value[2] = new string(line.Slice(offset, line.Length - offset));
             return new Tuple<string, string, string>(value[0], value[1], value[2]);
 

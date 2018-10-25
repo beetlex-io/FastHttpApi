@@ -22,10 +22,14 @@ namespace BeetleX.FastHttpApi
             this.Session = session;
             mState = LoadedState.None;
             WebSocket = false;
+            KeepAlive = true;
             this.Server = httpApiServer;
         }
 
 
+        public string Path { get; set; }
+
+        public string VersionNumber { get; set; }
 
         public bool WebSocket { get; set; }
 
@@ -54,6 +58,10 @@ namespace BeetleX.FastHttpApi
         public string ClientIPAddress => Header[HeaderTypeFactory.CLIENT_IPADDRESS];
 
         public string Method { get; set; }
+
+        public bool IsRewrite { get; set; }
+
+        public string SourceUrl { get; set; }
 
         public string BaseUrl { get; set; }
 
@@ -97,24 +105,28 @@ namespace BeetleX.FastHttpApi
                 {
                     ReadOnlySpan<Char> line = HttpParse.ReadCharLine(index);
                     stream.ReadFree(index.Length);
-                    Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line);
+                    Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line, mQueryString, this);
                     Method = result.Item1;
                     Url = result.Item2;
                     BaseUrl = HttpParse.GetBaseUrlToLower(Url);
                     Ext = HttpParse.GetBaseUrlExt(BaseUrl);
                     string rewriteUrl = null;
-                    if (Server.UrlRewrite.Match(this, out rewriteUrl))
+                    string rewriteurlLower;
+                    if (Server.UrlRewrite.Match(this, out rewriteUrl, out rewriteurlLower, mQueryString))
                     {
+                        this.IsRewrite = true;
+                        this.SourceUrl = this.Url;
                         if (Server.EnableLog(EventArgs.LogType.Info))
                         {
                             Server.BaseServer.Log(EventArgs.LogType.Info, Session, "request rewrite {0}  to {1}", Url, rewriteUrl);
                         }
                         Url = rewriteUrl;
-                        BaseUrl = HttpParse.GetBaseUrlToLower(Url);
+                        BaseUrl = rewriteurlLower;
                         Ext = HttpParse.GetBaseUrlExt(BaseUrl);
                     }
                     HttpVersion = result.Item3;
-                    HttpParse.AnalyzeQueryString(Url, mQueryString);
+                    int numberIndex = HttpVersion.IndexOf('/');
+                    VersionNumber = HttpVersion.Substring(numberIndex + 1, HttpVersion.Length - numberIndex - 1);
                     mState = LoadedState.Method;
                 }
             }
@@ -127,8 +139,14 @@ namespace BeetleX.FastHttpApi
                 if (this.Header.Read(stream, mCookies))
                 {
                     mState = LoadedState.Header;
-                    int.TryParse(Header[HeaderTypeFactory.CONTENT_LENGTH], out mLength);
-                    KeepAlive = string.Compare(Header[HeaderTypeFactory.CONNECTION], "close", true) != 0;
+                    string length = Header[HeaderTypeFactory.CONTENT_LENGTH];
+                    if (length != null)
+                        int.TryParse(length, out mLength);
+                    if (VersionNumber == "1.0")
+                    {
+                        string connection = Header[HeaderTypeFactory.CONNECTION];
+                        KeepAlive = string.Compare(connection, "keep-alive", true) == 0;
+                    }
                 }
             }
         }
@@ -158,7 +176,7 @@ namespace BeetleX.FastHttpApi
             response.Session = this.Session;
             response.HttpVersion = this.HttpVersion;
             response.Request = this;
-            if (this.KeepAlive)
+            if (VersionNumber == "1.0" && this.KeepAlive)
                 response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
             response.Header[HeaderTypeFactory.HOST] = Header[HeaderTypeFactory.HOST];
             response.RequestID = QueryString["_requestid"];

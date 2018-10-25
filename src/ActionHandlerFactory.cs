@@ -116,8 +116,16 @@ namespace BeetleX.FastHttpApi
 
                 string sourceUrl = rooturl + mi.Name;
                 string url = sourceUrl.ToLower();
-                ActionHandler handler = GetAction(url);
+                RouteTemplateAttribute ra = mi.GetCustomAttribute<RouteTemplateAttribute>(false);
+                if (ra != null)
+                {
 
+                    string reurl = ra.Analysis(url);
+                    if (reurl != null)
+                        server.UrlRewrite.Add(reurl, url);
+                }
+                ActionHandler handler = GetAction(url);
+             
                 if (handler != null)
                 {
                     server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controllerType.Name,
@@ -125,6 +133,7 @@ namespace BeetleX.FastHttpApi
                     continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.Route = ra;
                 handler.DecodeType = decodeType;
                 if (mi.GetCustomAttribute<PostAttribute>(false) != null)
                     handler.Method = "POST";
@@ -262,7 +271,7 @@ namespace BeetleX.FastHttpApi
                     }
 
                     Data.IDataContext datacontext;
-                   
+
                     string bodyValue;
                     if (handler.DecodeType == Data.DecodeType.Json)
                     {
