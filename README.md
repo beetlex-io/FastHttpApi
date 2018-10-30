@@ -15,6 +15,8 @@
 **[详情查看官网](http://www.ikende.com/)**
 
 ## 更新日志
+#### 2018-10-30
+修改路由处理，优化处理性能，添加和Go iris，core Kestrel和asp.net core mvc性能对比测试用例
 #### 2018-10-23(FastHttpApi)
 重写控制器参数绑定功能，支持json,x-www-form-urlencoded和自定义流读取，默认是JSON。修改javascript生成插件，把控制器注释转议到javascript下并提供vs提示支持。
 #### 2018-10-17(FastHttpApi)
