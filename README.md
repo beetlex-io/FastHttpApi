@@ -13,7 +13,8 @@
 8. 支持SSL和Https
 
 **[详情查看官网](http://www.ikende.com/)**
-
+#### 性能对比概要
+![](https://i.imgur.com/A4hYksO.png)
 ## 更新日志
 #### 2018-10-30
 修改路由处理，优化处理性能，添加和Go iris，core Kestrel和asp.net core mvc性能对比测试用例
@@ -42,71 +43,4 @@
 ![](https://i.imgur.com/u1cynsb.png)
 #### 100000k次基于长连接的QPS测试,运行和运行后的资源情况
 ![](https://i.imgur.com/NkY6plh.png)
-## 性能对比测试
-由于dotnet core下面没有其他简化的http api组件，只能拿Kestrel asp.net core来作对比，虽然对asp.net core不公平，但这样的对比测也只是为了体现简化后的性能回报；测试服务器是阿里云的4核虚拟机，8G内存,测试工具是AB，测试功能主要是针对GET/POST的json数据处理。由于Kestrel asp.net core默认不支持AB的Keep-Alive选项，所以测试结果就并没有针对asp.net core的Keep-Alive测试
-##### Kestrel asp.net core代码
-```
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult Get(int id)
-        {
-            return new JsonResult(Employee.List(id));
-        }
-        // POST api/values
-        [HttpPost]
-        public ActionResult Post([FromBody] Employee value)
-        {
-            return new JsonResult(value);
-        }
-```
-##### FastHttpApi 代码
-```
-        // /listemployee?count
-        public IList<Employee> ListEmployee(int count)
-        {
-            return Employee.List(count);
-        }
-        // post /AddEmployee 
-        public Employee AddEmployee([BodyParameter]Employee item)
-        {
-            return item;
-        }
-```
-##### Kestrel asp.net core GET测试结果
-![](https://i.imgur.com/xQ6XeF2.png) 
-##### FastHttpApi GET测试结果
-![](https://i.imgur.com/ssFiLPp.png) 
-##### FastHttpApi GET测试结果开启Keep-Alive
-![](https://i.imgur.com/Moh3UvX.png) 
-##### Kestrel asp.net core POST测试结果
-![](https://i.imgur.com/lmYg41g.png) 
-##### FastHttpApi POST测试结果
-![](https://i.imgur.com/DTSoOLy.png) 
-##### FastHttpApi POST测试结果开启Keep-Alive
-![](https://i.imgur.com/utZFsdu.png) 
 
-### 针对Kestrel的对比测试
-对比一下两者在accept connection上的性能差异，开启了两个AB实例进行压测
-##### Kestrel代码
-```
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            app.Run(context =>
-            {
-                byte[] data = System.Text.Encoding.UTF8.GetBytes(DateTime.Now.ToString());
-                return context.Response.Body.WriteAsync(data, 0, data.Length);
-            });
-        }
-```
-##### FastHttpApi代码
-```
-        //  /hello?name=
-        public string Hello(string name)
-        {
-            return DateTime.Now + " hello " + name;
-        }
-```
-##### Kestrel测试结果
-![](https://i.imgur.com/f44TLci.png) 
-##### FastHttpApi测试结果
-![](https://i.imgur.com/CqClp6e.png) 
