@@ -38,3 +38,14 @@ samples/HttpApiServer.HelloWorld/bin/
 samples/HttpApiServer.HelloWorld/obj/
 samples/HttpApiServer.SimpleChatRoom/bin/
 samples/HttpApiServer.SimpleChatRoom/obj/
+PerformanceTest/FastHttpApiWeb/Properties/
+PerformanceTest/FastHttpApiWeb/bin/
+PerformanceTest/FastHttpApiWeb/obj/
+PerformanceTest/netcore-mvc/.vs/netcore-mvc/DesignTimeBuild/
+PerformanceTest/netcore-mvc/Properties/
+PerformanceTest/netcore-mvc/bin/
+PerformanceTest/netcore-mvc/obj/
+PerformanceTest/netcore/Properties/
+PerformanceTest/netcore/bin/
+PerformanceTest/netcore/obj/
+PerformanceTest/netcore-mvc/.vs/netcore-mvc/v15/Server/

@@ -16,16 +16,47 @@ namespace BeetleX.FastHttpApi
 
     public class HttpRequest
     {
-        public HttpRequest(ISession session, HttpApiServer httpApiServer)
+       
+        public HttpRequest()
         {
             Header = new Header();
-            this.Session = session;
+            mDataContxt = new Data.DataContxt();
+            mQueryString = new QueryString(mDataContxt);
+            mCookies = new Cookies();
             mState = LoadedState.None;
             WebSocket = false;
             KeepAlive = true;
+        }
+
+        internal void Init(ISession session, HttpApiServer httpApiServer)
+        {
+            this.Session = session;
             this.Server = httpApiServer;
         }
 
+        internal void Reset()
+        {
+            mState = LoadedState.None;
+            WebSocket = false;
+            KeepAlive = true;
+            //Method = null;
+            //Url = null;
+            Ext = null;
+            //HttpVersion = null;
+
+            Header.Clear();
+            mDataContxt.Clear();
+            mCookies.Clear();
+        }
+
+        internal void Recovery()
+        {
+            this.Server.Recovery(this);
+        }
+
+        private Data.DataContxt mDataContxt;
+
+        public Data.DataContxt Data => mDataContxt;
 
         public string Path { get; set; }
 
@@ -37,9 +68,9 @@ namespace BeetleX.FastHttpApi
 
         private int mLength;
 
-        private QueryString mQueryString = new QueryString();
+        private QueryString mQueryString;
 
-        private Cookies mCookies = new Cookies();
+        private Cookies mCookies;
 
         private PipeStream mStream;
 
@@ -75,8 +106,6 @@ namespace BeetleX.FastHttpApi
 
         public string IfNoneMatch => Header[HeaderTypeFactory.IF_NONE_MATCH];
 
-        public QueryString QueryString => mQueryString;
-
         public ISession Session { get; private set; }
 
         public LoadedState Read(PipeStream stream)
@@ -96,39 +125,42 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+
+
         private void LoadMethod(PipeStream stream)
         {
             if (mState == LoadedState.None)
             {
-                IndexOfResult index = stream.IndexOf(HeaderTypeFactory.LINE_BYTES);
-                if (index.End != null)
+                string data;
+                if (!stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out data))
                 {
-                    ReadOnlySpan<Char> line = HttpParse.ReadCharLine(index);
-                    stream.ReadFree(index.Length);
-                    Tuple<string, string, string> result = HttpParse.AnalyzeRequestLine(line, mQueryString, this);
-                    Method = result.Item1;
-                    Url = result.Item2;
-                    BaseUrl = HttpParse.GetBaseUrlToLower(Url);
-                    Ext = HttpParse.GetBaseUrlExt(BaseUrl);
-                    string rewriteUrl = null;
-                    string rewriteurlLower;
-                    if (Server.UrlRewrite.Match(this, out rewriteUrl, out rewriteurlLower, mQueryString))
-                    {
-                        this.IsRewrite = true;
-                        this.SourceUrl = this.Url;
-                        if (Server.EnableLog(EventArgs.LogType.Info))
-                        {
-                            Server.BaseServer.Log(EventArgs.LogType.Info, Session, "request rewrite {0}  to {1}", Url, rewriteUrl);
-                        }
-                        Url = rewriteUrl;
-                        BaseUrl = rewriteurlLower;
-                        Ext = HttpParse.GetBaseUrlExt(BaseUrl);
-                    }
-                    HttpVersion = result.Item3;
-                    int numberIndex = HttpVersion.IndexOf('/');
-                    VersionNumber = HttpVersion.Substring(numberIndex + 1, HttpVersion.Length - numberIndex - 1);
-                    mState = LoadedState.Method;
+                    return;
                 }
+                HttpParse.AnalyzeRequestLine(data, this);
+                HttpParse.ReadHttpVersionNumber(HttpVersion, mQueryString, this);
+                int len = HttpParse.ReadUrlQueryString(Url, mQueryString, this);
+                if (len > 0)
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.ServerConfig);
+                else
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.ServerConfig);
+
+                RouteMatchResult routeMatchResult = new RouteMatchResult();
+                if (Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
+                {
+                    this.IsRewrite = true;
+                    this.SourceUrl = this.Url;
+                    if (Server.EnableLog(EventArgs.LogType.Info))
+                    {
+                        Server.BaseServer.Log(EventArgs.LogType.Info, Session, "request rewrite {0}  to {1}", Url, routeMatchResult.RewriteUrl);
+                    }
+                    Url = routeMatchResult.RewriteUrl;
+                    if (Server.ServerConfig.UrlIgnoreCase)
+                        BaseUrl = routeMatchResult.RewriteUrlLower;
+                    else
+                        BaseUrl = routeMatchResult.RewriteUrl;
+                    Ext = routeMatchResult.Ext;
+                }
+                mState = LoadedState.Method;
             }
         }
 
@@ -178,8 +210,8 @@ namespace BeetleX.FastHttpApi
             response.Request = this;
             if (VersionNumber == "1.0" && this.KeepAlive)
                 response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
-            response.Header[HeaderTypeFactory.HOST] = Header[HeaderTypeFactory.HOST];
-            response.RequestID = QueryString["_requestid"];
+            //response.Header[HeaderTypeFactory.HOST] = Header[HeaderTypeFactory.HOST];
+            response.RequestID = mQueryString["_requestid"];
             return response;
         }
 

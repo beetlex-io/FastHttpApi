@@ -11,11 +11,12 @@ namespace BeetleX.FastHttpApi
         public RouteRewrite(HttpApiServer server)
         {
             mServer = server;
+            this.UrlIgnoreCase = mServer.ServerConfig.UrlIgnoreCase;
         }
 
+        public bool UrlIgnoreCase { get; set; }
 
-
-        private Dictionary<string, RouteGroup> mRoutes = new Dictionary<string, RouteGroup>();
+        private Dictionary<int, RouteGroup> mRoutes = new Dictionary<int, RouteGroup>();
 
         private HttpApiServer mServer;
 
@@ -34,14 +35,16 @@ namespace BeetleX.FastHttpApi
             {
                 mServer.Log(EventArgs.LogType.Info, null, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
             }
+            item.UrlIgnoreCase = this.UrlIgnoreCase;
             item.Init();
+
             RouteGroup rg = null;
-            mRoutes.TryGetValue(item.Path, out rg);
+            mRoutes.TryGetValue(item.ID, out rg);
             if (rg == null)
             {
                 rg = new RouteGroup();
                 rg.Ext = item.Ext;
-                mRoutes[item.Path] = rg;
+                mRoutes[item.ID] = rg;
             }
             rg.Routes.Add(item);
         }
@@ -52,16 +55,14 @@ namespace BeetleX.FastHttpApi
             Add(route);
         }
 
-        public bool Match(HttpRequest request, out string rewriteUrl, out string rewriteLower, QueryString queryString)
+        public bool Match(HttpRequest request, ref RouteMatchResult result, QueryString queryString)
         {
-            rewriteUrl = null;
-            rewriteLower = null;
             RouteGroup rg = null;
-            if (mRoutes.TryGetValue(request.Path, out rg))
+            if (mRoutes.TryGetValue(request.Path.GetHashCode(), out rg))
             {
                 if (string.Compare(rg.Ext, request.Ext, true) == 0)
                 {
-                    if (rg.Match(request.Url, out rewriteUrl, out rewriteLower, queryString))
+                    if (rg.Match(request.BaseUrl, ref result, queryString))
                     {
                         return true;
                     }

@@ -10,6 +10,7 @@ using BeetleX.FastHttpApi.WebSockets;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Net;
+using BeetleX.Dispatchs;
 
 namespace BeetleX.FastHttpApi
 {
@@ -93,6 +94,25 @@ namespace BeetleX.FastHttpApi
 
         public IDataFrameSerializer FrameSerializer { get; set; }
 
+        private System.Collections.Concurrent.ConcurrentQueue<HttpRequest> mRequestPool = new System.Collections.Concurrent.ConcurrentQueue<HttpRequest>();
+
+        internal HttpRequest CreateRequest(ISession session)
+        {
+            HttpRequest request;
+            if (!mRequestPool.TryDequeue(out request))
+                request = new HttpRequest();
+            request.Init(session, this);
+            return request;
+
+        }
+
+        internal void Recovery(HttpRequest request)
+        {
+            request.Reset();
+            mRequestPool.Enqueue(request);
+        }
+
+
         public object this[string name]
         {
             get
@@ -169,13 +189,12 @@ namespace BeetleX.FastHttpApi
             config.BufferSize = ServerConfig.BufferSize;
             config.LogLevel = ServerConfig.LogLevel;
             config.Combined = ServerConfig.PacketCombined;
-            config.MaxAcceptThreads = ServerConfig.MaxAcceptThreads;
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
             HttpPacket hp = new HttpPacket(this, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
-            Name = "FastHttpApi Http Server";
+            Name = "BeetleX Http Server";
             if (mAssemblies != null)
             {
                 foreach (System.Reflection.Assembly assembly in mAssemblies)
@@ -190,6 +209,7 @@ namespace BeetleX.FastHttpApi
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
+            mUrlRewrite.UrlIgnoreCase = ServerConfig.UrlIgnoreCase;
             mUrlRewrite.AddRegion(this.ServerConfig.Routes);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
@@ -310,6 +330,7 @@ namespace BeetleX.FastHttpApi
             {
                 e.Cancel = true;
             }
+            e.Socket.NoDelay = true;
         }
 
         public override void Error(IServer server, ServerErrorEventArgs e)
@@ -531,43 +552,63 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
+        private void OnRequestHandler(object state)
         {
-            System.Threading.Interlocked.Increment(ref mTotalRequests);
-            HttpToken token = (HttpToken)e.Session.Tag;
-            if (token.WebSocket)
+            PacketDecodeCompletedEventArgs e = (PacketDecodeCompletedEventArgs)state;
+            try
             {
-                OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
-            }
-            else
-            {
-                HttpRequest request = (HttpRequest)e.Message;
-                if (request.ClientIPAddress == null)
+                System.Threading.Interlocked.Increment(ref mTotalRequests);
+                HttpToken token = (HttpToken)e.Session.Tag;
+                if (token.WebSocket)
                 {
-                    request.Header.Add(HeaderTypeFactory.CLIENT_IPADDRESS, e.Session.RemoteEndPoint.ToString());
-                }
-                if (EnableLog(LogType.Info))
-                {
-                    mServer.Log(LogType.Info, e.Session, "{0} {1} {2}", request.ClientIPAddress, request.Method, request.Url);
-                }
-                if (EnableLog(LogType.Debug))
-                {
-                    mServer.Log(LogType.Debug, e.Session, "{0} {1}", request.ClientIPAddress, request.ToString());
-                }
-                request.Server = this;
-                HttpResponse response = request.CreateResponse();
-                token.KeepAlive = request.KeepAlive;
-                if (token.FirstRequest && string.Compare(request.Header[HeaderTypeFactory.UPGRADE], "websocket", true) == 0)
-                {
-                    token.FirstRequest = false;
-                    OnWebSocketConnect(request, response);
+                    OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
                 }
                 else
                 {
-                    token.FirstRequest = false;
-                    OnHttpRequest(request, response);
+                    HttpRequest request = (HttpRequest)e.Message;
+                    if (request.ClientIPAddress == null)
+                    {
+                        IPEndPoint IP = e.Session.RemoteEndPoint as IPEndPoint;
+                        if (IP != null)
+                        {
+                            string ipstr = IP.Address.ToString() + ":" + IP.Port.ToString();
+                            request.Header.Add(HeaderTypeFactory.CLIENT_IPADDRESS, ipstr);
+                        }
+                    }
+                    if (EnableLog(LogType.Info))
+                    {
+                        mServer.Log(LogType.Info, e.Session, "{0} {1} {2}", request.ClientIPAddress, request.Method, request.Url);
+                    }
+                    if (EnableLog(LogType.Debug))
+                    {
+                        mServer.Log(LogType.Debug, e.Session, "{0} {1}", request.ClientIPAddress, request.ToString());
+                    }
+                    request.Server = this;
+                    HttpResponse response = request.CreateResponse();
+                    token.KeepAlive = request.KeepAlive;
+                    if (token.FirstRequest && string.Compare(request.Header[HeaderTypeFactory.UPGRADE], "websocket", true) == 0)
+                    {
+                        token.FirstRequest = false;
+                        OnWebSocketConnect(request, response);
+                    }
+                    else
+                    {
+                        token.FirstRequest = false;
+                        OnHttpRequest(request, response);
+                    }
                 }
             }
+            catch (Exception e_)
+            {
+                mServer.Error(e_, e.Session, "{0} OnRequestHandler error {1}", e.Session.RemoteEndPoint, e.Message);
+            }
+        }
+
+        public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
+        {
+            OnRequestHandler(e);
+            // System.IO.Pipelines.PipeScheduler.ThreadPool.Schedule(OnRequestHandler, e);
+            //multiRequestThreadDispatcher.Enqueue(e);
         }
 
 
@@ -633,7 +674,7 @@ namespace BeetleX.FastHttpApi
                     return;
                 }
             }
-            if (session.SendMessages == 0 && !token.KeepAlive)
+            if (session.Count == 0 && !token.KeepAlive)
             {
                 session.Dispose();
             }

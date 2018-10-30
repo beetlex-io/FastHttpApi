@@ -34,11 +34,11 @@ namespace BeetleX.FastHttpApi
             FileManager = false;
             CacheFileSize = 500;
             PacketCombined = 0;
-            MaxAcceptThreads = 20;
+            UrlIgnoreCase = true;
         }
 
 
-        public int MaxAcceptThreads { get; set; }
+        public bool UrlIgnoreCase { get; set; }
 
         public UrlRoute[] Routes { get; set; }
 

@@ -213,7 +213,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             HttpToken token = (HttpToken)response.Session.Tag;
             token.File = fr.CreateFileBlock();
             response.SetContentType(fct.ContentType);
-            response.Result(token.File);         
+            response.Result(token.File);
 
         }
 
@@ -284,7 +284,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             else
             {
-              
+
                 if (Server.EnableLog(EventArgs.LogType.Warring))
                     Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file ext not support", request.ClientIPAddress, request.BaseUrl);
                 NotSupportResult notSupport = new NotSupportResult("get {0} file {1} ext not support", request.Url, request.Ext);
@@ -363,7 +363,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 }
                 else
                 {
-                    charbuffer[i + offset] = Char.ToLower(filebuffer[i]);
+                    if (Server.ServerConfig.UrlIgnoreCase)
+                        charbuffer[i + offset] = Char.ToLower(filebuffer[i]);
+                    else
+                        charbuffer[i + offset] = filebuffer[i];
                 }
             }
             return new string(charbuffer, 0, filebuffer.Length + offset);

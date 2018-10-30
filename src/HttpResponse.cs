@@ -12,11 +12,7 @@ namespace BeetleX.FastHttpApi
         public HttpResponse()
         {
             Header = new Header();
-            Header[HeaderTypeFactory.SERVER] = "BeetleX-Fast-HttpServer";
-            Header[HeaderTypeFactory.CONTENT_TYPE] = "text/html";
-
             AsyncResult = false;
-
         }
 
         private string mCode = "200";
@@ -99,6 +95,7 @@ namespace BeetleX.FastHttpApi
             {
                 mBody = data;
                 Session.Server.Send(this, this.Session);
+                Request.Recovery();
             }
         }
 
@@ -123,51 +120,65 @@ namespace BeetleX.FastHttpApi
                 this.Header[HeaderTypeFactory.CONTENT_TYPE] = result.ContentType;
                 result.Setting(this);
             }
-            stream.Write(HttpVersion);
-            stream.Write(HeaderTypeFactory.SPACE_BYTES[0]);
-            stream.Write(mCode);
-            stream.Write(HeaderTypeFactory.SPACE_BYTES[0]);
-            stream.Write(CodeMsg);
-            stream.Write(HeaderTypeFactory.LINE_BYTES);
-          
+
+            byte[] buffer = HttpParse.GetByteBuffer();
+            //string line = string.Concat(HttpVersion, " ", mCode, " ", CodeMsg, "\r\n");
+            //var hlen = Encoding.ASCII.GetBytes(line, 0, line.Length, buffer, 0);
+            int hlen = 0;
+            hlen = hlen + Encoding.ASCII.GetBytes(HttpVersion, 0, HttpVersion.Length, buffer, hlen);
+            buffer[hlen] = HeaderTypeFactory._SPACE_BYTE;
+            hlen++;
+            hlen = hlen + Encoding.ASCII.GetBytes(mCode, 0, mCode.Length, buffer, hlen);
+            buffer[hlen] = HeaderTypeFactory._SPACE_BYTE;
+            hlen++;
+            hlen = hlen + Encoding.ASCII.GetBytes(CodeMsg, 0, CodeMsg.Length, buffer, hlen);
+
+            buffer[hlen] = HeaderTypeFactory._LINE_R;
+            hlen++;
+            buffer[hlen] = HeaderTypeFactory._LINE_N;
+            hlen++;
+
+            stream.Write(buffer, 0, hlen);
+            stream.Write(HeaderTypeFactory.SERVAR_HEADER_BYTES, 0, HeaderTypeFactory.SERVAR_HEADER_BYTES.Length);
             Header.Write(stream);
             for (int i = 0; i < mSetCookies.Count; i++)
             {
                 HeaderTypeFactory.Write(HeaderTypeFactory.SET_COOKIE, stream);
                 stream.Write(mSetCookies[i]);
-                stream.Write(HeaderTypeFactory.LINE_BYTES);
+                stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
             }
             if (mBody != null)
             {
                 StaticResurce.FileBlock fb = mBody as StaticResurce.FileBlock;
                 if (fb != null)
                 {
-                    stream.Write(HeaderTypeFactory.LINE_BYTES);
+                    stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
                     fb.Write(stream);
                 }
                 else
                 {
                     if (result.HasBody)
                     {
-                      
-                        MemoryBlockCollection contentLength = stream.Allocate(28);
-                        stream.Write(HeaderTypeFactory.LINE_BYTES);
+                        stream.Write(HeaderTypeFactory.CONTENT_LENGTH_BYTES, 0, 16);
+                        MemoryBlockCollection contentLength = stream.Allocate(10);
+                        stream.Write(HeaderTypeFactory.TOW_LINE_BYTES, 0, 4);
                         int len = stream.CacheLength;
                         result.Write(stream, this);
                         int count = stream.CacheLength - len;
-                        contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n", stream.Encoding);
+                        //contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n\r\n", stream.Encoding);
+                        contentLength.Full(count.ToString().PadRight(10), stream.Encoding);
                     }
                     else
                     {
-                        stream.Write(HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES);
-                        stream.Write(HeaderTypeFactory.LINE_BYTES);
+                        stream.Write(HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES, 0, HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES.Length);
+                        stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
                     }
                 }
             }
             else
             {
-                stream.Write(HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES);
-                stream.Write(HeaderTypeFactory.LINE_BYTES);
+                stream.Write(HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES, 0, HeaderTypeFactory.NULL_CONTENT_LENGTH_BYTES.Length);
+                stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
             }
 
             if (Session.Server.EnableLog(EventArgs.LogType.Debug))

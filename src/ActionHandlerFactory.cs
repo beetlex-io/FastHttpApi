@@ -14,7 +14,7 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        private System.Collections.Concurrent.ConcurrentDictionary<string, ActionHandler> mMethods = new System.Collections.Concurrent.ConcurrentDictionary<string, ActionHandler>();
+        private System.Collections.Generic.Dictionary<string, ActionHandler> mMethods = new Dictionary<string, ActionHandler>();
 
         public void Register(HttpConfig config, HttpApiServer server, params Assembly[] assemblies)
         {
@@ -113,19 +113,21 @@ namespace BeetleX.FastHttpApi
                     continue;
                 if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
                     continue;
-
                 string sourceUrl = rooturl + mi.Name;
-                string url = sourceUrl.ToLower();
+                string url = sourceUrl;
+                if (server.ServerConfig.UrlIgnoreCase)
+                {
+                    url = sourceUrl.ToLower();
+                }
                 RouteTemplateAttribute ra = mi.GetCustomAttribute<RouteTemplateAttribute>(false);
                 if (ra != null)
                 {
-
                     string reurl = ra.Analysis(url);
                     if (reurl != null)
                         server.UrlRewrite.Add(reurl, url);
                 }
                 ActionHandler handler = GetAction(url);
-             
+
                 if (handler != null)
                 {
                     server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controllerType.Name,
@@ -176,7 +178,9 @@ namespace BeetleX.FastHttpApi
                 return result;
             }
             result.Url = url.Value<string>();
-            string baseurl = HttpParse.CharToLower(result.Url);
+            string baseurl = result.Url;
+            if (server.ServerConfig.UrlIgnoreCase)
+                baseurl = HttpParse.CharToLower(result.Url);
             if (baseurl[0] != '/')
                 baseurl = "/" + baseurl;
             result.Url = baseurl;
@@ -200,7 +204,9 @@ namespace BeetleX.FastHttpApi
                 try
                 {
 
-                    WebsocketJsonContext dc = new WebsocketJsonContext(server, request, new Data.JsonDataConext(data));
+                    Data.DataContxt dataContxt = new Data.DataContxt();
+                    Data.DataContextBind.BindJson(dataContxt, data);
+                    WebsocketJsonContext dc = new WebsocketJsonContext(server, request, dataContxt);
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
                     ActionContext context = new ActionContext(handler, dc);
@@ -261,7 +267,7 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    if (string.Compare(request.Method, handler.Method, true) != 0)
+                    if (request.Method != handler.Method)
                     {
                         if (server.EnableLog(EventArgs.LogType.Warring))
                             server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} execute {1} action  {1} not support", request.ClientIPAddress, request.Url, request.Method);
@@ -269,18 +275,16 @@ namespace BeetleX.FastHttpApi
                         response.Result(notSupportResult);
                         return;
                     }
-
-                    Data.IDataContext datacontext;
-
                     string bodyValue;
                     if (handler.DecodeType == Data.DecodeType.Json)
                     {
+                        JToken token = null;
                         if (request.Length > 0)
+                        {
                             bodyValue = request.Stream.ReadString(request.Length);
-                        else
-                            bodyValue = "{}";
-                        JToken token = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(bodyValue);
-                        datacontext = new Data.JsonDataConext(token);
+                            token = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(bodyValue);
+                        }
+                        Data.DataContextBind.BindJson(request.Data, token);
                     }
                     else if (handler.DecodeType == Data.DecodeType.FormUrl)
                     {
@@ -288,15 +292,9 @@ namespace BeetleX.FastHttpApi
                             bodyValue = request.Stream.ReadString(request.Length);
                         else
                             bodyValue = "";
-                        datacontext = new Data.UrlEncodeDataContext(bodyValue);
+                        Data.DataContextBind.BindFormUrl(request.Data, bodyValue);
                     }
-                    else
-                    {
-                        datacontext = new Data.DataContxt();
-                    }
-
-                    request.QueryString.CopyTo(datacontext);
-                    HttpContext pc = new HttpContext(server, request, response, datacontext);
+                    HttpContext pc = new HttpContext(server, request, response, request.Data);
                     long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;
                     ActionContext context = new ActionContext(handler, pc);

@@ -6,7 +6,7 @@ namespace BeetleX.FastHttpApi
 {
     public class Cookies
     {
-        private Dictionary<string, string> mItems = new Dictionary<string, string>();
+        private Dictionary<string, string> mItems = new Dictionary<string, string>(4);
 
         public string this[string name]
         {
@@ -14,6 +14,11 @@ namespace BeetleX.FastHttpApi
             {
                 return GetValue(name);
             }
+        }
+
+        public void Clear()
+        {
+            mItems.Clear();
         }
 
         private string GetValue(string name)

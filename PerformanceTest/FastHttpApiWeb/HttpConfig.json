@@ -1,0 +1,25 @@
+{
+  "HttpConfig": {
+    "Host": "",
+    "Port": 9090,
+    "SSL": false,
+    "CertificateFile": "",
+    "CertificatePassword": "",
+    "MaxBodyLength": 2097152,
+    "OutputStackTrace": false,
+    "StaticResurceType": "xml;svg;woff;woff2;jpg;jpeg;gif;png;js;html;htm;css;txt;ico;zip;rar",
+    "DefaultPage": "index.html;index.htm",
+    "NotLoadFolder": "\\Files;\\Images;\\Data",
+    "Manager": "admin",
+    "ManagerPWD": "henry-13579",
+    "NoGzipFiles": "jpg;jpeg;png;gif;png;ico;zip;rar;bmp",
+    "CacheFiles": "html;htm;js;css",
+    "BufferSize": 8192,
+    "WebSocketMaxRPS": 2000,
+    "WriteLog": true,
+    "LogToConsole": true,
+    "UrlIgnoreCase": false,
+    "LogLevel": "Warring",
+    "FileManager": true
+  }
+}

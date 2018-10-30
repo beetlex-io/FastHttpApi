@@ -111,7 +111,7 @@ namespace BeetleX.FastHttpApi.Admin
 
         private void OnFileFind(object sender, ResourceCenter.EventFindFileArgs e)
         {
-            if (e.Request.QueryString["tag"] == "manager")
+            if (e.Request.Data["tag"] == "manager")
             {
                 if (mPath[mPath.Length - 1] == System.IO.Path.DirectorySeparatorChar)
                 {

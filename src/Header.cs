@@ -2,107 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static BeetleX.FastHttpApi.HttpParse;
 
 namespace BeetleX.FastHttpApi
 {
     public class HeaderTypeFactory
     {
-        static HeaderTypeFactory()
-        {
-            SPACE_BYTES = Encoding.UTF8.GetBytes(" ");
-            HEADER_SPLIT = Encoding.UTF8.GetBytes(": ");
-            LINE_BYTES = Encoding.UTF8.GetBytes("\r\n");
-            NULL_CONTENT_LENGTH_BYTES = Encoding.UTF8.GetBytes("Content-Length: 0\r\n");
-            CHUNKED_BYTES = Encoding.UTF8.GetBytes("0\r\n\r\n");
-            for (int i = 0; i < HEADERNAME_MAXLENGTH; i++)
-            {
-                mTypes.Add(new List<HeaderType>());
-            }
-            Add(HeaderTypeFactory.AGE);
-            Add(HeaderTypeFactory.AUTHORIZATION);
-            Add(HeaderTypeFactory.WWW_AUTHENTICATE);
-            Add(HeaderTypeFactory.ACCEPT);
-            Add(HeaderTypeFactory.ACCEPT_ENCODING);
-            Add(HeaderTypeFactory.ACCEPT_LANGUAGE);
-            Add(HeaderTypeFactory.ACCEPT_CHARSET);
-            Add(HeaderTypeFactory.ACCESS_CONTROL_ALLOW_CREDENTIALS);
-            Add(HeaderTypeFactory.ACCESS_CONTROL_ALLOW_HEADERS);
-            Add(HeaderTypeFactory.ACCESS_CONTROL_ALLOW_ORIGIN);
-            Add(HeaderTypeFactory.CACHE_CONTROL);
-            Add(HeaderTypeFactory.CLIENT_IPADDRESS);
-            Add(HeaderTypeFactory.CONNECTION);
-            Add(HeaderTypeFactory.CONTENT_ENCODING);
-            Add(HeaderTypeFactory.CONTENT_LENGTH);
-            Add(HeaderTypeFactory.CONTENT_TYPE);
-            Add(HeaderTypeFactory.COOKIE);
-            Add(HeaderTypeFactory.DATE);
-            Add(HeaderTypeFactory.HOST);
-            Add(HeaderTypeFactory.ETAG);
-            Add(HeaderTypeFactory.IF_NONE_MATCH);
-            Add(HeaderTypeFactory.LOCATION);
-            Add(HeaderTypeFactory.ORIGIN);
-            Add(HeaderTypeFactory.REFERER);
-            Add(HeaderTypeFactory.SEC_WEBSOCKET_EXTENSIONS);
-            Add(HeaderTypeFactory.SEC_WEBSOCKET_KEY);
-            Add(HeaderTypeFactory.SEC_WEBSOCKET_VERSION);
-            Add(HeaderTypeFactory.SEC_WEBSOCKT_ACCEPT);
-            Add(HeaderTypeFactory.SERVER);
-            Add(HeaderTypeFactory.SET_COOKIE);
-            Add(HeaderTypeFactory.STATUS);
-            Add(HeaderTypeFactory.TRANSFER_ENCODING);
-            Add(HeaderTypeFactory.UPGRADE);
-            Add(HeaderTypeFactory.USER_AGENT);
-
-        }
-
-        public const int HEADERNAME_MAXLENGTH = 32;
-
-        private static List<List<HeaderType>> mTypes = new List<List<HeaderType>>();
-
-        private static void Add(String name)
-        {
-            if (Find(name) == null)
-            {
-                HeaderType type = new HeaderType(name);
-                mTypes[type.Index].Add(type);
-            }
-        }
-
-        public static HeaderType Find(string name)
-        {
-            HeaderType type;
-            List<HeaderType> headers = mTypes[name.Length % HEADERNAME_MAXLENGTH];
-            for (int i = 0; i < headers.Count; i++)
-            {
-                type = headers[i];
-                if (type.Compare(name))
-                    return type;
-
-            }
-            if (headers.Count < 20)
-            {
-                type = new HeaderType(name);
-                headers.Add(type);
-                return type;
-            }
-            return null;
-
-        }
-
-        public static void Write(string name, PipeStream stream)
-        {
-            HeaderType type = Find(name);
-            if (type != null)
-            {
-                stream.Write(type.Bytes);
-            }
-            else
-            {
-                stream.Write(name + ": ");
-            }
-        }
 
         public static byte[] NULL_CONTENT_LENGTH_BYTES;
+
+        public static byte[] CONTENT_LENGTH_BYTES;
+
+        public static byte[] TOW_LINE_BYTES;
 
         public static byte[] CHUNKED_BYTES;
 
@@ -112,7 +23,18 @@ namespace BeetleX.FastHttpApi
 
         public static byte[] HEADER_SPLIT;
 
+        public const byte _LINE_R = 13;
 
+        public const byte _LINE_N = 10;
+
+        public const byte _SPACE_BYTE = 32;
+
+        public const int HEADERNAME_MAXLENGTH = 32;
+
+        public static byte[] SERVAR_HEADER_BYTES;
+
+
+        #region header
         public const string AUTHORIZATION = "Authorization";
 
         public const string WWW_AUTHENTICATE = "WWW-Authenticate";
@@ -180,13 +102,111 @@ namespace BeetleX.FastHttpApi
         public const string SERVER = "Server";
 
         public const string SET_COOKIE = "Set-Cookie";
+        #endregion
+
+        static HeaderTypeFactory()
+        {
+            SPACE_BYTES = Encoding.UTF8.GetBytes(" ");
+            HEADER_SPLIT = Encoding.UTF8.GetBytes(": ");
+            LINE_BYTES = Encoding.UTF8.GetBytes("\r\n");
+            NULL_CONTENT_LENGTH_BYTES = Encoding.UTF8.GetBytes("Content-Length: 0\r\n");
+            CHUNKED_BYTES = Encoding.UTF8.GetBytes("0\r\n\r\n");
+            CONTENT_LENGTH_BYTES = Encoding.UTF8.GetBytes("Content-Length: ");
+            TOW_LINE_BYTES = Encoding.UTF8.GetBytes("\r\n\r\n");
+            SERVAR_HEADER_BYTES = Encoding.UTF8.GetBytes("Server: BeetleX\r\n");
+            Add(HeaderTypeFactory.AGE);
+            Add(HeaderTypeFactory.AUTHORIZATION);
+            Add(HeaderTypeFactory.WWW_AUTHENTICATE);
+            Add(HeaderTypeFactory.ACCEPT);
+            Add(HeaderTypeFactory.ACCEPT_ENCODING);
+            Add(HeaderTypeFactory.ACCEPT_LANGUAGE);
+            Add(HeaderTypeFactory.ACCEPT_CHARSET);
+            Add(HeaderTypeFactory.ACCESS_CONTROL_ALLOW_CREDENTIALS);
+            Add(HeaderTypeFactory.ACCESS_CONTROL_ALLOW_HEADERS);
+            Add(HeaderTypeFactory.ACCESS_CONTROL_ALLOW_ORIGIN);
+            Add(HeaderTypeFactory.CACHE_CONTROL);
+            Add(HeaderTypeFactory.CLIENT_IPADDRESS);
+            Add(HeaderTypeFactory.CONNECTION);
+            Add(HeaderTypeFactory.CONTENT_ENCODING);
+            Add(HeaderTypeFactory.CONTENT_LENGTH);
+            Add(HeaderTypeFactory.CONTENT_TYPE);
+            Add(HeaderTypeFactory.COOKIE);
+            Add(HeaderTypeFactory.DATE);
+            Add(HeaderTypeFactory.HOST);
+            Add(HeaderTypeFactory.ETAG);
+            Add(HeaderTypeFactory.IF_NONE_MATCH);
+            Add(HeaderTypeFactory.LOCATION);
+            Add(HeaderTypeFactory.ORIGIN);
+            Add(HeaderTypeFactory.REFERER);
+            Add(HeaderTypeFactory.SEC_WEBSOCKET_EXTENSIONS);
+            Add(HeaderTypeFactory.SEC_WEBSOCKET_KEY);
+            Add(HeaderTypeFactory.SEC_WEBSOCKET_VERSION);
+            Add(HeaderTypeFactory.SEC_WEBSOCKT_ACCEPT);
+            Add(HeaderTypeFactory.SERVER);
+            Add(HeaderTypeFactory.SET_COOKIE);
+            Add(HeaderTypeFactory.STATUS);
+            Add(HeaderTypeFactory.TRANSFER_ENCODING);
+            Add(HeaderTypeFactory.UPGRADE);
+            Add(HeaderTypeFactory.USER_AGENT);
+        }
+
+        private static System.Collections.Generic.Dictionary<int, HeaderType> mHeaderTypes = new Dictionary<int, HeaderType>();
+
+        private static int mCount;
+
+        private static void Add(String name)
+        {
+
+            HeaderType type = new HeaderType(name);
+            mHeaderTypes[type.ID] = type;
+        }
+
+        private static void Add(string name, HeaderType type)
+        {
+            if (mCount < 5000)
+            {
+                int id = name.GetHashCode();
+                mHeaderTypes[id] = type;
+                System.Threading.Interlocked.Increment(ref mCount);
+            }
+        }
+
+        public static HeaderType Find(string name)
+        {
+            HeaderType type;
+            int id = name.GetHashCode();
+            if (mHeaderTypes.TryGetValue(id, out type))
+                return type;
+            foreach (var item in mHeaderTypes.Values)
+            {
+                if (item.Compare(name))
+                {
+                    Add(name, type);
+                    return item;
+                }
+            }
+            lock (mHeaderTypes)
+            {
+                type = new HeaderType(name);
+                Add(name, type);
+            }
+            return type;
+        }
+
+        public static void Write(string name, PipeStream stream)
+        {
+            HeaderType type = Find(name);
+            stream.Write(type.Bytes);
+
+        }
+
 
     }
 
     public class Header
     {
 
-        private List<HeaderValue> mValues = new List<HeaderValue>(8);
+        private Dictionary<int, HeaderValue> mValues = new Dictionary<int, HeaderValue>(8);
 
         public void Add(string name, string value)
         {
@@ -195,33 +215,28 @@ namespace BeetleX.FastHttpApi
             Find(name).Value = value;
         }
 
+        public void Clear()
+        {
+            mValues.Clear();
+        }
+
         private HeaderValue Find(string name)
         {
-            HeaderValue result;
-            for (int i = 0; i < mValues.Count; i++)
-            {
-                result = mValues[i];
-                if (result.Type.Compare(name))
-                    return result;
-            }
             HeaderType type = HeaderTypeFactory.Find(name);
-            if (type == null)
-                type = new HeaderType(name);
-            result = new HeaderValue(type, null);
-            mValues.Add(result);
-            return result;
+            HeaderValue value;
+            if (mValues.TryGetValue(type.ID, out value))
+                return value;
+            value = new HeaderValue(type, null);
+            mValues[type.ID] = value;
+            return value;
         }
 
         private HeaderValue FindOnly(string name)
         {
             HeaderValue result;
-            for (int i = 0; i < mValues.Count; i++)
-            {
-                result = mValues[i];
-                if (result.Type.Compare(name))
-                    return result;
-            }
-            return null;
+            int id = name.GetHashCode();
+            mValues.TryGetValue(id, out result);
+            return result;
         }
 
         public string this[string name]
@@ -242,52 +257,42 @@ namespace BeetleX.FastHttpApi
 
         public bool Read(PipeStream stream, Cookies cookies)
         {
-            IndexOfResult index = stream.IndexOf(HeaderTypeFactory.LINE_BYTES);
-            while (index.End != null)
+            string lineData;
+            while (stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out lineData))
             {
-                if (index.Length == 2)
+                if (string.IsNullOrEmpty(lineData))
                 {
-                    stream.ReadFree(2);
                     return true;
                 }
                 else
                 {
-                    ReadOnlySpan<Char> line = HttpParse.ReadCharLine(index);
-                    stream.ReadFree(index.Length);
+                    ReadOnlySpan<Char> line = lineData;
                     if (line[0] == 'C' && line[5] == 'e' && line[1] == 'o' && line[2] == 'o' && line[3] == 'k' && line[4] == 'i')
                     {
                         HttpParse.AnalyzeCookie(line.Slice(8, line.Length - 8), cookies);
                     }
                     else
                     {
-
                         Tuple<string, string> result = HttpParse.AnalyzeHeader(line);
-                        HeaderType type = HeaderTypeFactory.Find(result.Item1);
-                        if (type == null)
-                            Add(result.Item1, result.Item2);
-                        else
-                            Add(type.Name, result.Item2);
+                        this[result.Item1] = result.Item2;
                     }
                 }
-                index = stream.IndexOf(HeaderTypeFactory.LINE_BYTES);
             }
             return false;
         }
 
         internal void Write(PipeStream stream)
         {
-            foreach (var item in mValues)
+            foreach (var item in mValues.Values)
             {
-                stream.Write(item.Type.Bytes);
-                stream.Write(item.Value);
-                stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
+                item.Write(stream);
             }
         }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (var item in mValues)
+            foreach (var item in mValues.Values)
             {
                 sb.AppendFormat("{0}={1}\r\n", item.Type.Name, item.Value);
             }
@@ -306,57 +311,43 @@ namespace BeetleX.FastHttpApi
         public HeaderType Type { get; set; }
 
         public string Value { get; set; }
+
+        public void Write(PipeStream stream)
+        {
+            byte[] buffer = HttpParse.GetByteBuffer();
+            int count = Type.Bytes.Length;
+            System.Buffer.BlockCopy(Type.Bytes, 0, buffer, 0, count);
+            count = count + Encoding.UTF8.GetBytes(Value, 0, Value.Length, buffer, count);
+            buffer[count] = HeaderTypeFactory._LINE_R;
+            buffer[count + 1] = HeaderTypeFactory._LINE_N;
+            stream.Write(buffer, 0, count + 2);
+        }
     }
 
 
-    public class HeaderType
+    public struct HeaderType
     {
         public HeaderType(string name)
         {
             Name = name;
-            UpperData = new char[name.Length];
-            LowerData = new char[name.Length];
-            for (int i = 0; i < Name.Length; i++)
-            {
-                UpperData[i] = char.ToUpper(name[i]);
-                LowerData[i] = char.ToLower(name[i]);
-            }
             Bytes = Encoding.UTF8.GetBytes(name + ": ");
-            Index = name.Length % HeaderTypeFactory.HEADERNAME_MAXLENGTH;
+            ID = name.GetHashCode();
         }
-
-        public char[] UpperData { get; set; }
-
-        private char[] LowerData;
 
         public string Name { get; set; }
 
         public byte[] Bytes { get; set; }
 
-        public int Index { get; set; }
+        public int ID { get; set; }
+
+        public override int GetHashCode()
+        {
+            return this.ID;
+        }
 
         public bool Compare(string value)
         {
-            if (value.Length != Name.Length)
-                return false;
-            int length = value.Length;
-            int end = length - 1;
-            if ((value[0] == UpperData[0] || value[0] == LowerData[0]) &&
-               (value[end] == UpperData[end] || value[end] == LowerData[end]))
-            {
-                for (int i = 1; i < end; i++)
-                {
-                    if (value[i] == UpperData[i] || value[i] == LowerData[i])
-                        continue;
-                    else
-                        return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-            return true;
+            return string.Compare(Name, value, true) == 0;
         }
     }
 }

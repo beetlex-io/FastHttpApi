@@ -46,12 +46,12 @@ namespace BeetleX.FastHttpApi
         START:
             if (mRequest == null)
             {
-                mRequest = new HttpRequest(session,mServer);
+                mRequest = mServer.CreateRequest(session); //new HttpRequest(session, mServer);
             }
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {
                 int length = mRequest.Length;
-                if (string.Compare(mRequest.Method, "GET", true) == 0 || string.Compare(mRequest.Method, "POST", true) == 0)
+                if (mRequest.Method == "GET" || mRequest.Method == "POST")
                 {
                     Completed?.Invoke(this, mCompletedArgs.SetInfo(session, mRequest));
                 }
@@ -197,7 +197,7 @@ namespace BeetleX.FastHttpApi
         public byte[] Encode(object data, IServer server)
         {
             byte[] result = null;
-            using (Buffers.PipeStream stream = new PipeStream(server.BufferPool, server.Config.LittleEndian, server.Config.Encoding))
+            using (Buffers.PipeStream stream = new PipeStream(server.BufferPool.Next(), server.Config.LittleEndian, server.Config.Encoding))
             {
                 OnEncode(null, data, stream);
                 stream.Position = 0;
@@ -209,7 +209,7 @@ namespace BeetleX.FastHttpApi
 
         public ArraySegment<byte> Encode(object data, IServer server, byte[] buffer)
         {
-            using (Buffers.PipeStream stream = new PipeStream(server.BufferPool, server.Config.LittleEndian, server.Config.Encoding))
+            using (Buffers.PipeStream stream = new PipeStream(server.BufferPool.Next(), server.Config.LittleEndian, server.Config.Encoding))
             {
                 OnEncode(null, data, stream);
                 stream.Position = 0;

@@ -26,6 +26,16 @@ namespace BeetleX.FastHttpApi
                 mByteBuffer = new byte[1024 * 4];
             return mByteBuffer;
         }
+        [ThreadStatic]
+        private static char[] mToLowerBuffer;
+        public static char[] GetToLowerBuffer()
+        {
+            if (mToLowerBuffer == null)
+            {
+                mToLowerBuffer = new char[1024];
+            }
+            return mToLowerBuffer;
+        }
 
         public static ReadOnlySpan<char> ReadCharLine(IndexOfResult result)
         {
@@ -69,7 +79,7 @@ namespace BeetleX.FastHttpApi
 
         public static string CharToLower(ReadOnlySpan<char> url)
         {
-            char[] buffer = GetCharBuffer();
+            char[] buffer = GetToLowerBuffer();
             for (int i = 0; i < url.Length; i++)
                 buffer[i] = Char.ToLower(url[i]);
             return new string(buffer, 0, url.Length);
@@ -250,76 +260,313 @@ namespace BeetleX.FastHttpApi
             return new Tuple<string, string>(name, value);
         }
 
-        public static Tuple<string, string, string> AnalyzeRequestLine(ReadOnlySpan<char> line, QueryString queryString, HttpRequest rquest)
+        public static void AnalyzeRequestLine(ReadOnlySpan<char> line, HttpRequest request)
         {
-            string[] value = new string[3];
-            int qsOffset = 0;
-            string qname = null;
-            string qvalue;
             int offset = 0;
-            int items = 0;
-            int length = line.Length - 1;
-            int pathStart = 0;
-            int pathEnd = 0;
+            int count = 0;
             for (int i = 0; i < line.Length; i++)
             {
                 if (line[i] == ' ')
                 {
-                    value[items] = new string(line.Slice(offset, i - offset));
-                    offset = i + 1;
-                    items++;
-                    if (items == 2)
+                    if (count == 0)
                     {
-                        if (qname != null)
-                        {
-                            qvalue = new string(line.Slice(qsOffset, i - qsOffset));
-                            qsOffset++;
-                            queryString.Add(qname, qvalue);
-                            qname = null;
-                        }
-                        break;
+                        request.Method = new string(line.Slice(offset, i - offset));
+                        offset = i + 1;
                     }
-                }
-                else if (line[i] == '?')
-                {
-                    qsOffset = i + 1;
-                }
-                else if (line[i] == '=')
-                {
-                    if (qsOffset > 0)
-                    {
-                        qname = new string(line.Slice(qsOffset, i - qsOffset));
-                        qsOffset = i + 1;
-                    }
-                }
-                else if (line[i] == '&')
-                {
-                    if (qname != null)
-                    {
-                        qvalue = new string(line.Slice(qsOffset, i - qsOffset));
-                        qsOffset = i + 1;
-                        queryString.Add(qname, qvalue);
-                        qname = null;
-                    }
-                }
-                else if (line[i] == '/')
-                {
-                    if (pathStart == 0)
-                        pathStart = i;
                     else
-                        pathEnd = i;
+                    {
+                        request.Url = new string(line.Slice(offset, i - offset));
+                        offset = i + 1;
+                        request.HttpVersion = new string(line.Slice(offset, line.Length - offset));
+                    }
+                    count++;
                 }
-
             }
-            if (pathEnd > pathStart)
-                rquest.Path = CharToLower(line.Slice(pathStart, pathEnd - pathStart + 1));
-            else
-                rquest.Path = "/";
-            value[2] = new string(line.Slice(offset, line.Length - offset));
-            return new Tuple<string, string, string>(value[0], value[1], value[2]);
 
         }
 
+
+        public static int ReadUrlQueryString(ReadOnlySpan<char> url, QueryString queryString, HttpRequest request)
+        {
+            int result = 0;
+            ReadOnlySpan<char> qsdata = url;
+            for (int i = 0; i < url.Length; i++)
+            {
+                if (url[i] == '?')
+                {
+                    result = i;
+                    qsdata = url.Slice(i + 1, url.Length - i - 1);
+                    break;
+                }
+            }
+            if (result > 0)
+            {
+                string name = null;
+                string value = null;
+                int offset = 0;
+                for (int i = 0; i < qsdata.Length; i++)
+                {
+                    if (qsdata[i] == '=')
+                    {
+                        name = new string(qsdata.Slice(offset, i - offset));
+                        offset = i + 1;
+                    }
+                    else if (qsdata[i] == '&')
+                    {
+                        if (name != null && i - offset > 0)
+                        {
+                            value = new string(qsdata.Slice(offset, i - offset));
+                            queryString.Add(name, value);
+                            name = null;
+                        }
+                        offset = i + 1;
+                    }
+                }
+                if (name != null && qsdata.Length - offset > 0)
+                {
+                    value = new string(qsdata.Slice(offset, qsdata.Length - offset));
+                    queryString.Add(name, value);
+                }
+            }
+            return result;
+        }
+
+        public static void ReadUrlPathAndExt(ReadOnlySpan<char> url, QueryString queryString, HttpRequest request, HttpConfig config)
+        {
+            bool urlIgnoreCase = config.UrlIgnoreCase;
+
+            if (urlIgnoreCase)
+                request.BaseUrl = CharToLower(url);
+            else
+                request.BaseUrl = new string(url);
+            for (int i = url.Length - 1; i >= 0; i--)
+            {
+                if (url[i] == '.')
+                {
+                    if (urlIgnoreCase)
+                        request.Ext = CharToLower(url.Slice(i + 1, url.Length - i - 1));
+                    else
+                        request.Ext = new string(url.Slice(i + 1, url.Length - i - 1));
+                    continue;
+                }
+                if (url[i] == '/')
+                {
+                    if (urlIgnoreCase)
+                        request.Path = CharToLower(url.Slice(0, i + 1));
+                    else
+                        request.Path = new string(url.Slice(0, i + 1));
+                    return;
+                }
+            }
+        }
+
+        public static void ReadHttpVersionNumber(ReadOnlySpan<char> buffer, QueryString queryString, HttpRequest request)
+        {
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                if (buffer[i] == '/')
+                {
+                    request.VersionNumber = new string(buffer.Slice(i + 1, buffer.Length - i - 1));
+                }
+            }
+        }
+
+
+
+
+        public struct AnalyzeHeaderLine
+        {
+            public short Count;
+
+            public Char[] Buffer;
+
+            public bool EmptyLine;
+
+            public short Offset;
+
+            public string Name;
+
+            public bool Import(ReadOnlySpan<byte> bytes, PipeStream stream, Header header, Cookies cookie)
+            {
+                Span<char> bufferSpan = new Span<char>(Buffer);
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    byte b = bytes[i];
+                    Char c = (char)b;
+                    bufferSpan[Count] = c;
+                    Count++;
+                    if (bufferSpan[Count - 1] == '\n' && bufferSpan[Count - 2] == '\r')
+                    {
+                        stream.ReadFree(Count);
+                        if (Count == 2)
+                        {
+                            EmptyLine = true;
+                            return true;
+                        }
+                        string value = new string(bufferSpan.Slice(Offset, Count - Offset - 2));
+                        header[Name] = value;
+                        if (Name[0] == 'C' && Name[5] == 'e' && Name[1] == 'o' && Name[2] == 'o' && Name[3] == 'k' && Name[4] == 'i')
+                        {
+                            HttpParse.AnalyzeCookie(value, cookie);
+                        }
+                        Name = null;
+                        Offset = 0;
+                        Count = 0;
+                        EmptyLine = false;
+                        return true;
+                    }
+                    if (c == ':')
+                    {
+                        if (Name == null)
+                        {
+                            Name = new string(bufferSpan.Slice(Offset, Count - Offset - 1));
+                            Offset = (short)(Count);
+                        }
+                    }
+                    else
+                    {
+                        if (Name != null)
+                        {
+                            if (c == ' ')
+                                Offset++;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        public struct AnalyzeMethodLine
+        {
+            public short Count;
+
+            public short Spaces;
+
+            public Char[] Buffer;
+
+            public short UrlOffset;
+
+            public short VersionOffset;
+
+            private int ReadQueryString(ReadOnlySpan<char> buffer, QueryString queryString, HttpRequest request)
+            {
+                int result = 0;
+                ReadOnlySpan<char> qsdata = buffer;
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    if (buffer[i] == '?')
+                    {
+                        result = i;
+                        qsdata = buffer.Slice(i + 1, buffer.Length - i - 1);
+                        break;
+                    }
+                }
+                if (result > 0)
+                {
+                    string name = null;
+                    string value = null;
+                    int offset = 0;
+                    for (int i = 0; i < qsdata.Length; i++)
+                    {
+                        if (qsdata[i] == '=')
+                        {
+                            name = new string(qsdata.Slice(offset, i - offset));
+                            offset = i + 1;
+                        }
+                        else if (qsdata[i] == '&')
+                        {
+                            if (name != null && i - offset > 0)
+                            {
+                                value = new string(qsdata.Slice(offset, i - offset));
+                                queryString.Add(name, value);
+                                name = null;
+                            }
+                            offset = i + 1;
+                        }
+                    }
+                    if (name != null && qsdata.Length - offset > 0)
+                    {
+                        value = new string(qsdata.Slice(offset, qsdata.Length - offset));
+                        queryString.Add(name, value);
+                    }
+                }
+                return result;
+            }
+
+            private void ReadPath(ReadOnlySpan<char> buffer, QueryString queryString, HttpRequest request)
+            {
+                request.BaseUrl = CharToLower(buffer);
+                for (int i = buffer.Length - 1; i >= 0; i--)
+                {
+                    if (buffer[i] == '.')
+                    {
+                        request.Ext = CharToLower(buffer.Slice(i + 1, buffer.Length - i - 1));
+                        continue;
+                    }
+                    if (buffer[i] == '/')
+                    {
+                        request.Path = CharToLower(buffer.Slice(0, i + 1));
+                        return;
+                    }
+                }
+            }
+
+            private void ReadHttpVersionNumber(ReadOnlySpan<char> buffer, QueryString queryString, HttpRequest request)
+            {
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    if (buffer[i] == '/')
+                    {
+                        request.VersionNumber = new string(buffer.Slice(i + 1, buffer.Length - i - 1));
+                    }
+                }
+            }
+
+            public bool Import(ReadOnlySpan<byte> bytes, PipeStream stream, QueryString queryString, HttpRequest request)
+            {
+                Span<char> bufferSpan = new Span<char>(Buffer);
+                ReadOnlySpan<char> UrlData = Buffer;
+                ReadOnlySpan<char> VersionData = Buffer;
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    byte b = bytes[i];
+                    Char c = (char)b;
+                    bufferSpan[Count] = c;
+                    Count++;
+                    if (bufferSpan[Count - 1] == '\n' && bufferSpan[Count - 2] == '\r')
+                    {
+                        VersionData = new ReadOnlySpan<char>(Buffer, VersionOffset, Count - VersionOffset - 2);
+                        request.Url = new string(UrlData);
+                        request.HttpVersion = new string(VersionData);
+                        ReadHttpVersionNumber(VersionData, queryString, request);
+                        int len = ReadQueryString(UrlData, queryString, request);
+                        if (len > 0)
+                            ReadPath(UrlData.Slice(0, len), queryString, request);
+                        else
+                            ReadPath(UrlData, queryString, request);
+                        stream.ReadFree(Count);
+                        return true;
+                    }
+                    else if (c == ' ')
+                    {
+                        Spaces++;
+                        if (Spaces == 1)
+                        {
+                            request.Method = new string(Buffer, 0, Count - 1);
+                            UrlOffset = Count;
+                        }
+                        if (Spaces == 2)
+                        {
+                            VersionOffset = Count;
+                            UrlData = new ReadOnlySpan<char>(Buffer, UrlOffset, VersionOffset - UrlOffset - 1);
+
+                        }
+                    }
+
+                }
+                return false;
+            }
+        }
 
     }
 }

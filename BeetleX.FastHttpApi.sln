@@ -23,9 +23,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeetleX.FastHttpApi.Admin",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.Admin", "samples\HttpApiServer.Admin\HttpApiServer.Admin.csproj", "{4FEF2F5E-47E9-44F0-A71A-72E5EDDC9334}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.HelloWorld", "samples\HttpApiServer.HelloWorld\HttpApiServer.HelloWorld.csproj", "{D84C813C-A815-4186-9BB7-C2EC33AB0913}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.HelloWorld", "samples\HttpApiServer.HelloWorld\HttpApiServer.HelloWorld.csproj", "{D84C813C-A815-4186-9BB7-C2EC33AB0913}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.SimpleChatRoom", "samples\HttpApiServer.SimpleChatRoom\HttpApiServer.SimpleChatRoom.csproj", "{305CE559-7CD5-45AB-B828-0BF29D71AF93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.SimpleChatRoom", "samples\HttpApiServer.SimpleChatRoom\HttpApiServer.SimpleChatRoom.csproj", "{305CE559-7CD5-45AB-B828-0BF29D71AF93}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PerformanceTest", "PerformanceTest", "{D3C2884A-0DFC-45ED-ABD5-492564E20F0B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FastHttpApiWeb", "PerformanceTest\FastHttpApiWeb\FastHttpApiWeb.csproj", "{25013304-8D45-4034-9126-20D4BE0EC306}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "netcore", "PerformanceTest\netcore\netcore.csproj", "{72510BA9-384B-4F00-BA90-676F7A75180C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "netcore-mvc", "PerformanceTest\netcore-mvc\netcore-mvc.csproj", "{CE2A182B-F9E6-4EBC-8974-17065E550856}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "go", "go", "{91CE5B83-AA5B-44D0-86FF-A655F55EB77C}"
+	ProjectSection(SolutionItems) = preProject
+		PerformanceTest\go\main.go = PerformanceTest\go\main.go
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +90,18 @@ Global
 		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{305CE559-7CD5-45AB-B828-0BF29D71AF93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25013304-8D45-4034-9126-20D4BE0EC306}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25013304-8D45-4034-9126-20D4BE0EC306}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25013304-8D45-4034-9126-20D4BE0EC306}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25013304-8D45-4034-9126-20D4BE0EC306}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72510BA9-384B-4F00-BA90-676F7A75180C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72510BA9-384B-4F00-BA90-676F7A75180C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72510BA9-384B-4F00-BA90-676F7A75180C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72510BA9-384B-4F00-BA90-676F7A75180C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE2A182B-F9E6-4EBC-8974-17065E550856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE2A182B-F9E6-4EBC-8974-17065E550856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE2A182B-F9E6-4EBC-8974-17065E550856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE2A182B-F9E6-4EBC-8974-17065E550856}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +116,10 @@ Global
 		{4FEF2F5E-47E9-44F0-A71A-72E5EDDC9334} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{D84C813C-A815-4186-9BB7-C2EC33AB0913} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{305CE559-7CD5-45AB-B828-0BF29D71AF93} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
+		{25013304-8D45-4034-9126-20D4BE0EC306} = {D3C2884A-0DFC-45ED-ABD5-492564E20F0B}
+		{72510BA9-384B-4F00-BA90-676F7A75180C} = {D3C2884A-0DFC-45ED-ABD5-492564E20F0B}
+		{CE2A182B-F9E6-4EBC-8974-17065E550856} = {D3C2884A-0DFC-45ED-ABD5-492564E20F0B}
+		{91CE5B83-AA5B-44D0-86FF-A655F55EB77C} = {D3C2884A-0DFC-45ED-ABD5-492564E20F0B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {988EEA11-1C48-44A4-9DF0-1C3D08600A4F}

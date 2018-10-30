@@ -7,6 +7,8 @@ namespace BeetleX.FastHttpApi.Data
     public interface IDataContext
     {
 
+        string this[string name] { get; }
+
         void Add(string name, string value);
 
         bool TryGetBoolean(string name, out bool value);

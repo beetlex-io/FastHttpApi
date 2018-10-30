@@ -144,8 +144,9 @@ namespace BeetleX.FastHttpApi
         private object[] GetValues(IHttpContext context)
         {
 
-            object[] parameters = new object[Parameters.Count];
-            for (int i = 0; i < parameters.Length; i++)
+            int count = this.Parameters.Count;
+            object[] parameters = new object[count];
+            for (int i = 0; i < count; i++)
             {
                 parameters[i] = Parameters[i].GetValue(context);
 

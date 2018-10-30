@@ -17,14 +17,18 @@ namespace BeetleX.FastHttpApi
         public List<UrlRoute> Routes { get; private set; }
 
 
-        public bool Match(string url, out string result, out string rewriteLower, QueryString queryString)
+        public bool Match(string url, ref RouteMatchResult result, QueryString queryString)
         {
-            result = null;
-            rewriteLower = null;
             for (int i = 0; i < Routes.Count; i++)
             {
-                if (Routes[i].Match(url, out result, out rewriteLower, queryString))
+                UrlRoute urlRoute = Routes[i];
+                if (urlRoute.Match(url, queryString))
+                {
+                    result.Ext = urlRoute.Ext;
+                    result.RewriteUrl = urlRoute.Rewrite;
+                    result.RewriteUrlLower = urlRoute.Rewrite;
                     return true;
+                }
             }
             return false;
         }
