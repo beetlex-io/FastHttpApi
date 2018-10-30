@@ -7,7 +7,7 @@ namespace BeetleX.FastHttpApi.Data
 {
     class DataContextBind
     {
-        public static void BindJson(DataContxt context, JToken data)
+        public static void BindJson(IDataContext context, JToken data)
         {
             if (data != null)
                 foreach (JProperty property in data)
@@ -19,7 +19,7 @@ namespace BeetleX.FastHttpApi.Data
                 }
         }
 
-        public static void BindFormUrl(DataContxt context, string data)
+        public static void BindFormUrl(IDataContext context, string data)
         {
             HttpParse.AsynczeFromUrlEncoded(data, context);
         }

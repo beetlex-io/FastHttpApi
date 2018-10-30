@@ -4,10 +4,8 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi.Data
 {
-    public enum DecodeType
+    [AttributeUsage(AttributeTargets.Method)]
+    public class NoDataConvertAttribute : Attribute
     {
-        Json,
-        FormUrl,
-        None
     }
 }

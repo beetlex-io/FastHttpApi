@@ -14,14 +14,13 @@ using BeetleX.Dispatchs;
 
 namespace BeetleX.FastHttpApi
 {
-    public class HttpApiServer : ServerHandlerBase, BeetleX.ISessionSocketProcessHandler, WebSockets.IDataFrameSerializer, IWebSocketServer, IBodyProcessHandler
+    public class HttpApiServer : ServerHandlerBase, BeetleX.ISessionSocketProcessHandler, WebSockets.IDataFrameSerializer, IWebSocketServer
     {
 
         public HttpApiServer() : this(null)
         {
             mFileLog = new FileLog();
             FrameSerializer = this;
-            BodyProcessHandler = this;
         }
 
         public HttpApiServer(HttpConfig serverConfig)
@@ -99,7 +98,7 @@ namespace BeetleX.FastHttpApi
         internal HttpRequest CreateRequest(ISession session)
         {
             HttpRequest request;
-            if (!mRequestPool.TryDequeue(out request))
+            //if (!mRequestPool.TryDequeue(out request))
                 request = new HttpRequest();
             request.Init(session, this);
             return request;
@@ -108,8 +107,11 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery(HttpRequest request)
         {
-            request.Reset();
-            mRequestPool.Enqueue(request);
+            //if (!request.WebSocket)
+            //{
+            //    request.Reset();
+            //    mRequestPool.Enqueue(request);
+            //}
         }
 
 
@@ -339,42 +341,6 @@ namespace BeetleX.FastHttpApi
         }
 
 
-        #region body process
-        public IBodyProcessHandler BodyProcessHandler { get; set; }
-
-        public object GetRequestBody(HttpRequest request, PipeStream stream, int length, string name, Type type)
-        {
-            if (request.Length > 0)
-            {
-                string value = request.Stream.ReadString(request.Length);
-                return Newtonsoft.Json.JsonConvert.DeserializeObject(value, type);
-            }
-            return null;
-        }
-
-        public IResult CreateResponseResult(HttpResponse response, object data)
-        {
-            ActionResult result = data as ActionResult;
-            if (result == null)
-            {
-                result = new ActionResult();
-                result.Data = data;
-            }
-            result.Url = response.Request.BaseUrl;
-            result.ID = response.RequestID;
-            return new JsonResult(result);
-        }
-
-        public object GetRequestBody(HttpRequest request, string name, Type type)
-        {
-            return BodyProcessHandler.GetRequestBody(request, request.Stream, request.Length, name, type);
-        }
-
-        public IResult GetResponseResult(HttpResponse response, object data)
-        {
-            return BodyProcessHandler.CreateResponseResult(response, data);
-        }
-        #endregion
 
         #region websocket
         public virtual object FrameDeserialize(DataFrame data, PipeStream stream)

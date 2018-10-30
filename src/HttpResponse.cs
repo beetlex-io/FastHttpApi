@@ -77,7 +77,18 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                IResult result = Request.Server.GetResponseResult(this, data);
+                ActionResult actionResult = data as ActionResult;
+                IResult result;
+                if (actionResult == null)
+                {
+                       
+                    result = new ActionJsonResult(data);
+                }
+                else
+                {
+                    result = new JsonResult(data);
+                }
+
                 Completed(result);
             }
         }

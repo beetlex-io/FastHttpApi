@@ -16,7 +16,7 @@ namespace BeetleX.FastHttpApi
 
     public class HttpRequest
     {
-       
+
         public HttpRequest()
         {
             Header = new Header();
@@ -39,11 +39,12 @@ namespace BeetleX.FastHttpApi
             mState = LoadedState.None;
             WebSocket = false;
             KeepAlive = true;
-            //Method = null;
-            //Url = null;
+            Method = null;
+            Url = null;
+            BaseUrl = null;
             Ext = null;
-            //HttpVersion = null;
-
+            mLength = 0;
+            HttpVersion = null;
             Header.Clear();
             mDataContxt.Clear();
             mCookies.Clear();

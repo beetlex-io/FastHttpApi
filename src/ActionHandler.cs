@@ -21,14 +21,14 @@ namespace BeetleX.FastHttpApi
             LoadParameter();
             Filters = new List<FilterAttribute>();
             Method = "GET";
-            DecodeType = DecodeType.Json;
+
         }
 
 
         public RouteTemplateAttribute Route { get; set; }
 
 
-        public Data.DecodeType DecodeType { get; set; }
+        public DataConvertAttribute DataConvert { get; set; }
 
 
         public string Method { get; set; }

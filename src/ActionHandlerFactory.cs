@@ -1,4 +1,5 @@
-﻿using BeetleX.FastHttpApi.WebSockets;
+﻿using BeetleX.FastHttpApi.Data;
+using BeetleX.FastHttpApi.WebSockets;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -73,6 +74,7 @@ namespace BeetleX.FastHttpApi
 
         private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server)
         {
+            DataConvertAttribute controllerDataConvert = controllerType.GetCustomAttribute<DataConvertAttribute>(false);
             if (string.IsNullOrEmpty(rooturl))
                 rooturl = "/";
             else
@@ -98,13 +100,6 @@ namespace BeetleX.FastHttpApi
             }
             foreach (MethodInfo mi in controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
-                Data.DecodeType decodeType = Data.DecodeType.Json;
-                if (controllerType.GetCustomAttribute<Data.FormUrlDecodeAttribute>(false) != null)
-                    decodeType = Data.DecodeType.FormUrl;
-                if (mi.GetCustomAttribute<Data.FormUrlDecodeAttribute>(false) != null)
-                    decodeType = Data.DecodeType.FormUrl;
-                if (mi.GetCustomAttribute<Data.NoDecodeAttribute>(false) != null)
-                    decodeType = Data.DecodeType.None;
                 if (string.Compare("Equals", mi.Name, true) == 0
                     || string.Compare("GetHashCode", mi.Name, true) == 0
                     || string.Compare("GetType", mi.Name, true) == 0
@@ -113,6 +108,19 @@ namespace BeetleX.FastHttpApi
                     continue;
                 if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
                     continue;
+                DataConvertAttribute actionConvert = mi.GetCustomAttribute<DataConvertAttribute>();
+                if (mi.GetCustomAttribute<NoDataConvertAttribute>(false) != null)
+                {
+                    actionConvert = null;
+                }
+                else
+                {
+                    if (actionConvert == null)
+                        actionConvert = controllerDataConvert;
+                    if (actionConvert == null)
+                        actionConvert = new JsonDataConvertAttribute();
+                }
+
                 string sourceUrl = rooturl + mi.Name;
                 string url = sourceUrl;
                 if (server.ServerConfig.UrlIgnoreCase)
@@ -135,8 +143,8 @@ namespace BeetleX.FastHttpApi
                     continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.DataConvert = actionConvert;
                 handler.Route = ra;
-                handler.DecodeType = decodeType;
                 if (mi.GetCustomAttribute<PostAttribute>(false) != null)
                     handler.Method = "POST";
                 handler.SourceUrl = sourceUrl;
@@ -203,9 +211,8 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-
                     Data.DataContxt dataContxt = new Data.DataContxt();
-                    Data.DataContextBind.BindJson(dataContxt, data);
+                    DataContextBind.BindJson(dataContxt, data);
                     WebsocketJsonContext dc = new WebsocketJsonContext(server, request, dataContxt);
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
@@ -275,25 +282,8 @@ namespace BeetleX.FastHttpApi
                         response.Result(notSupportResult);
                         return;
                     }
-                    string bodyValue;
-                    if (handler.DecodeType == Data.DecodeType.Json)
-                    {
-                        JToken token = null;
-                        if (request.Length > 0)
-                        {
-                            bodyValue = request.Stream.ReadString(request.Length);
-                            token = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(bodyValue);
-                        }
-                        Data.DataContextBind.BindJson(request.Data, token);
-                    }
-                    else if (handler.DecodeType == Data.DecodeType.FormUrl)
-                    {
-                        if (request.Length > 0)
-                            bodyValue = request.Stream.ReadString(request.Length);
-                        else
-                            bodyValue = "";
-                        Data.DataContextBind.BindFormUrl(request.Data, bodyValue);
-                    }
+                    if (handler.DataConvert != null)
+                        handler.DataConvert.Execute(request.Data, request);
                     HttpContext pc = new HttpContext(server, request, response, request.Data);
                     long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;

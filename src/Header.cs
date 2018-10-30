@@ -156,7 +156,6 @@ namespace BeetleX.FastHttpApi
 
         private static void Add(String name)
         {
-
             HeaderType type = new HeaderType(name);
             mHeaderTypes[type.ID] = type;
         }
@@ -165,8 +164,11 @@ namespace BeetleX.FastHttpApi
         {
             if (mCount < 5000)
             {
-                int id = name.GetHashCode();
-                mHeaderTypes[id] = type;
+                lock (mHeaderTypes)
+                {
+                    int id = name.GetHashCode();
+                    mHeaderTypes[id] = type;
+                }
                 System.Threading.Interlocked.Increment(ref mCount);
             }
         }
@@ -181,15 +183,12 @@ namespace BeetleX.FastHttpApi
             {
                 if (item.Compare(name))
                 {
-                    Add(name, type);
+                    Add(name, item);
                     return item;
                 }
             }
-            lock (mHeaderTypes)
-            {
-                type = new HeaderType(name);
-                Add(name, type);
-            }
+            type = new HeaderType(name);
+            Add(name, type);
             return type;
         }
 
@@ -197,10 +196,7 @@ namespace BeetleX.FastHttpApi
         {
             HeaderType type = Find(name);
             stream.Write(type.Bytes);
-
         }
-
-
     }
 
     public class Header
@@ -325,7 +321,7 @@ namespace BeetleX.FastHttpApi
     }
 
 
-    public struct HeaderType
+    public class HeaderType
     {
         public HeaderType(string name)
         {
