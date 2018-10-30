@@ -14,6 +14,7 @@
 
 **[详情查看官网](http://www.ikende.com/)**
 #### 性能对比概要
+[测试代码](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest)
 ![](https://i.imgur.com/A4hYksO.png)
 ## 更新日志
 #### 2018-10-30
