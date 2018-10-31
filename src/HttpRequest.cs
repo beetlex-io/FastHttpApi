@@ -16,7 +16,6 @@ namespace BeetleX.FastHttpApi
 
     public class HttpRequest
     {
-
         public HttpRequest()
         {
             Header = new Header();
@@ -37,14 +36,10 @@ namespace BeetleX.FastHttpApi
         internal void Reset()
         {
             mState = LoadedState.None;
-            WebSocket = false;
-            KeepAlive = true;
-            Method = null;
-            Url = null;
-            BaseUrl = null;
-            Ext = null;
+            mWebSocket = false;
+            mKeepAlive = true;
+            mExt = null;
             mLength = 0;
-            HttpVersion = null;
             Header.Clear();
             mDataContxt.Clear();
             mCookies.Clear();
@@ -55,6 +50,12 @@ namespace BeetleX.FastHttpApi
             this.Server.Recovery(this);
         }
 
+        private string mExt;
+
+        private bool mWebSocket = false;
+
+        private bool mKeepAlive = true;
+
         private Data.DataContxt mDataContxt;
 
         public Data.DataContxt Data => mDataContxt;
@@ -63,7 +64,7 @@ namespace BeetleX.FastHttpApi
 
         public string VersionNumber { get; set; }
 
-        public bool WebSocket { get; set; }
+        public bool WebSocket { get { return mWebSocket; } set { mWebSocket = value; } }
 
         private LoadedState mState;
 
@@ -79,7 +80,7 @@ namespace BeetleX.FastHttpApi
 
         public PipeStream Stream => mStream;
 
-        public bool KeepAlive { get; set; }
+        public bool KeepAlive { get { return mKeepAlive; } set { mKeepAlive = value; } }
 
         public Header Header { get; private set; }
 
@@ -101,7 +102,7 @@ namespace BeetleX.FastHttpApi
 
         public string HttpVersion { get; set; }
 
-        public string Ext { get; set; }
+        public string Ext { get { return mExt; } set { mExt = value; } }
 
         public HttpApiServer Server { get; set; }
 
@@ -125,9 +126,6 @@ namespace BeetleX.FastHttpApi
                 this.Stream.ReadFree(Length);
             }
         }
-
-
-
         private void LoadMethod(PipeStream stream)
         {
             if (mState == LoadedState.None)
@@ -211,7 +209,6 @@ namespace BeetleX.FastHttpApi
             response.Request = this;
             if (VersionNumber == "1.0" && this.KeepAlive)
                 response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
-            //response.Header[HeaderTypeFactory.HOST] = Header[HeaderTypeFactory.HOST];
             response.RequestID = mQueryString["_requestid"];
             return response;
         }

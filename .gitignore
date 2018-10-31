@@ -49,3 +49,5 @@ PerformanceTest/netcore/Properties/
 PerformanceTest/netcore/bin/
 PerformanceTest/netcore/obj/
 PerformanceTest/netcore-mvc/.vs/netcore-mvc/v15/Server/
+samples/HttpApiServer.DataPost/bin/
+samples/HttpApiServer.DataPost/obj/

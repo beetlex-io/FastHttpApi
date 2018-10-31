@@ -93,12 +93,12 @@ namespace BeetleX.FastHttpApi
 
         public IDataFrameSerializer FrameSerializer { get; set; }
 
-        private System.Collections.Concurrent.ConcurrentQueue<HttpRequest> mRequestPool = new System.Collections.Concurrent.ConcurrentQueue<HttpRequest>();
+        private ObjectPoolGroup<HttpRequest> mRequestPool = new ObjectPoolGroup<HttpRequest>();
 
         internal HttpRequest CreateRequest(ISession session)
         {
             HttpRequest request;
-            //if (!mRequestPool.TryDequeue(out request))
+            if (!mRequestPool.TryPop(out request))
                 request = new HttpRequest();
             request.Init(session, this);
             return request;
@@ -107,11 +107,11 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery(HttpRequest request)
         {
-            //if (!request.WebSocket)
-            //{
-            //    request.Reset();
-            //    mRequestPool.Enqueue(request);
-            //}
+            if (!request.WebSocket)
+            {
+                request.Reset();
+                mRequestPool.Push(request);
+            }
         }
 
 

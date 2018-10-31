@@ -81,14 +81,11 @@ namespace BeetleX.FastHttpApi
                 IResult result;
                 if (actionResult == null)
                 {
-                       
-                    result = new ActionJsonResult(data);
+                    actionResult = new ActionResult(data);
+                    actionResult.Url = Request.BaseUrl;
+                    actionResult.ID = RequestID;
                 }
-                else
-                {
-                    result = new JsonResult(data);
-                }
-
+                result = new JsonResult(actionResult);
                 Completed(result);
             }
         }
