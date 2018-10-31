@@ -5,9 +5,12 @@
 ![](https://i.imgur.com/A4hYksO.png)
 
 ### 安装组件
+
 ```
 Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
 ```
+### 项目设置ServerGC
+`<ServerGarbageCollection>true</ServerGarbageCollection>`
 
 ```
     [Controller]
@@ -22,6 +25,11 @@ Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();
+        }
+        // Get /hello?name=henry
+        public object Hello(string name)
+        {
+            return $"hello {name} {DateTime.Now}";
         }
         // Get /GetTime  
         public object GetTime()
