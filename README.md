@@ -3,20 +3,66 @@
 ## 简介
 是dotNet core下基于[Beetlex](https://github.com/IKende/BeetleX)实现的一个高度精简化和高吞吐支持双协议的组件，组件在同一端口服务下同时支持http和WebSocket协议；通过组件定义的web api同样支持http和websocket调用。组件除了支持HTTP/Websocket还提供静态网页资源输出，从而可以在组件的基础上直接构建网站应用.在安全性方面组件支持SSL，只需要简单配置证书文件即可让服务支持https的安全性访问。 在性能上经测试FastHttpApi在GET/POST这些数据交互的场景下性能和吞吐能力都优胜于是Asp.net core集成的Kestrel！。
 
-1. 支持以函数的方式来制定HTTP请求逻辑
-2. 支持使用者处理异步响应
-3. 同一端口下同时支持http/websocket协议
-4. 支持Filter功能，以便更好地控制请求方法的处理
-5. 支持自定义Http Body解释器，方便制定基于json,xml,protobuf,msgpack等数据格式的传输
-6. 支持QueryString参数和Cookies
-7. 支持外置或内嵌到DLL的静态资源输出（默认对html,js,css资源进行GZIP处理）
-8. 支持SSL和Https
-
 **[详情查看官网](http://www.ikende.com/)**
 #### 性能对比概要
 **[详细测试代码master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest)**
-
 ![](https://i.imgur.com/A4hYksO.png)
+
+### 安装组件
+```
+Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
+```
+
+```
+    [Controller]
+    class Program
+    {
+        private static BeetleX.FastHttpApi.HttpApiServer mApiServer;
+        static void Main(string[] args)
+        {
+            mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            mApiServer.Debug();
+            mApiServer.Register(typeof(Program).Assembly);
+            mApiServer.Open();
+            Console.Write(mApiServer.BaseServer);
+            Console.Read();
+        }
+        // Get /GetTime  
+        public object GetTime()
+        {
+            return DateTime.Now;
+        }
+        // Post /PostStream
+        // name=aaa&value=bbb
+        [Post]
+        [NoDataConvert]
+        public object PostStream(IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            string value = context.Request.Stream.ReadString(context.Request.Length);
+            return value;
+        }
+        // Post /Post
+        // {"name":"henry","value":"bbbb"}
+        [Post]
+        public object Post(string name, string value, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            return $"{name}={value}";
+        }
+        
+        // Post /PostForm
+        // name=aaa&value=bbb
+        [Post]
+        [FormUrlDataConvert]
+        public object PostForm(string name, string value, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            return $"{name}={value}";
+        }
+    }
+```
+
 ## 更新日志
 #### 2018-10-30
 修改路由处理，优化处理性能，添加和Go iris，core Kestrel和asp.net core mvc性能对比测试用例
