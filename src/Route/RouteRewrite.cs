@@ -33,7 +33,7 @@ namespace BeetleX.FastHttpApi
         {
             if (mServer.EnableLog(EventArgs.LogType.Info))
             {
-                mServer.Log(EventArgs.LogType.Info, null, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
+                mServer.Log(EventArgs.LogType.Info, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
             }
             item.UrlIgnoreCase = this.UrlIgnoreCase;
             item.Init();

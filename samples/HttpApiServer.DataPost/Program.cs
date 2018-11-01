@@ -8,22 +8,21 @@ namespace HttpApiServer.DataPost
     class Program
     {
         private static BeetleX.FastHttpApi.HttpApiServer mApiServer;
-
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            mApiServer.ServerConfig.LogLevel = BeetleX.EventArgs.LogType.Trace;
+            mApiServer.ServerConfig.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();
         }
-
         public object GetTime()
         {
             return DateTime.Now;
         }
-
         [Post]
         [NoDataConvert]
         public object PostStream(IHttpContext context)

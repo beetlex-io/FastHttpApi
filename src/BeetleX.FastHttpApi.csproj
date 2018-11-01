@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.0.8.6" />
+    <PackageReference Include="BeetleX" Version="1.0.8.7" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
