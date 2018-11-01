@@ -2,14 +2,14 @@
 基于Beetlex实现的一个轻量级和高性能的HTTP服务组件，组件在同一端口服务下同时支持http和WebSocket协议。只需要配置证书文件即可让服务支持https的安全性访问。 在性能方面经测试组件在GET/POST这些数据交互的场景下性能优胜于Asp.net core！**[详情查看官网](http://www.ikende.com/)**.
 #### 性能对比概要
 **[详细测试代码master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest)**
-![](https://i.imgur.com/A4hYksO.png)
+![](https://i.imgur.com/lyvQIhu.png)
 
-### 安装组件
+### install package
 
 ```
 Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
 ```
-### 项目设置ServerGC
+### Setting up the Server GC
 `<ServerGarbageCollection>true</ServerGarbageCollection>`
 
 ```
