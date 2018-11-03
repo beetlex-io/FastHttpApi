@@ -10,17 +10,24 @@ namespace BeetleX.FastHttpApi.Data
         public static void BindJson(IDataContext context, JToken data)
         {
             if (data != null)
-                foreach (JProperty property in data)
+            {
+                context.Add("body", data);
+                if (data is JObject)
                 {
-                    if (property.Value != null)
+                    foreach (JProperty property in data)
                     {
-                        context.Add(property.Name, property.Value.ToString());
+                        if (property.Value != null)
+                        {
+                            context.Add(property.Name, property);
+                        }
                     }
                 }
+            }
         }
 
         public static void BindFormUrl(IDataContext context, string data)
         {
+            context.Add("body", data);
             HttpParse.AsynczeFromUrlEncoded(data, context);
         }
     }

@@ -141,7 +141,7 @@ namespace BeetleX.FastHttpApi
 
         public List<ParameterBinder> Parameters { get; private set; }
 
-        private object[] GetValues(IHttpContext context)
+        public object[] GetParameters(IHttpContext context)
         {
 
             int count = this.Parameters.Count;
@@ -154,9 +154,8 @@ namespace BeetleX.FastHttpApi
             return parameters;
         }
 
-        public object Invoke(IHttpContext context)
+        public object Invoke(IHttpContext context, object[] parameters)
         {
-            object[] parameters = GetValues(context);
             return mMethodHandler.Execute(Controller, parameters);
         }
 

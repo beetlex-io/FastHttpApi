@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,12 +18,20 @@ namespace BeetleX.FastHttpApi.Data
         {
             if (request.Length > 0)
             {
-                string value = request.Stream.ReadString(request.Length);
-                JToken token = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(value);
-                DataContextBind.BindJson(dataContext, token);
+                using (request.Stream.LockFree())
+                {
+                    using (System.IO.StreamReader streamReader = new System.IO.StreamReader(request.Stream))
+                    using (JsonTextReader reader = new JsonTextReader(streamReader))
+                    {
+                        JsonSerializer jsonSerializer = JsonSerializer.CreateDefault();
+                        JToken token = (JToken)jsonSerializer.Deserialize(reader);
+                        DataContextBind.BindJson(dataContext, token);
+                    }
+                }
             }
         }
     }
+
 
     public class FormUrlDataConvertAttribute : DataConvertAttribute
     {

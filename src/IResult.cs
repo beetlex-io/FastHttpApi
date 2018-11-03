@@ -1,6 +1,8 @@
 ﻿using BeetleX.Buffers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -209,9 +211,14 @@ namespace BeetleX.FastHttpApi
 
         public void Write(PipeStream stream, HttpResponse response)
         {
-            string value = Newtonsoft.Json.JsonConvert.SerializeObject(Data);
-            stream.Write(value);
-
+            using (stream.LockFree())
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(writer, Data);
+                }
+            }
         }
     }
 

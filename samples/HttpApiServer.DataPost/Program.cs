@@ -23,6 +23,14 @@ namespace HttpApiServer.DataPost
         {
             return DateTime.Now;
         }
+        // Get /hello?name=henry 
+        // or
+        // Get /hello/henry
+        [RouteTemplate("{name}")]
+        public object Hello(string name, IHttpContext context)
+        {
+            return $"hello {name} {DateTime.Now}";
+        }
         [Post]
         [NoDataConvert]
         public object PostStream(IHttpContext context)
@@ -31,12 +39,14 @@ namespace HttpApiServer.DataPost
             string value = context.Request.Stream.ReadString(context.Request.Length);
             return value;
         }
+        //json {"name":"","value":""}
         [Post]
         public object Post(string name, string value, IHttpContext context)
         {
             Console.WriteLine(context.Data);
             return $"{name}={value}";
         }
+        //name=aaa&value=aaa
         [Post]
         [FormUrlDataConvert]
         public object PostForm(string name, string value, IHttpContext context)

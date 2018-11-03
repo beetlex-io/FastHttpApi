@@ -79,7 +79,6 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 }
                 string lenstr = (stream.CacheLength - len).ToString("X");
                 mb.Full(Encoding.UTF8.GetBytes(lenstr.PadRight(16)));
-
             }
             else
             {

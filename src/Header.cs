@@ -251,6 +251,14 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        public void CopyTo(Header header)
+        {
+            foreach (var item in mValues.Values)
+            {
+                header.Add(item.Type.Name, item.Value);
+            }
+        }
+
         public bool Read(PipeStream stream, Cookies cookies)
         {
             string lineData;

@@ -102,7 +102,6 @@ namespace BeetleX.FastHttpApi
                 request = new HttpRequest();
             request.Init(session, this);
             return request;
-
         }
 
         internal void Recovery(HttpRequest request)

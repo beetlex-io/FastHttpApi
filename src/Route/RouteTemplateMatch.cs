@@ -17,7 +17,11 @@ namespace BeetleX.FastHttpApi
 
         private List<MatchItem> mItems = new List<MatchItem>();
 
+        public List<MatchItem> Items => mItems;
+
         private string mTemplate;
+
+        public string Template => mTemplate;
 
         private void Init()
         {
@@ -77,7 +81,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        class MatchItem
+        public class MatchItem
         {
             public string Start;
 

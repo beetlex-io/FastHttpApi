@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
     public class ControllerAttribute : Attribute
     {
         public ControllerAttribute()
@@ -12,6 +12,8 @@ namespace BeetleX.FastHttpApi
         }
         public string BaseUrl { get; set; }
     }
+
+
     public interface IBodyFlag { }
 
     public interface IController
