@@ -167,14 +167,25 @@ namespace BeetleX.FastHttpApi
                 {
                     if (result.HasBody)
                     {
-                        stream.Write(HeaderTypeFactory.CONTENT_LENGTH_BYTES, 0, 16);
-                        MemoryBlockCollection contentLength = stream.Allocate(10);
-                        stream.Write(HeaderTypeFactory.TOW_LINE_BYTES, 0, 4);
-                        int len = stream.CacheLength;
-                        result.Write(stream, this);
-                        int count = stream.CacheLength - len;
-                        //contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n\r\n", stream.Encoding);
-                        contentLength.Full(count.ToString().PadRight(10), stream.Encoding);
+                        if (result.Length > 0)
+                        {
+                            stream.Write(HeaderTypeFactory.CONTENT_LENGTH_BYTES, 0, HeaderTypeFactory.CONTENT_LENGTH_BYTES.Length);
+                            stream.Write(result.Length.ToString());
+                            stream.Write(HeaderTypeFactory.TOW_LINE_BYTES, 0, 4);
+                            result.Write(stream, this);
+                        }
+                        else
+                        {
+                            stream.Write(HeaderTypeFactory.CONTENT_LENGTH_BYTES, 0, HeaderTypeFactory.CONTENT_LENGTH_BYTES.Length);
+                            MemoryBlockCollection contentLength = stream.Allocate(10);
+                            stream.Write(HeaderTypeFactory.TOW_LINE_BYTES, 0, 4);
+                            int len = stream.CacheLength;
+                            result.Write(stream, this);
+                            int count = stream.CacheLength - len;
+                            //contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n\r\n", stream.Encoding);
+                            contentLength.Full(count.ToString().PadRight(10), stream.Encoding);
+                        }
+
                     }
                     else
                     {

@@ -51,7 +51,9 @@ namespace BeetleX.FastHttpApi
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {
                 int length = mRequest.Length;
-                if (mRequest.Method == "GET" || mRequest.Method == "POST")
+                if (mRequest.Method == HttpParse.POST_TAG || mRequest.Method == HttpParse.GET_TAG
+                    || mRequest.Method == HttpParse.PUT_TAG || mRequest.Method == HttpParse.DELETE_TAG
+                    )
                 {
                     Completed?.Invoke(this, mCompletedArgs.SetInfo(session, mRequest));
                 }

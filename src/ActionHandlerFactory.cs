@@ -27,11 +27,36 @@ namespace BeetleX.FastHttpApi
                     ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
                     if (ca != null)
                     {
-                        Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server);
+                        EventControllerInstanceArgs e = new EventControllerInstanceArgs();
+                        e.Type = type;
+                        OnControllerInstance(e);
+                        if (e.Controller == null)
+                        {
+                            Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server, ca);
+                        }
+                        else
+                        {
+                            Register(config, type, e.Controller, ca.BaseUrl, server, ca);
+                        }
                     }
                 }
             }
         }
+
+        public object GetController(Type type)
+        {
+            EventControllerInstanceArgs e = new EventControllerInstanceArgs();
+            e.Type = type;
+            OnControllerInstance(e);
+            return e.Controller;
+        }
+
+        protected virtual void OnControllerInstance(EventControllerInstanceArgs e)
+        {
+            ControllerInstance?.Invoke(this, e);
+        }
+
+        public event System.EventHandler<EventControllerInstanceArgs> ControllerInstance;
 
         public ICollection<ActionHandler> Handlers
         {
@@ -48,7 +73,7 @@ namespace BeetleX.FastHttpApi
             ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
             if (ca != null)
             {
-                Register(config, type, controller, ca.BaseUrl, server);
+                Register(config, type, controller, ca.BaseUrl, server, ca);
             }
         }
 
@@ -72,7 +97,7 @@ namespace BeetleX.FastHttpApi
         }
 
 
-        private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server)
+        private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca)
         {
             DataConvertAttribute controllerDataConvert = controllerType.GetCustomAttribute<DataConvertAttribute>(false);
             if (string.IsNullOrEmpty(rooturl))
@@ -123,19 +148,46 @@ namespace BeetleX.FastHttpApi
 
                 string sourceUrl = rooturl + mi.Name;
                 string url = sourceUrl;
+                string method = HttpParse.GET_TAG;
+                string route = null;
+                GetAttribute get = mi.GetCustomAttribute<GetAttribute>(false);
+                if (get != null)
+                {
+                    method = HttpParse.GET_TAG;
+                    route = get.Route;
+                }
+                PostAttribute post = mi.GetCustomAttribute<PostAttribute>(false);
+                if (post != null)
+                {
+                    method = HttpParse.POST_TAG;
+                    route = post.Route;
+                }
+                DelAttribute del = mi.GetCustomAttribute<DelAttribute>(false);
+                if (del != null)
+                {
+                    method = HttpParse.DELETE_TAG;
+                    route = del.Route;
+                }
+                PutAttribute put = mi.GetCustomAttribute<PutAttribute>(false);
+                if (put != null)
+                {
+                    method = HttpParse.PUT_TAG;
+                    route = put.Route;
+                }
+
                 if (server.ServerConfig.UrlIgnoreCase)
                 {
                     url = sourceUrl.ToLower();
                 }
-                RouteTemplateAttribute ra = mi.GetCustomAttribute<RouteTemplateAttribute>(false);
-                if (ra != null)
+                RouteTemplateAttribute ra = null;
+                if (!string.IsNullOrEmpty(route))
                 {
+                    ra = new RouteTemplateAttribute(route);
                     string reurl = ra.Analysis(url);
                     if (reurl != null)
                         server.UrlRewrite.Add(reurl, url);
                 }
                 ActionHandler handler = GetAction(url);
-
                 if (handler != null)
                 {
                     server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controllerType.Name,
@@ -143,10 +195,10 @@ namespace BeetleX.FastHttpApi
                     continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.SingleInstance = ca.SingleInstance;
                 handler.DataConvert = actionConvert;
                 handler.Route = ra;
-                if (mi.GetCustomAttribute<PostAttribute>(false) != null)
-                    handler.Method = "POST";
+                handler.Method = method;
                 handler.SourceUrl = sourceUrl;
                 handler.Filters.AddRange(filters);
                 fas = mi.GetCustomAttributes<FilterAttribute>(false);
@@ -216,7 +268,7 @@ namespace BeetleX.FastHttpApi
                     WebsocketJsonContext dc = new WebsocketJsonContext(server, request, dataContxt);
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
-                    ActionContext context = new ActionContext(handler, dc);
+                    ActionContext context = new ActionContext(handler, dc, this);
                     long startTime = server.BaseServer.GetRunTime();
                     context.Execute();
                     if (!dc.AsyncResult)
@@ -287,7 +339,7 @@ namespace BeetleX.FastHttpApi
                     HttpContext pc = new HttpContext(server, request, response, request.Data);
                     long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;
-                    ActionContext context = new ActionContext(handler, pc);
+                    ActionContext context = new ActionContext(handler, pc, this);
                     context.Execute();
                     if (!response.AsyncResult)
                     {

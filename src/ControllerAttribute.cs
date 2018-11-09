@@ -9,8 +9,11 @@ namespace BeetleX.FastHttpApi
     {
         public ControllerAttribute()
         {
+            SingleInstance = true;
         }
         public string BaseUrl { get; set; }
+
+        public bool SingleInstance { get; set; }
     }
 
 

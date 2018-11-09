@@ -190,6 +190,7 @@ namespace BeetleX.FastHttpApi
             config.BufferSize = ServerConfig.BufferSize;
             config.LogLevel = ServerConfig.LogLevel;
             config.Combined = ServerConfig.PacketCombined;
+            config.UseIPv6 = ServerConfig.UseIPv6;
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;

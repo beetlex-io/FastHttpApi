@@ -8,6 +8,14 @@ namespace BeetleX.FastHttpApi
 {
     public class HttpParse
     {
+        public const string GET_TAG = "GET";
+
+        public const string POST_TAG = "POST";
+
+        public const string DELETE_TAG = "DELETE";
+
+        public const string PUT_TAG = "PUT";
+
         [ThreadStatic]
         private static char[] mCharCacheBuffer;
 
@@ -180,7 +188,7 @@ namespace BeetleX.FastHttpApi
                     if (i > offset)
                     {
                         value = new string(url.Slice(offset, i - offset));
-                        context.Add(name, value);
+                        context.Add(name, System.Net.WebUtility.UrlDecode(value));
                         offset = i + 1;
                     }
                     name = null;
@@ -192,7 +200,7 @@ namespace BeetleX.FastHttpApi
                 if (url.Length > offset)
                 {
                     value = new string(url.Slice(offset, url.Length - offset));
-                    context.Add(name, value);
+                    context.Add(name, System.Net.WebUtility.UrlDecode(value));
                 }
             }
         }

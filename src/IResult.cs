@@ -12,6 +12,8 @@ namespace BeetleX.FastHttpApi
     {
         string ContentType { get; }
 
+        int Length { get; set; }
+
         void Setting(HttpResponse response);
 
         bool HasBody { get; }
@@ -19,7 +21,29 @@ namespace BeetleX.FastHttpApi
         void Write(PipeStream stream, HttpResponse response);
     }
 
-    public class NotFoundResult : IResult
+    public abstract class ResultBase : IResult
+    {
+        public virtual string ContentType => "text/plain";
+
+        public virtual int Length { get; set; }
+
+        public virtual bool HasBody => true;
+
+        public virtual void Setting(HttpResponse response)
+        {
+
+        }
+
+        public virtual void Write(PipeStream stream, HttpResponse response)
+        {
+
+        }
+
+    }
+
+
+
+    public class NotFoundResult : ResultBase
     {
         public NotFoundResult(string message)
         {
@@ -30,42 +54,36 @@ namespace BeetleX.FastHttpApi
 
         public string Message { get; set; }
 
-        public string ContentType => "text/html";
 
-        public bool HasBody => true;
+        public override bool HasBody => true;
 
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "404";
             response.CodeMsg = "not found";
             response.Request.ClearStream();
         }
 
-        public void Write(PipeStream stream, HttpResponse response)
+        public override void Write(PipeStream stream, HttpResponse response)
         {
             stream.Write(Message);
         }
     }
 
-    public class NoModifyResult : IResult
+    public class NoModifyResult : ResultBase
     {
 
-        public string ContentType => "text/html";
+        public override bool HasBody => false;
 
-        public bool HasBody => false;
-
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "304";
             response.CodeMsg = "Not Modified";
             response.Request.ClearStream();
         }
-        public void Write(PipeStream stream, HttpResponse response)
-        {
-        }
     }
 
-    public class InnerErrorResult : IResult
+    public class InnerErrorResult : ResultBase
     {
         public InnerErrorResult(string code, string messge)
         {
@@ -88,11 +106,9 @@ namespace BeetleX.FastHttpApi
 
         public string Code { get; set; }
 
-        public string ContentType => "text/html";
+        public override bool HasBody => true;
 
-        public bool HasBody => true;
-
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "500";
             response.CodeMsg = "server inner error!";
@@ -100,14 +116,14 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        public void Write(PipeStream stream, HttpResponse response)
+        public override void Write(PipeStream stream, HttpResponse response)
         {
             stream.WriteLine(Error);
             stream.WriteLine(Code);
         }
     }
 
-    public class NotSupportResult : IResult
+    public class NotSupportResult : ResultBase
     {
         public NotSupportResult(string messge)
         {
@@ -117,24 +133,23 @@ namespace BeetleX.FastHttpApi
 
         public string Message { get; set; }
 
-        public string ContentType => "text/html";
 
-        public bool HasBody => true;
+        public override bool HasBody => true;
 
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "403";
             response.CodeMsg = "not support";
             response.Request.ClearStream();
         }
 
-        public void Write(PipeStream stream, HttpResponse response)
+        public override void Write(PipeStream stream, HttpResponse response)
         {
             stream.Write(Message);
         }
     }
 
-    public class UpgradeWebsocketResult : IResult
+    public class UpgradeWebsocketResult : ResultBase
     {
         public UpgradeWebsocketResult(string websocketKey)
         {
@@ -143,11 +158,10 @@ namespace BeetleX.FastHttpApi
 
         public string WebsocketKey { get; set; }
 
-        public string ContentType => "text/html";
 
-        public bool HasBody => false;
+        public override bool HasBody => false;
 
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "101";
             response.CodeMsg = "Switching Protocols";
@@ -160,14 +174,9 @@ namespace BeetleX.FastHttpApi
             string str_sha1_out = Convert.ToBase64String(bytes_sha1_out);
             response.Header.Add(HeaderTypeFactory.SEC_WEBSOCKT_ACCEPT, str_sha1_out);
         }
-
-        public void Write(PipeStream stream, HttpResponse response)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    public class TextResult : IResult
+    public class TextResult : ResultBase
     {
         public TextResult(string text)
         {
@@ -176,22 +185,15 @@ namespace BeetleX.FastHttpApi
 
         public string Text { get; set; }
 
-        public string ContentType => "text/html";
+        public override bool HasBody => true;
 
-        public bool HasBody => true;
-
-        public void Setting(HttpResponse response)
-        {
-
-        }
-
-        public void Write(PipeStream stream, HttpResponse response)
+        public override void Write(PipeStream stream, HttpResponse response)
         {
             stream.Write(Text);
         }
     }
 
-    public class JsonResult : IResult
+    public class JsonResult : ResultBase
     {
         public JsonResult(object data)
         {
@@ -200,16 +202,11 @@ namespace BeetleX.FastHttpApi
 
         public object Data { get; set; }
 
-        public string ContentType => "application/json";
+        public override string ContentType => "application/json";
 
-        public bool HasBody => true;
+        public override bool HasBody => true;
 
-        public void Setting(HttpResponse response)
-        {
-
-        }
-
-        public void Write(PipeStream stream, HttpResponse response)
+        public override void Write(PipeStream stream, HttpResponse response)
         {
             using (stream.LockFree())
             {
@@ -238,7 +235,7 @@ namespace BeetleX.FastHttpApi
 
     }
 
-    public class Move301Result : IResult
+    public class Move301Result : ResultBase
     {
         public Move301Result(string location)
         {
@@ -247,24 +244,19 @@ namespace BeetleX.FastHttpApi
 
         public string Location { get; set; }
 
-        public string ContentType => "text/html";
 
-        public bool HasBody => false;
+        public override bool HasBody => false;
 
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "301";
             response.CodeMsg = "Moved Permanently";
             response.Header[HeaderTypeFactory.LOCATION] = Location;
         }
 
-        public void Write(PipeStream stream, HttpResponse response)
-        {
-
-        }
     }
 
-    public class Move302Result : IResult
+    public class Move302Result : ResultBase
     {
         public Move302Result(string location)
         {
@@ -273,20 +265,32 @@ namespace BeetleX.FastHttpApi
 
         public string Location { get; set; }
 
-        public string ContentType => "text/html";
 
-        public bool HasBody => false;
+        public override bool HasBody => false;
 
-        public void Setting(HttpResponse response)
+        public override void Setting(HttpResponse response)
         {
             response.Code = "302";
             response.CodeMsg = "found";
             response.Header[HeaderTypeFactory.LOCATION] = Location;
         }
 
-        public void Write(PipeStream stream, HttpResponse response)
-        {
+    }
 
+    public class StringBytes : ResultBase
+    {
+        public StringBytes(byte[] data)
+        {
+            Data = data;
+            Length = data.Length;
+        }
+        public byte[] Data { get; set; }
+
+        public override bool HasBody => true;
+
+        public override void Write(PipeStream stream, HttpResponse response)
+        {
+            stream.Write(Data, 0, Data.Length);
         }
     }
 

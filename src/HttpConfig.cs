@@ -35,8 +35,12 @@ namespace BeetleX.FastHttpApi
             CacheFileSize = 500;
             PacketCombined = 0;
             UrlIgnoreCase = true;
+            UseIPv6 = true;
+
         }
 
+
+        public bool UseIPv6 { get; set; }
 
         public bool UrlIgnoreCase { get; set; }
 

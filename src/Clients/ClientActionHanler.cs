@@ -232,7 +232,7 @@ namespace BeetleX.FastHttpApi.Clients
                     result.Header = new Dictionary<string, string>();
                 foreach (var item in mDataParameters)
                 {
-                    result.Header[item.Name] = (string)parameters[item.Index];
+                    result.Header[item.Name] = parameters[item.Index].ToString();
                 }
             }
             if (mQueryStringParameters.Count > 0)
@@ -241,7 +241,7 @@ namespace BeetleX.FastHttpApi.Clients
                     result.QueryString = new Dictionary<string, string>();
                 foreach (var item in mQueryStringParameters)
                 {
-                    result.QueryString[item.Name] = (string)parameters[item.Index];
+                    result.QueryString[item.Name] = parameters[item.Index].ToString();
                 }
             }
             if (this.MethodInfo.ReturnType != typeof(void))

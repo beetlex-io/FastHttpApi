@@ -14,6 +14,7 @@ namespace BeetleX.FastHttpApi
         {
             Host = host;
             Port = port;
+            TimeOut = 5000;
         }
 
         public string Host { get; set; }
@@ -35,6 +36,7 @@ namespace BeetleX.FastHttpApi
             mMinConnections = min;
             mMaxConnections = max;
         }
+        public int TimeOut { get; set; }
 
         public TcpClient Pop()
         {
@@ -51,6 +53,9 @@ namespace BeetleX.FastHttpApi
                 result = SocketFactory.CreateClient<TcpClient>(packet, Host, Port);
                 packet.Client = result;
                 result.Connected = c => { c.Socket.NoDelay = true; };
+                result.Connect();
+                result.Socket.SendTimeout = TimeOut;
+                result.Socket.ReceiveTimeout = TimeOut;
             }
             else
             {
@@ -89,6 +94,13 @@ namespace BeetleX.FastHttpApi
 
         }
 
+        public static void SetTimeout(string host, int timeout)
+        {
+            Uri url = new Uri(host);
+            GetPool(null, url).TimeOut = timeout;
+
+        }
+
         public static HttpClientPool GetPool(string key, Uri uri)
         {
             if (string.IsNullOrEmpty(key))
@@ -121,7 +133,7 @@ namespace BeetleX.FastHttpApi
         public HttpApiClient(string host)
         {
             Uri = new Uri(host);
-            TimeOut = 5000;
+
             Header = new Header();
             Formater = new FormUrlFormater();
             Host = Uri.Host;
@@ -132,7 +144,6 @@ namespace BeetleX.FastHttpApi
 
         public string Host { get; set; }
 
-        public int TimeOut { get; set; }
 
         private System.Collections.Concurrent.ConcurrentDictionary<Type, object> mAPI = new System.Collections.Concurrent.ConcurrentDictionary<Type, object>();
 
@@ -176,9 +187,7 @@ namespace BeetleX.FastHttpApi
             if (header != null)
                 foreach (var item in header)
                     request.Header[item.Key] = item.Value;
-            if (queryString != null)
-                foreach (var item in queryString)
-                    request.QuestryString.Add(item.Key, item.Value);
+            request.QuestryString = queryString;
             request.Url = url;
             request.Body = data;
             return Execute(request, bodyType);
@@ -196,9 +205,7 @@ namespace BeetleX.FastHttpApi
             if (header != null)
                 foreach (var item in header)
                     request.Header[item.Key] = item.Value;
-            if (queryString != null)
-                foreach (var item in queryString)
-                    request.QuestryString.Add(item.Key, item.Value);
+            request.QuestryString = queryString;
             request.Url = url;
             request.Body = data;
             return Execute(request, bodyType);
@@ -211,9 +218,7 @@ namespace BeetleX.FastHttpApi
             request.Formater = formater == null ? this.Formater : formater;
             request.Method = Request.DELETE;
             request.Header[HeaderTypeFactory.HOST] = Host;
-            if (queryString != null)
-                foreach (var item in queryString)
-                    request.QuestryString.Add(item.Key, item.Value);
+            request.QuestryString = queryString;
             Header.CopyTo(request.Header);
             if (header != null)
                 foreach (var item in header)
@@ -230,9 +235,7 @@ namespace BeetleX.FastHttpApi
             request.Formater = formater == null ? this.Formater : formater;
             request.Header[HeaderTypeFactory.CONTENT_TYPE] = "text/plain";
             request.Header[HeaderTypeFactory.HOST] = Host;
-            if (queryString != null)
-                foreach (var item in queryString)
-                    request.QuestryString.Add(item.Key, item.Value);
+            request.QuestryString = queryString;
             Header.CopyTo(request.Header);
             if (header != null)
                 foreach (var item in header)
@@ -245,6 +248,7 @@ namespace BeetleX.FastHttpApi
         {
             HttpClientPool pool = HttpClientPoolFactory.GetPool(mPoolKey, this.Uri);
             TcpClient tcpClient = pool.Pop();
+
             try
             {
                 tcpClient.SendMessage(request);
@@ -271,7 +275,7 @@ namespace BeetleX.FastHttpApi
                 if (!result.KeepAlive)
                     tcpClient.DisConnect();
                 if (code >= 400)
-                    throw new System.Net.WebException($"{result.Code} {result.CodeMsg} {result.Body}");
+                    throw new System.Net.WebException($"{request.Method} {request.Url} {result.Code} {result.CodeMsg} {result.Body}");
                 return result;
             }
             finally

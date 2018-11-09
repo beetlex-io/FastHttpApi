@@ -21,15 +21,18 @@ namespace BeetleX.FastHttpApi
             LoadParameter();
             Filters = new List<FilterAttribute>();
             Method = "GET";
+            SingleInstance = true;
+            ControllerType = Controller.GetType();
 
         }
 
+        public Type ControllerType { get; set; }
+
+        public bool SingleInstance { get; set; }
 
         public RouteTemplateAttribute Route { get; set; }
 
-
         public DataConvertAttribute DataConvert { get; set; }
-
 
         public string Method { get; set; }
 
@@ -154,9 +157,17 @@ namespace BeetleX.FastHttpApi
             return parameters;
         }
 
-        public object Invoke(IHttpContext context, object[] parameters)
+        public object Invoke(IHttpContext context, ActionHandlerFactory actionHandlerFactory, object[] parameters)
         {
-            return mMethodHandler.Execute(Controller, parameters);
+            var controller = Controller;
+            if (!SingleInstance)
+            {
+                controller = actionHandlerFactory.GetController(ControllerType);
+                if (controller == null)
+                    controller = this.Controller;
+            }
+            return mMethodHandler.Execute(controller, parameters);
+
         }
 
         public int CompareTo(object obj)

@@ -45,7 +45,8 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 if (!stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out line))
                     return;
-                if (line == "0")
+                chunkeLength = int.Parse(line, System.Globalization.NumberStyles.HexNumber);
+                if (chunkeLength == 0)
                 {
                     stream.ReadFree(2);
                     var item = response;
@@ -56,7 +57,6 @@ namespace BeetleX.FastHttpApi.Clients
                     Completed?.Invoke(Client, item);
                     return;
                 }
-                chunkeLength = int.Parse(line, System.Globalization.NumberStyles.HexNumber);
                 response.Length += chunkeLength;
             }
             else if (chunkeLength == -1)

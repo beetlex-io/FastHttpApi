@@ -50,7 +50,7 @@ namespace BeetleX.FastHttpApi.Clients
                         if (i > 0)
                             stream.Write("&");
                         stream.Write(key.ToString() + "=");
-                        stream.Write(System.Net.WebUtility.UrlEncode(value.ToString()));
+                        stream.Write(System.Net.WebUtility.UrlDecode(value.ToString()));
                         i++;
                     }
                 }
