@@ -51,3 +51,5 @@ PerformanceTest/netcore/obj/
 PerformanceTest/netcore-mvc/.vs/netcore-mvc/v15/Server/
 samples/HttpApiServer.DataPost/bin/
 samples/HttpApiServer.DataPost/obj/
+samples/HttpApiServer.JWT/bin/
+samples/HttpApiServer.JWT/obj/

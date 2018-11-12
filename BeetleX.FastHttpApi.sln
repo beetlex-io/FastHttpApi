@@ -40,7 +40,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "go", "go", "{91CE5B83-AA5B-
 		PerformanceTest\go\main.go = PerformanceTest\go\main.go
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.DataPost", "samples\HttpApiServer.DataPost\HttpApiServer.DataPost.csproj", "{3EDE740F-057A-419B-B37B-25FB7B1716F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.DataPost", "samples\HttpApiServer.DataPost\HttpApiServer.DataPost.csproj", "{3EDE740F-057A-419B-B37B-25FB7B1716F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.JWT", "samples\HttpApiServer.JWT\HttpApiServer.JWT.csproj", "{4603CF26-DCAF-4FFD-950F-BB0AAF33383D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -108,6 +110,10 @@ Global
 		{3EDE740F-057A-419B-B37B-25FB7B1716F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EDE740F-057A-419B-B37B-25FB7B1716F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EDE740F-057A-419B-B37B-25FB7B1716F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4603CF26-DCAF-4FFD-950F-BB0AAF33383D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4603CF26-DCAF-4FFD-950F-BB0AAF33383D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4603CF26-DCAF-4FFD-950F-BB0AAF33383D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4603CF26-DCAF-4FFD-950F-BB0AAF33383D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +133,7 @@ Global
 		{CE2A182B-F9E6-4EBC-8974-17065E550856} = {D3C2884A-0DFC-45ED-ABD5-492564E20F0B}
 		{91CE5B83-AA5B-44D0-86FF-A655F55EB77C} = {D3C2884A-0DFC-45ED-ABD5-492564E20F0B}
 		{3EDE740F-057A-419B-B37B-25FB7B1716F9} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
+		{4603CF26-DCAF-4FFD-950F-BB0AAF33383D} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {988EEA11-1C48-44A4-9DF0-1C3D08600A4F}
