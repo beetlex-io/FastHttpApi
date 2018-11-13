@@ -29,6 +29,12 @@ namespace BeetleX.FastHttpApi
 
         public const byte _SPACE_BYTE = 32;
 
+        public const byte _AND = 38;
+
+        public const byte _QMARK = 63;
+
+        public const byte _EQ = 61;
+
         public const int HEADERNAME_MAXLENGTH = 32;
 
         public static byte[] SERVAR_HEADER_BYTES;

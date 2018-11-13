@@ -25,9 +25,9 @@ namespace BeetleX.FastHttpApi
 
         private int mConnections = 0;
 
-        private int mMinConnections = 5;
+        private int mMinConnections = 10;
 
-        private int mMaxConnections = 20;
+        private int mMaxConnections = 50;
 
         private int mPoolConnectins = 0;
 

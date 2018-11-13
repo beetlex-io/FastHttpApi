@@ -240,7 +240,7 @@ namespace BeetleX.FastHttpApi
             };
             if (EnableLog(LogType.Info))
             {
-                mServer.Log(LogType.Info, null, "FastHttpApi Server started!");
+                mServer.Log(LogType.Info, null, "FastHttpApi Server started [v:{0}]", typeof(HttpApiServer).Assembly.GetName().Version);
             }
         }
 

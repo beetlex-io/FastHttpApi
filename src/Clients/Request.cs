@@ -19,7 +19,6 @@ namespace BeetleX.FastHttpApi.Clients
         {
             Method = GET;
             this.HttpProtocol = "HTTP/1.1";
-            this.QuestryString = new Dictionary<string, string>();
         }
 
         public IClientBodyFormater Formater { get; set; }
@@ -38,30 +37,62 @@ namespace BeetleX.FastHttpApi.Clients
 
         public void Execute(PipeStream stream)
         {
-            stream.Write(Method + " ");
-            stream.Write(Url);
+            var buffer = HttpParse.GetByteBuffer();
+            int offset = 0;
+            offset += Encoding.ASCII.GetBytes(Method, 0, Method.Length, buffer, offset);
+
+            buffer[offset] = HeaderTypeFactory._SPACE_BYTE;
+            offset++;
+
+            offset += Encoding.ASCII.GetBytes(Url, 0, Url.Length, buffer, offset);
+
+            //stream.Write(Method + " ");
+            //stream.Write(Url);
             if (QuestryString != null && QuestryString.Count > 0)
             {
                 int i = 0;
                 foreach (var item in this.QuestryString)
                 {
+
+                    string key = item.Key;
+                    string value = item.Value;
+                    if (string.IsNullOrEmpty(value))
+                        continue;
+                    value = System.Net.WebUtility.UrlEncode(value);
                     if (i == 0)
                     {
-                        stream.Write("?");
+                        buffer[offset] = HeaderTypeFactory._QMARK;
+                        offset++;
+                        //stream.Write("?");
                     }
                     else
                     {
-                        stream.Write("&");
+                        buffer[offset] = HeaderTypeFactory._AND;
+                        offset++;
+                        //stream.Write("&");
                     }
-                    stream.Write(item.Key + "=");
-                    stream.Write(System.Net.WebUtility.UrlEncode(item.Value));
+                    offset += Encoding.ASCII.GetBytes(key, 0, key.Length, buffer, offset);
+                    buffer[offset] = HeaderTypeFactory._EQ;
+                    offset++;
+                    offset += Encoding.ASCII.GetBytes(value, 0, value.Length, buffer, offset);
+                    //stream.Write(item.Key + "=");
+                    //stream.Write(System.Net.WebUtility.UrlEncode(item.Value));
                     i++;
                 }
             }
-            stream.Write(HeaderTypeFactory.SPACE_BYTES, 0, 1);
-            stream.Write(this.HttpProtocol);
-            stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
+            buffer[offset] = HeaderTypeFactory._SPACE_BYTE;
+            offset++;
 
+            // stream.Write(HeaderTypeFactory.SPACE_BYTES, 0, 1);
+            //stream.Write(this.HttpProtocol);
+            //stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
+            offset += Encoding.ASCII.GetBytes(HttpProtocol, 0, HttpProtocol.Length, buffer, offset);
+
+            buffer[offset] = HeaderTypeFactory._LINE_R;
+            offset++;
+            buffer[offset] = HeaderTypeFactory._LINE_N;
+            offset++;
+            stream.Write(buffer, 0, offset);
             if (Header != null)
                 Header.Write(stream);
             if (Method == POST || Method == PUT)

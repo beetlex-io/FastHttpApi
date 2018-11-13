@@ -108,6 +108,18 @@ namespace BeetleX.FastHttpApi
 
         public string IfNoneMatch => Header[HeaderTypeFactory.IF_NONE_MATCH];
 
+        public string Host => Header[HeaderTypeFactory.HOST];
+
+        public string Authorization => Header[HeaderTypeFactory.AUTHORIZATION];
+
+        public string Accept => Header[HeaderTypeFactory.ACCEPT];
+
+        public string AcceptEncoding => Header[HeaderTypeFactory.ACCEPT_ENCODING];
+
+        public string AcceptLanguage => Header[HeaderTypeFactory.ACCEPT_LANGUAGE];
+
+        public string AcceptCharset => Header[HeaderTypeFactory.ACCEPT_CHARSET];
+
         public ISession Session { get; private set; }
 
         public LoadedState Read(PipeStream stream)
