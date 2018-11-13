@@ -34,16 +34,16 @@
             </nav>
             <form class="form-inline" style="padding-top:10px;" id="loginBar">
                 <div class="form-group">
-                    <label for="exampleInputName2">昵称</label>
-                    <input type="text" class="form-control" id="userName" placeholder="昵称">
+                    <label for="exampleInputName2">nickname</label>
+                    <input type="text" class="form-control" id="userName" placeholder="nickname">
                 </div>
 
-                <button onclick="login()" type="button" class="btn btn-default">登陆</button>
+                <button onclick="login()" type="button" class="btn btn-default">login</button>
             </form>
             <div class="row" style="margin-top:10px;">
                 <div class="col-md-6" role="main">
                     <div class="panel panel-default">
-                        <div class="panel-heading" id="roomTitle">聊天记录</div>
+                        <div class="panel-heading" id="roomTitle">record</div>
                         <div class="panel-body">
                             <div id="lstTalk" style="height:500px;overflow: auto; overflow-x:hidden;">
                                 <p v-for="item in Data" style="padding-top:4px;">
@@ -67,21 +67,21 @@
                                 <div class="form-group">
                                     <input type="text" style="width:300px;" class="form-control" id="talkMsg" placeholder="发言">
                                 </div>
-                                <button type="button" onclick="sendMessage()" class="btn btn-default">发送</button>
+                                <button type="button" onclick="sendMessage()" class="btn btn-default">send</button>
                             </form>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3" role="main">
                     <div class="panel panel-default">
-                        <div class="panel-heading">用户</div>
+                        <div class="panel-heading">User</div>
                         <div class="panel-body">
                             <div style="height:530px;overflow: auto; overflow-x:hidden;">
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>昵称</th>
-                                            <th>地址</th>
+                                            <th>nickname</th>
+                                            <th>ipaddress</th>
                                         </tr>
                                     </thead>
                                     <tbody id="lstUser">

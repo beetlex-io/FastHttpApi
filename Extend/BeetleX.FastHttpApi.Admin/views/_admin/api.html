@@ -12,7 +12,7 @@
     <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
-    <title>FastHttpApi后台服务管理</title>
+    <title>FastHttpApi Service Management</title>
     <style>
         pre {
             padding: 5px;
@@ -84,15 +84,15 @@
                     html += '<div id="api' + i + '" style="display:none;padding-left:20px;">'
 
                         + '<div class="bs-callout bs-callout-warning" id="callout-inputgroup-container-body"> \
-                                                                                                         <h4>http请求</h4 > \
+                                                                                                             <h4>http </h4 > \
 <span class="label label-default">Url:</span> \
-                                                                        <pre>'+ v.Http.Url + '</pre> \
-                                                                          <span class="label label-default">Post:</span> \
-<pre>'+ (v.Http.Body ? v.Http.Body : '无') + '</pre> \
-<h4>WebSocket请求</h4 > \
+                                                                            <pre>'+ v.Http.Url + '</pre> \
+                                                                              <span class="label label-default">Post:</span> \
+<pre>'+ (v.Http.Body ? v.Http.Body : 'null') + '</pre> \
+<h4>WebSocket</h4 > \
 <span class="label label-default">Send:</span> \
 <pre>'+ v.WebSocket.Body + '</pre> \
-                                                                                                                                                                                                  </div > '
+                                                                                                                                                                                                      </div > '
                         + '</div >';
 
                     i++;

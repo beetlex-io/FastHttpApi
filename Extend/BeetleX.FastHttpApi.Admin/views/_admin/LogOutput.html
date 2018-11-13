@@ -11,10 +11,14 @@
     <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
-    <title>FastHttpApi后台服务管理</title>
+    <title>FastHttpApi Service Management</title>
     <style>
         .log_Debug {
             color: powderblue;
+            margin: 2px;
+        }
+        .log_Trace {
+            color: orange;
             margin: 2px;
         }
 
@@ -52,12 +56,12 @@
 
             <div style="width:800px;margin:auto;margin-top:10px;">
                 <div class="panel panel-default">
-                    <div class="panel-heading">日志信息</div>
+                    <div class="panel-heading">Log info</div>
                     <div class="panel-body">
                         <form class="bs-example btn-group-sm" data-example-id="btn-tags" style="padding:4px;">
-                            <button type="button" class="btn btn-success" onclick="ConnectLog()">连接到服务器</button>
-                            <button type="button" class="btn btn-danger" onclick="DisconnectLog()">断开</button>
-                            <button type="button" class="btn btn-danger" onclick="$('#lstLogs').empty()">清除</button>
+                            <button type="button" class="btn btn-success" onclick="ConnectLog()">connect</button>
+                            <button type="button" class="btn btn-danger" onclick="DisconnectLog()">disconnect</button>
+                            <button type="button" class="btn btn-danger" onclick="$('#lstLogs').empty()">clear</button>
 
                         </form>
                         <div id="lstLogs" style="background-color:black;height:500px;overflow-y:scroll">

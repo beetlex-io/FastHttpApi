@@ -5,15 +5,15 @@
     <meta charset="utf-8" />
     <script src="js/jquery_2_1_min.js"></script><!--jquery-->
     <script src="https://cdn.jsdelivr.net/npm/vue"></script><!-- vuejs-->
-    <script src="js/FastHttpApi.js"></script><!-- 组件基础通讯脚本-->
-    <script src="js/Controller.js"></script><!-- 控制器生成的脚本-->
+    <script src="js/FastHttpApi.js"></script>
+    <script src="js/Controller.js"></script>
     <title>hello world</title>
 </head>
 <body>
     <div id="hello">
         <p>
-            Enter you name: <input type="text" v-model:value="Data.Name" placeholder="输入你的名称">
-            <button type="button" onclick="Submit()">提交</button>
+            Enter you name: <input type="text" v-model:value="Data.Name" placeholder="enter you name">
+            <button type="button" onclick="Submit()">submit</button>
         </p>
         <p><span>{{Data.Hello}}</span>  <span>{{Data.Time}}</span></p>
     </div>

@@ -11,7 +11,7 @@
     <script src="AdminController.js"></script>
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
-    <title>FastHttpApi后台服务管理</title>
+    <title>FastHttpApi Service Management</title>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -25,7 +25,8 @@
             </div>
 
             <form class="bs-example btn-group-sm" data-example-id="btn-tags" style="padding:4px;">
-                <button type="button" class="btn btn-success" onclick="searchConn(0)">查询</button>  <button type="button" class="btn btn-danger" onclick="disconnect()">关闭连接</button>
+                <button type="button" class="btn btn-success" onclick="searchConn(0)">search</button>
+                <button type="button" class="btn btn-danger" onclick="disconnect()">close</button>
                 <span id="connections" class="badge"></span>
             </form>
             <table class="table">
@@ -33,10 +34,10 @@
                     <tr>
                         <th style="width:40px;"><input type="checkbox" onclick="selectAll(this)" /></th>
                         <th style="width:120px;">IPAddress</th>
-                        <th style="width:120px;">类型</th>
-                        <th style="width:120px;">会话ID</th>
-                        <th>会话名称</th>
-                        <th>在线时长</th>
+                        <th style="width:120px;">Type</th>
+                        <th style="width:120px;">ID</th>
+                        <th>Name</th>
+                        <th>Live Time</th>
                     </tr>
                 </thead>
                 <tbody id="lstConnection">
@@ -84,7 +85,7 @@
         async function disconnect() {
             var items = getSelectItems();
             if (items.length > 0) {
-                if (confirm('是否要断开选择的连接?')) {
+                if (confirm('close the connections?')) {
                     var url = "/_admin/CloseSession";
                     var sessions = getSelectItems();
                     if (sessions.length > 0) {

@@ -20,7 +20,7 @@
         <div class="row">
             <div class="col-md-9" role="main">
                 <div class="panel panel-default">
-                    <div class="panel-heading"> <h3 class="panel-title">设置Cookie</h3></div>
+                    <div class="panel-heading"> <h3 class="panel-title">set cookie</h3></div>
                     <div class="panel-body">
                         <form>
                             <div class="form-group">
@@ -32,14 +32,14 @@
                                 <input type="text" class="form-control" id="cookieValue">
                             </div>
 
-                            <button type="button" onclick="setCookie()" class="btn btn-primary">设置</button>
+                            <button type="button" onclick="setCookie()" class="btn btn-primary">submit</button>
                         </form>
                     </div>
                 </div>
 
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">获取Cookie</h3>
+                        <h3 class="panel-title">get cookie</h3>
                     </div>
                     <div class="panel-body">
                         <form>
@@ -52,7 +52,7 @@
                                 <input type="text" class="form-control" id="getcookieValue">
                             </div>
 
-                            <button type="button" onclick="getCookie()" class="btn btn-primary">获取</button>
+                            <button type="button" onclick="getCookie()" class="btn btn-primary">submit</button>
                         </form>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
     async function setCookie() {
         var result = await HomesetCookie($('#cookieName').val(), $('#cookieValue').val(), true);
         if (result.Data == true)
-            alert('设置成功!')
+            alert('success!')
     }
     async function getCookie() {
         var result = await HomegetCookie($('#getcookieName').val(), true);

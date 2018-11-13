@@ -14,8 +14,7 @@
     <script src="ReadFileHandler.js"></script>
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
-    <title>FastHttpApi后台服务管理</title>
-    <title>ikende.com .net library</title>
+    <title>FastHttpApi Service Management</title>
 </head>
 <body>
 
@@ -32,9 +31,9 @@
         <div class="row">
             <form class="navbar-form navbar-left btn-group-sm" style="margin-bottom:4px;" role="search">
                 <div class="form-group">
-                    <input id="folderName" type="text" class="form-control" placeholder="文件夹名称">
+                    <input id="folderName" type="text" class="form-control" placeholder="Folder Name">
                 </div>
-                <a href="javascript:void(0)" class="btn btn-default" onclick="CreateFolder()">添加文件夹</a>
+                <a href="javascript:void(0)" class="btn btn-default" onclick="CreateFolder()">New Folder</a>
 
             </form>
         </div>
@@ -113,7 +112,7 @@
 
         async function uploadFile(rf) {
             if (rf.completed() != true) {
-              
+
                 var data = await rf.read();
                 if (!data.errCode) {
                     var result = await _FileManagerUploadFile(root, data);
@@ -151,7 +150,7 @@
         }
 
         async function DeleteResource(name, isfile) {
-            if (confirm('是否要删除文件（' + name + '）')) {
+            if (confirm('want to delete file（' + name + '?')) {
                 var result = await _FileManagerDeleteResource(root, name, isfile);
                 if (result.Code == 403) {
                     window.location.href = result.Data;
@@ -165,7 +164,7 @@
         async function CreateFolder() {
 
             if (!$('#folderName').val()) {
-                alert("请输入文件夹名称!")
+                alert("Please enter a folder name!")
                 return;
             }
             var result = await _FileManagerCreateFolder(root, $('#folderName').val());

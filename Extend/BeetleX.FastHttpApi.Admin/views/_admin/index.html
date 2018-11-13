@@ -13,7 +13,7 @@
     <script src="bootstrap.js"></script>
     <script src="md5.js"></script>
     <script src="Monitor.js"></script>
-    <title>FastHttpApi后台服务管理</title>
+    <title>FastHttpApi Service Management</title>
     <style>
         .values {
             min-width: 80px;
@@ -27,7 +27,7 @@
 
         .valueLabel {
             display: inline-block;
-            min-width: 100px;
+            min-width: 150px;
             text-align: right;
         }
     </style>
@@ -45,54 +45,54 @@
             <div class="col-sm-7 col-md-7">
 
                 <div class="panel panel-default">
-                    <div class="panel-heading">服务状态</div>
+                    <div class="panel-heading">Server Status</div>
                     <div class="panel-body">
 
                         <div id="serverStatus">
-                            <p class="pline"><span class="valueLabel">服务名称:</span> <label class="values"> <span class="badge ">{{Data.ServerName}}</span></label></p>
+                            <p class="pline"><span class="valueLabel">ServerName:</span> <label class="values"> <span class="badge ">{{Data.ServerName}}</span></label></p>
 
                             <p class="pline">
-                                <span class="valueLabel">服务地址:</span>  <label class="values">
+                                <span class="valueLabel">Host:</span>  <label class="values">
                                     <span class="badge ">{{Data.Host}}@{{Data.Port}}</span>
                                 </label>
-                                <span class="valueLabel">运行时长:</span><span class="badge ">{{Data.RunTime}}</span>
+                                <span class="valueLabel">RunTime:</span><span class="badge ">{{Data.RunTime}}</span>
                             </p>
                             <p class="pline">
                                 <span class="valueLabel">CPU:</span>  <label class="values">
                                     <span class="badge ">{{Data.Cpu}}%</span>
                                 </label>
-                                <span class="valueLabel">内存:</span><span class="badge ">{{Data.Memory}}KB</span>
+                                <span class="valueLabel">Memory:</span><span class="badge ">{{Data.Memory}}KB</span>
                             </p>
                             <p class="pline">
-                                <span class="valueLabel">总处理连接:</span>  <label class="values">
+                                <span class="valueLabel">Total Connections:</span>  <label class="values">
                                     <span class="badge ">{{Data.TotalConnections}}</span>
                                 </label>
-                                <span class="valueLabel">活跃连接:</span> <span class="badge ">{{Data.CurrentConnectinos}}</span>
-                                <span class="valueLabel">处理连接:</span> <span class="badge ">{{Data.ConnectionsPer}}/秒</span>
+                                <span class="valueLabel">Live:</span> <span class="badge ">{{Data.CurrentConnectinos}}</span>
+                                <span class="valueLabel">Accept:</span> <span class="badge ">{{Data.ConnectionsPer}}/s</span>
                             </p>
                             <p class="pline">
-                                <span class="valueLabel">处理请求:</span>
+                                <span class="valueLabel">Request:</span>
                                 <label class="values">
-                                    <span class="badge "> {{Data.RequestPer}}/秒</span>
+                                    <span class="badge "> {{Data.RequestPer}}/s</span>
                                 </label>
-                                <span class="valueLabel">总处理请求:</span>
+                                <span class="valueLabel">Total Request:</span>
                                 <span class="badge ">{{Data.TotalRequest}}</span>
                             </p>
                             <p class="pline">
-                                <span class="valueLabel">接收字节:</span>
+                                <span class="valueLabel">ReceiveBytes:</span>
                                 <label class="values">
-                                    <span class="badge ">{{Data.ReceiveBytesPer}}MB/秒</span>
+                                    <span class="badge ">{{Data.ReceiveBytesPer}}MB/s</span>
                                 </label>
-                                <span class="valueLabel">总接收字节:</span>
+                                <span class="valueLabel">Total ReceiveBytes:</span>
                                 <span class="badge ">{{Data.TotalReceiveBytes}}MB</span>
                             </p>
                             <p>
                             <p>
-                                <span class="valueLabel">发送字节:</span>
+                                <span class="valueLabel">SendBytes:</span>
                                 <label class="values">
-                                    <span class="badge ">{{Data.SendBytesPer}}MB/秒</span>
+                                    <span class="badge ">{{Data.SendBytesPer}}MB/s</span>
                                 </label>
-                                <span class="valueLabel">总发送字节:</span>
+                                <span class="valueLabel">Total SendBytes:</span>
                                 <span class="badge ">{{Data.TotalSendBytes}}MB</span>
                             </p>
 
@@ -117,23 +117,23 @@
             <div class="col-sm-6 col-md-5">
 
                 <div class="panel panel-default">
-                    <div class="panel-heading">信息设置</div>
+                    <div class="panel-heading">Setting</div>
                     <div class="panel-body">
                         <form class="form-horizontal" id="setting" style="font-size:14px;">
                             <div class="form-group">
-                                <label for="inputEmail3" class="col-sm-4 control-label">最大连接数</label>
+                                <label for="inputEmail3" class="col-sm-5 control-label">Max Conn</label>
                                 <div class="col-sm-5">
                                     <input type="number" v-model:value="MaxConn" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-4 control-label">WS秒最大请求数</label>
+                                <label for="inputPassword3" class="col-sm-5 control-label">Websocket Max RPS</label>
                                 <div class="col-sm-5">
                                     <input type="number" v-model:value="WSMaxRPS" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-4 control-label">日志级别</label>
+                                <label for="inputPassword3" class="col-sm-5 control-label">LogLevel</label>
                                 <div class="col-sm-5">
                                     <select v-model:value="LogLevel" class="form-control">
                                         <option value="All">All</option>
@@ -148,20 +148,20 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-4 control-label">日志是否写文件</label>
+                                <label for="inputPassword3" class="col-sm-5 control-label">Write to file</label>
                                 <div class="col-sm-5">
                                     <input type="checkbox" v-model:value="WriteLog" class="checkbox">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-4 control-label">日志输出Console</label>
+                                <label for="inputPassword3" class="col-sm-5 control-label">displsy to Console</label>
                                 <div class="col-sm-5">
                                     <input type="checkbox" v-model:value="LogToConsole" class="checkbox">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-offset-2 col-sm-10">
-                                    <button type="button" onclick="UpSetting()" class="btn btn-default">设置</button>
+                                    <button type="button" onclick="UpSetting()" class="btn btn-default">submit</button>
                                 </div>
                             </div>
                         </form>
