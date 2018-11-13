@@ -1,17 +1,18 @@
-### 简介
-FastHttpApi是在Beetlex基础上实现的轻量级和高性能的HTTP服务组件，组件支持http和WebSocket协议。只需要配置证书文件即可让服务支持https的安全性访问。 通过测试组件在GET/POST这些数据交互的场景下性能优胜于Asp.net core！**[详情查看官网](http://www.ikende.com/)**.
+### introduction
+Fasthttpapi is a lightweight and high-performance HTTP service component in the dotnet core platform that supports WebSocket and SSL！**[HomePage](http://www.ikende.com/)**.
 
 **[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest)**
 ![](https://i.imgur.com/lyvQIhu.png)
 
-### 安装包
+### Install Packet
 
 ```
 Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
 ```
-### 配置 Server GC
+### Setting Server GC
 `<ServerGarbageCollection>true</ServerGarbageCollection>`
 
+### sample code
 ```
     [Controller]
     class Program
