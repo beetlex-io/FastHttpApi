@@ -11,13 +11,14 @@ namespace FastHttpApiWeb
         static void Main(string[] args)
         {
             mApiServer = new HttpApiServer();
+
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
 
             Console.Write(mApiServer.BaseServer);
             Console.Read();
         }
-        [RouteTemplate("{name}")]
+        [Get(Route = "{name}")]
         public object values(string name)
         {
             return new TextResult(name);
