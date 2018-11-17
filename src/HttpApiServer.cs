@@ -106,11 +106,7 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery(HttpRequest request)
         {
-            if (!request.WebSocket)
-            {
-                request.Reset();
-                mRequestPool.Push(request);
-            }
+             mRequestPool.Push(request);
         }
 
 

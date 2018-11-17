@@ -45,11 +45,15 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery()
         {
-            Header.Clear();
-            mFiles.Clear();
-            mDataContxt.Clear();
-            mCookies.Clear();
-            this.Server.Recovery(this);
+            if (!WebSocket)
+            {
+                Header.Clear();
+                mFiles.Clear();
+                mDataContxt.Clear();
+                mCookies.Clear();
+                Reset();
+                this.Server.Recovery(this);
+            }
         }
 
         private string mExt;
