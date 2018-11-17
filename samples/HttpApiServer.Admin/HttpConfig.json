@@ -7,7 +7,7 @@
     "CertificatePassword": "",
     "MaxBodyLength": 2097152,
     "OutputStackTrace": false,
-    "StaticResurceType": "xml;svg;woff;woff2;jpg;jpeg;gif;png;js;html;htm;css;txt;ico;zip;rar",
+    "StaticResurceType": "xml;svg;woff;woff2;jpg;jpeg;gif;png;js;html;htm;css;txt;ico;zip;rar;xlsx",
     "DefaultPage": "index.html;index.htm",
     "NotLoadFolder": "\\Files;\\Images;\\Data",
     "Manager": "admin",

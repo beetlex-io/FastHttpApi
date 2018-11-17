@@ -40,13 +40,15 @@ namespace BeetleX.FastHttpApi
             mKeepAlive = true;
             mExt = null;
             mLength = 0;
-            Header.Clear();
-            mDataContxt.Clear();
-            mCookies.Clear();
+
         }
 
         internal void Recovery()
         {
+            Header.Clear();
+            mFiles.Clear();
+            mDataContxt.Clear();
+            mCookies.Clear();
             this.Server.Recovery(this);
         }
 
@@ -57,6 +59,10 @@ namespace BeetleX.FastHttpApi
         private bool mKeepAlive = true;
 
         private Data.DataContxt mDataContxt;
+
+        private List<PostFile> mFiles = new List<PostFile>();
+
+        public IList<PostFile> Files => mFiles;
 
         public Data.DataContxt Data => mDataContxt;
 
@@ -119,6 +125,8 @@ namespace BeetleX.FastHttpApi
         public string AcceptLanguage => Header[HeaderTypeFactory.ACCEPT_LANGUAGE];
 
         public string AcceptCharset => Header[HeaderTypeFactory.ACCEPT_CHARSET];
+
+        public string ContentType => Header[HeaderTypeFactory.CONTENT_TYPE];
 
         public ISession Session { get; private set; }
 

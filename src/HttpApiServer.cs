@@ -19,13 +19,13 @@ namespace BeetleX.FastHttpApi
 
         public HttpApiServer() : this(null)
         {
-            mFileLog = new FileLog();
-            FrameSerializer = this;
+
         }
 
         public HttpApiServer(HttpConfig serverConfig)
         {
-            mActionFactory = new ActionHandlerFactory();
+            mFileLog = new FileLog();
+            FrameSerializer = this;
             if (serverConfig != null)
             {
                 ServerConfig = serverConfig;
@@ -47,7 +47,7 @@ namespace BeetleX.FastHttpApi
                     ServerConfig = new HttpConfig();
                 }
             }
-            mResourceCenter = new StaticResurce.ResourceCenter(this);
+            mActionFactory = new ActionHandlerFactory();
             mUrlRewrite = new RouteRewrite(this);
         }
 
@@ -194,6 +194,9 @@ namespace BeetleX.FastHttpApi
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
+            //if (Environment.ProcessorCount >= 10)
+            //    config.IOQueueEnabled = true;
+            mResourceCenter = new StaticResurce.ResourceCenter(this);
             HttpPacket hp = new HttpPacket(this, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             Name = "BeetleX Http Server";
@@ -238,10 +241,8 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
-            if (EnableLog(LogType.Info))
-            {
-                mServer.Log(LogType.Info, null, "FastHttpApi Server started [v:{0}]", typeof(HttpApiServer).Assembly.GetName().Version);
-            }
+            mServer.Log(LogType.Info, null, "FastHttpApi Server started [v:{0}]", typeof(HttpApiServer).Assembly.GetName().Version);
+
         }
 
         public string Name { get { return mServer.Name; } set { mServer.Name = value; } }
@@ -506,7 +507,7 @@ namespace BeetleX.FastHttpApi
                     if (EnableLog(LogType.Error))
                     {
                         BaseServer.Error(e_, request.Session, "{0} response file error {1}", request.ClientIPAddress, e_.Message);
-                        InnerErrorResult result = new InnerErrorResult(e_, ServerConfig.OutputStackTrace);
+                        InnerErrorResult result = new InnerErrorResult($"response file error ", e_, ServerConfig.OutputStackTrace);
                         response.Result(result);
                     }
                 }
@@ -573,8 +574,6 @@ namespace BeetleX.FastHttpApi
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
             OnRequestHandler(e);
-            // System.IO.Pipelines.PipeScheduler.ThreadPool.Schedule(OnRequestHandler, e);
-            //multiRequestThreadDispatcher.Enqueue(e);
         }
 
 

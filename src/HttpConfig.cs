@@ -11,7 +11,7 @@ namespace BeetleX.FastHttpApi
         {
             Port = 9090;
             SSL = false;
-            MaxBodyLength = 1024 * 1024;
+            MaxBodyLength = 1024 * 1024 * 4;
             Encoding = Encoding.UTF8;
             OutputStackTrace = false;
             Filters = new List<FilterAttribute>();

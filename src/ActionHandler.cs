@@ -23,8 +23,10 @@ namespace BeetleX.FastHttpApi
             Method = "GET";
             SingleInstance = true;
             ControllerType = Controller.GetType();
-
+            NoConvert = false;
         }
+
+        public bool NoConvert { get; set; }
 
         public Type ControllerType { get; set; }
 
@@ -43,6 +45,8 @@ namespace BeetleX.FastHttpApi
         private MethodHandler mMethodHandler;
 
         private System.Reflection.MethodInfo mMethod;
+
+        public System.Reflection.MethodInfo MethodInfo => mMethod;
 
         public object Controller { get; set; }
 
@@ -130,12 +134,15 @@ namespace BeetleX.FastHttpApi
                 {
                     pb = new ResponseParameter();
                 }
+                else if (pi.ParameterType == typeof(PostFile))
+                {
+                    pb = new PostFileParameter();
+                }
                 else
                 {
-
                     pb = new DefaultParameter();
-
                 }
+                pb.ParameterInfo = pi;
                 pb.Name = pi.Name;
                 pb.Type = pi.ParameterType;
                 Parameters.Add(pb);
@@ -146,15 +153,22 @@ namespace BeetleX.FastHttpApi
 
         public object[] GetParameters(IHttpContext context)
         {
-
-            int count = this.Parameters.Count;
-            object[] parameters = new object[count];
-            for (int i = 0; i < count; i++)
+            try
             {
-                parameters[i] = Parameters[i].GetValue(context);
 
+                int count = this.Parameters.Count;
+                object[] parameters = new object[count];
+                for (int i = 0; i < count; i++)
+                {
+                    parameters[i] = Parameters[i].GetValue(context);
+
+                }
+                return parameters;
             }
-            return parameters;
+            catch (Exception e_)
+            {
+                throw new BXException($"{SourceUrl} bind parameters error {e_.Message}", e_);
+            }
         }
 
         public object Invoke(IHttpContext context, ActionHandlerFactory actionHandlerFactory, object[] parameters)
@@ -181,6 +195,8 @@ namespace BeetleX.FastHttpApi
     {
         public Type Type { get; internal set; }
 
+        public System.Reflection.ParameterInfo ParameterInfo { get; internal set; }
+
         public string Name { get; internal set; }
 
         public virtual bool DataParameter => true;
@@ -191,8 +207,6 @@ namespace BeetleX.FastHttpApi
         {
             return null;
         }
-
-
 
     }
 
@@ -443,7 +457,7 @@ namespace BeetleX.FastHttpApi
 
     }
 
-    public class DataContextParameter : ParameterBinder
+    class DataContextParameter : ParameterBinder
     {
         public override object GetValue(IHttpContext context)
         {
@@ -455,6 +469,20 @@ namespace BeetleX.FastHttpApi
             return new object();
         }
 
+    }
+
+    class PostFileParameter : ParameterBinder
+    {
+        public override bool DataParameter => false;
+
+        public override object GetValue(IHttpContext context)
+        {
+            return context.Data.GetObject(this.Name, this.Type);
+        }
+        public override object DefaultValue()
+        {
+            return new object();
+        }
     }
 
     class DefaultParameter : ParameterBinder

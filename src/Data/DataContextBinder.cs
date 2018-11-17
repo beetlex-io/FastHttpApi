@@ -30,5 +30,25 @@ namespace BeetleX.FastHttpApi.Data
             context.Add("body", data);
             HttpParse.AsynczeFromUrlEncoded(data, context);
         }
+
+        public static DataConvertAttribute GetConvertAttribute(string contentType)
+        {
+            if (string.IsNullOrEmpty(contentType))
+            {
+                return new JsonDataConvertAttribute();
+            }
+            else if (contentType.IndexOf("application/x-www-form-urlencoded", StringComparison.CurrentCultureIgnoreCase) >= 0)
+            {
+                return new FormUrlDataConvertAttribute();
+            }
+            else if (contentType.IndexOf("multipart/form-data", StringComparison.CurrentCultureIgnoreCase) >= 0)
+            {
+                return new MultiDataConvertAttribute();
+            }
+            else
+            {
+                return new JsonDataConvertAttribute();
+            }
+        }
     }
 }

@@ -27,16 +27,27 @@ namespace BeetleX.FastHttpApi
                     ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
                     if (ca != null)
                     {
-                        EventControllerInstanceArgs e = new EventControllerInstanceArgs();
-                        e.Type = type;
-                        OnControllerInstance(e);
-                        if (e.Controller == null)
+                        try
                         {
-                            Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server, ca);
+                            EventControllerInstanceArgs e = new EventControllerInstanceArgs();
+                            e.Type = type;
+                            OnControllerInstance(e);
+                            if (e.Controller == null)
+                            {
+                                Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server, ca);
+                            }
+                            else
+                            {
+                                Register(config, type, e.Controller, ca.BaseUrl, server, ca);
+                            }
                         }
-                        else
+                        catch (Exception e_)
                         {
-                            Register(config, type, e.Controller, ca.BaseUrl, server, ca);
+                            if (server.EnableLog(EventArgs.LogType.Error))
+                            {
+                                string msg = $"{type} controller register error {e_.Message} {e_.StackTrace}";
+                                server.Log(EventArgs.LogType.Error, msg);
+                            }
                         }
                     }
                 }
@@ -133,19 +144,18 @@ namespace BeetleX.FastHttpApi
                     continue;
                 if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
                     continue;
+                bool noconvert = false;
                 DataConvertAttribute actionConvert = mi.GetCustomAttribute<DataConvertAttribute>();
                 if (mi.GetCustomAttribute<NoDataConvertAttribute>(false) != null)
                 {
+                    noconvert = true;
                     actionConvert = null;
                 }
                 else
                 {
                     if (actionConvert == null)
                         actionConvert = controllerDataConvert;
-                    if (actionConvert == null)
-                        actionConvert = new JsonDataConvertAttribute();
                 }
-
                 string sourceUrl = rooturl + mi.Name;
                 string url = sourceUrl;
                 string method = HttpParse.GET_TAG;
@@ -195,6 +205,7 @@ namespace BeetleX.FastHttpApi
                     continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.NoConvert = noconvert;
                 handler.SingleInstance = ca.SingleInstance;
                 handler.DataConvert = actionConvert;
                 handler.Route = ra;
@@ -334,7 +345,11 @@ namespace BeetleX.FastHttpApi
                         response.Result(notSupportResult);
                         return;
                     }
-                    if (handler.DataConvert != null)
+                    if (!handler.NoConvert && handler.DataConvert == null)
+                    {
+                        handler.DataConvert = DataContextBind.GetConvertAttribute(request.ContentType);
+                    }
+                    if (!handler.NoConvert)
                         handler.DataConvert.Execute(request.Data, request);
                     HttpContext pc = new HttpContext(server, request, response, request.Data);
                     long startTime = server.BaseServer.GetRunTime();
@@ -352,7 +367,7 @@ namespace BeetleX.FastHttpApi
                 }
                 catch (Exception e_)
                 {
-                    InnerErrorResult result = new InnerErrorResult(e_, server.ServerConfig.OutputStackTrace);
+                    InnerErrorResult result = new InnerErrorResult($"http execute {request.BaseUrl} action error ", e_, server.ServerConfig.OutputStackTrace);
                     response.Result(result);
 
                     if (server.EnableLog(EventArgs.LogType.Error))

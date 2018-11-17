@@ -219,7 +219,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         public void ProcessFile(HttpRequest request, HttpResponse response)
         {
-            string url = HttpParse.CharToLower(request.BaseUrl);
+            string url = request.BaseUrl;
+            if (Server.ServerConfig.UrlIgnoreCase)
+                url = HttpParse.CharToLower(request.BaseUrl);
             if (url == "/")
             {
                 for (int i = 0; i < mDefaultPages.Count; i++)
@@ -250,6 +252,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
             if (ExtSupport(request.Ext))
             {
+                url = System.Net.WebUtility.UrlDecode(url);
                 FileContentType fct = mExts[request.Ext];
                 FileResource fr = GetFileResource(url);
                 if (fr != null)
@@ -260,6 +263,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 {
                     string file;
                     string fileurl = HttpParse.GetBaseUrl(request.Url);
+                    fileurl = System.Net.WebUtility.UrlDecode(fileurl);
                     if (ExistsFile(request, fileurl, out file))
                     {
                         fr = CreateResource(file, false);

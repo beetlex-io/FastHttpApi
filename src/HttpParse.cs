@@ -242,6 +242,78 @@ namespace BeetleX.FastHttpApi
 
         }
 
+        private static ContentHeaderProperty[] GetProperties(ReadOnlySpan<char> line)
+        {
+            List<ContentHeaderProperty> proerties = new List<ContentHeaderProperty>();
+            int offset = 0;
+            string name = null;
+            string value;
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i] == ' ')
+                {
+                    offset++;
+                    continue;
+                }
+                if (line[i] == '=')
+                {
+                    name = new string(line.Slice(offset, i - offset));
+                    offset = i + 1;
+                }
+                else if (line[i] == ';')
+                {
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        value = new string(line.Slice(offset + 1, i - offset - 2));
+                        proerties.Add(new ContentHeaderProperty() { Name = name, Value = value });
+                        offset = i + 1;
+                        name = null;
+                    }
+                }
+            }
+            if (name != null)
+            {
+                value = new string(line.Slice(offset + 1, line.Length - offset - 2));
+                proerties.Add(new ContentHeaderProperty() { Name = name, Value = value });
+            }
+            return proerties.ToArray();
+        }
+
+        public static ContentHeader AnalyzeContentHeader(ReadOnlySpan<char> line)
+        {
+            ContentHeader result = new ContentHeader();
+            ReadOnlySpan<char> property = line;
+            int offset = 0;
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i] == ':')
+                {
+                    result.Name = new string(line.Slice(0, i));
+                    offset = i + 1;
+                }
+                else if (offset > 0 && line[i] == ' ')
+                    offset = i + 1;
+                else if (line[i] == ';')
+                {
+                    result.Value = new string(line.Slice(offset, i - offset));
+                    property = line.Slice(i + 1);
+                    offset = 0;
+                    break;
+                }
+            }
+            if (offset > 0)
+            {
+                result.Value = new string(line.Slice(offset, line.Length - offset));
+            }
+            if (property.Length != line.Length)
+            {
+                result.Properties = GetProperties(property);
+            }
+            return result;
+        }
+
+
+
         public static Tuple<string, string> AnalyzeHeader(ReadOnlySpan<char> line)
         {
             string name = null, value = null;
@@ -598,6 +670,23 @@ namespace BeetleX.FastHttpApi
                 }
                 return false;
             }
+        }
+
+
+        public struct ContentHeader
+        {
+            public string Name;
+
+            public string Value;
+
+            public ContentHeaderProperty[] Properties { get; set; }
+
+        }
+
+        public struct ContentHeaderProperty
+        {
+            public string Name;
+            public string Value;
         }
 
     }

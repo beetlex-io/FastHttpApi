@@ -91,9 +91,9 @@ namespace BeetleX.FastHttpApi
             Error = messge;
         }
 
-        public InnerErrorResult(Exception e, bool outputStackTrace)
+        public InnerErrorResult(string message, Exception e, bool outputStackTrace)
         {
-            Error = e.Message;
+            Error = message + ":" + e.Message;
             if (e.InnerException != null)
                 Error += "->" + e.InnerException.Message;
             if (outputStackTrace)

@@ -53,3 +53,6 @@ samples/HttpApiServer.DataPost/bin/
 samples/HttpApiServer.DataPost/obj/
 samples/HttpApiServer.JWT/bin/
 samples/HttpApiServer.JWT/obj/
+samples/HttpApiServer.UploadFile/bin/
+samples/HttpApiServer.UploadFile/obj/
+samples/HttpApiServer.Admin/views/20170627214000.xlsx
