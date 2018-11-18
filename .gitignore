@@ -56,3 +56,9 @@ samples/HttpApiServer.JWT/obj/
 samples/HttpApiServer.UploadFile/bin/
 samples/HttpApiServer.UploadFile/obj/
 samples/HttpApiServer.Admin/views/20170627214000.xlsx
+samples/HttpApiClient/FastApiClient/WebServer/Properties/
+samples/HttpApiClient/FastApiClient/WebServer/bin/
+samples/HttpApiClient/FastApiClient/WebServer/obj/
+samples/HttpApiClient/FastApiClient/FastApiClient/bin/
+samples/HttpApiClient/FastApiClient/.vs/
+samples/HttpApiClient/FastApiClient/FastApiClient/obj/
