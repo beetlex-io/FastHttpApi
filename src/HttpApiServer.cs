@@ -106,7 +106,8 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery(HttpRequest request)
         {
-             mRequestPool.Push(request);
+
+            mRequestPool.Push(request);
         }
 
 

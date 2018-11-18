@@ -132,6 +132,7 @@ namespace BeetleX.FastHttpApi.Data
                                     string line = Encoding.UTF8.GetString(buffer, 0, indexOf.Length - 2);
                                     if (line == mEndBoundary)
                                     {
+
                                         CreateParameter(dataContext, request, name, filename, contentType, memoryStream);
                                         name = filename = contentType = null;
                                         return;
@@ -167,7 +168,9 @@ namespace BeetleX.FastHttpApi.Data
                                         if (block.ID == indexOf.Start.ID)
                                             offset = indexOf.StartPostion;
                                         if (block.ID == indexOf.End.ID)
+                                        {
                                             length = indexOf.EndPostion + 1;
+                                        }
                                         memoryStream.Write(block.Bytes, offset, length - offset);
                                         if (block.ID == indexOf.End.ID)
                                         {

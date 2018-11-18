@@ -213,7 +213,8 @@ namespace BeetleX.FastHttpApi.Clients
                         result.QueryString = new Dictionary<string, string>();
                     foreach (var item in mDataParameters)
                     {
-                        result.QueryString[item.Name] = parameters[item.Index].ToString();
+                        if (parameters[item.Index] != null)
+                            result.QueryString[item.Name] = parameters[item.Index].ToString();
                     }
                 }
                 else
@@ -221,7 +222,8 @@ namespace BeetleX.FastHttpApi.Clients
                     var data = new Dictionary<string, object>();
                     foreach (var item in mDataParameters)
                     {
-                        data[item.Name] = parameters[item.Index];
+                        if (parameters[item.Index] != null)
+                            data[item.Name] = parameters[item.Index];
                     }
                     result.Data = data;
                 }
@@ -232,7 +234,8 @@ namespace BeetleX.FastHttpApi.Clients
                     result.Header = new Dictionary<string, string>();
                 foreach (var item in mDataParameters)
                 {
-                    result.Header[item.Name] = parameters[item.Index].ToString();
+                    if (parameters[item.Index] != null)
+                        result.Header[item.Name] = parameters[item.Index].ToString();
                 }
             }
             if (mQueryStringParameters.Count > 0)
@@ -241,7 +244,8 @@ namespace BeetleX.FastHttpApi.Clients
                     result.QueryString = new Dictionary<string, string>();
                 foreach (var item in mQueryStringParameters)
                 {
-                    result.QueryString[item.Name] = parameters[item.Index].ToString();
+                    if (parameters[item.Index] != null)
+                        result.QueryString[item.Name] = parameters[item.Index].ToString();
                 }
             }
             if (this.MethodInfo.ReturnType != typeof(void))
