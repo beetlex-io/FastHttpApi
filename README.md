@@ -70,4 +70,17 @@ Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
         }
     }
 ```
+## monitoring and management Services
+#### Install Packet
+```
+Install-Package BeetleX.FastHttpApi.Admin -Version 0.6.2
+```
+#### Registering  management controller
+```
+mApiServer.Register(typeof(BeetleX.FastHttpApi.Admin._Admin).Assembly);
+```
+![](https://i.imgur.com/mKrbW43.png)
 
+![](https://i.imgur.com/ASTgD2r.png)
+
+![](https://i.imgur.com/q5mf7ee.png)
