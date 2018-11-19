@@ -32,24 +32,14 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                string configFile = "HttpConfig.json";
-                if (System.IO.File.Exists(configFile))
-                {
-                    using (System.IO.StreamReader reader = new StreamReader(configFile, Encoding.UTF8))
-                    {
-                        string json = reader.ReadToEnd();
-                        Newtonsoft.Json.Linq.JToken toke = (Newtonsoft.Json.Linq.JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-                        ServerConfig = toke["HttpConfig"].ToObject<HttpConfig>();
-                    }
-                }
-                else
-                {
-                    ServerConfig = new HttpConfig();
-                }
+                ServerConfig = LoadConfig();
             }
             mActionFactory = new ActionHandlerFactory();
+            mResourceCenter = new StaticResurce.ResourceCenter(this);
             mUrlRewrite = new RouteRewrite(this);
         }
+
+        string mConfigFile = "HttpConfig.json";
 
         private RouteRewrite mUrlRewrite;
 
@@ -106,10 +96,46 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery(HttpRequest request)
         {
-
             mRequestPool.Push(request);
         }
 
+
+        public void SaveConfig()
+        {
+            string file = Directory.GetCurrentDirectory() + System.IO.Path.DirectorySeparatorChar + mConfigFile;
+            using (System.IO.StreamWriter writer = new StreamWriter(file))
+            {
+                System.Collections.Generic.Dictionary<string, object> config = new Dictionary<string, object>();
+                config["HttpConfig"] = this.ServerConfig;
+                string strConfig = Newtonsoft.Json.JsonConvert.SerializeObject(config);
+                writer.Write(strConfig);
+                writer.Flush();
+            }
+        }
+
+        public HttpConfig LoadConfig()
+        {
+            string file = Directory.GetCurrentDirectory() + System.IO.Path.DirectorySeparatorChar + mConfigFile;
+            if (System.IO.File.Exists(file))
+            {
+                using (System.IO.StreamReader reader = new StreamReader(mConfigFile, Encoding.UTF8))
+                {
+                    string json = reader.ReadToEnd();
+                    if (string.IsNullOrEmpty(json))
+                        return new HttpConfig();
+                    Newtonsoft.Json.Linq.JToken toke = (Newtonsoft.Json.Linq.JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+                    if (toke["HttpConfig"] != null && toke["HttpConfig"].Type == JTokenType.Object)
+                    {
+                        return toke["HttpConfig"].ToObject<HttpConfig>();
+                    }
+                    return new HttpConfig();
+                }
+            }
+            else
+            {
+                return new HttpConfig();
+            }
+        }
 
         public object this[string name]
         {
@@ -193,7 +219,7 @@ namespace BeetleX.FastHttpApi
             config.LittleEndian = false;
             //if (Environment.ProcessorCount >= 10)
             //    config.IOQueueEnabled = true;
-            mResourceCenter = new StaticResurce.ResourceCenter(this);
+
             HttpPacket hp = new HttpPacket(this, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             Name = "BeetleX Http Server";

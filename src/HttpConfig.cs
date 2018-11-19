@@ -1,4 +1,5 @@
 ﻿using BeetleX.FastHttpApi;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -36,7 +37,6 @@ namespace BeetleX.FastHttpApi
             PacketCombined = 0;
             UrlIgnoreCase = true;
             UseIPv6 = true;
-
         }
 
 
@@ -90,12 +90,14 @@ namespace BeetleX.FastHttpApi
 
         public int MaxBodyLength { get; set; }
 
+        [JsonIgnore]
         public System.Text.Encoding Encoding { get; set; }
 
         public bool OutputStackTrace { get; set; }
 
         public string StaticResurceType { get; set; }
 
+        [JsonIgnore]
         public IList<FilterAttribute> Filters { get; set; }
 
         public string DefaultPage { get; set; }

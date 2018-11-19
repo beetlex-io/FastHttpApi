@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 
 namespace BeetleX.FastHttpApi.Admin
@@ -54,7 +55,11 @@ namespace BeetleX.FastHttpApi.Admin
                 WSMaxRPS = Server.ServerConfig.WebSocketMaxRPS,
                 LogLevel = Server.ServerConfig.LogLevel,
                 LogToConsole = Server.ServerConfig.LogToConsole,
-                WriteLog = Server.ServerConfig.WriteLog
+                WriteLog = Server.ServerConfig.WriteLog,
+                Exts = string.Join(';', Server.ResourceCenter.Exts.Keys.ToArray()),
+                FileManage = Server.ServerConfig.FileManager,
+                DefaultPages = string.Join(';', Server.ResourceCenter.DefaultPages.ToArray()),
+                MaxLength = Server.ServerConfig.MaxBodyLength
             };
         }
 
@@ -66,16 +71,26 @@ namespace BeetleX.FastHttpApi.Admin
             public BeetleX.EventArgs.LogType LogLevel { get; set; }
             public bool LogToConsole { get; set; }
             public bool WriteLog { get; set; }
+            public string Exts { get; set; }
+            public string DefaultPages { get; set; }
+            public bool FileManage { get; set; }
+            public int MaxLength { get; set; }
         }
         [Post]
         public void Setting(SettingInfo setting, IHttpContext context)
         {
+            Server.ServerConfig.MaxBodyLength = setting.MaxLength;
             Server.ServerConfig.MaxConnections = setting.MaxConn;
             Server.ServerConfig.WebSocketMaxRPS = setting.WSMaxRPS;
             Server.ServerConfig.LogLevel = setting.LogLevel;
             Server.BaseServer.Config.LogLevel = setting.LogLevel;
             Server.ServerConfig.LogToConsole = setting.LogToConsole;
             Server.ServerConfig.WriteLog = setting.WriteLog;
+            Server.ServerConfig.FileManager = setting.FileManage;
+            
+            Server.ResourceCenter.SetDefaultPages(setting.DefaultPages);
+            Server.ResourceCenter.SetFileExts(setting.Exts);
+            Server.SaveConfig();
             if (Server.EnableLog(EventArgs.LogType.Warring))
             {
                 Server.BaseServer.Log(EventArgs.LogType.Warring, context.Session, "{0} setting {1}", context.Request.ClientIPAddress,

@@ -121,19 +121,25 @@
                     <div class="panel-body">
                         <form class="form-horizontal" id="setting" style="font-size:14px;">
                             <div class="form-group">
-                                <label for="inputEmail3" class="col-sm-5 control-label">Max Conn</label>
+                                <label class="col-sm-5 control-label">Body max length</label>
+                                <div class="col-sm-5">
+                                    <input type="number" v-model:value="MaxLength" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label">Max Conn</label>
                                 <div class="col-sm-5">
                                     <input type="number" v-model:value="MaxConn" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-5 control-label">Websocket Max RPS</label>
+                                <label class="col-sm-5 control-label">Websocket RPS</label>
                                 <div class="col-sm-5">
                                     <input type="number" v-model:value="WSMaxRPS" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-5 control-label">LogLevel</label>
+                                <label class="col-sm-5 control-label">LogLevel</label>
                                 <div class="col-sm-5">
                                     <select v-model:value="LogLevel" class="form-control">
                                         <option value="All">All</option>
@@ -148,15 +154,33 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-5 control-label">Write to file</label>
+                                <label class="col-sm-5 control-label">Log save to file</label>
                                 <div class="col-sm-5">
                                     <input type="checkbox" v-model:value="WriteLog" class="checkbox">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="inputPassword3" class="col-sm-5 control-label">displsy to Console</label>
+                                <label class="col-sm-5 control-label">Displsy to console</label>
                                 <div class="col-sm-5">
                                     <input type="checkbox" v-model:value="LogToConsole" class="checkbox">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label">File manage</label>
+                                <div class="col-sm-5">
+                                    <input type="checkbox" v-model:value="FileManage" class="checkbox">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label">Extension types</label>
+                                <div class="col-sm-5">
+                                    <textarea v-model:value="Exts" class="form-control" rows="5"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label">Default pages</label>
+                                <div class="col-sm-5">
+                                    <input type="text" v-model:value="DefaultPages" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -199,7 +223,11 @@
             WSMaxRPS: 0,
             LogLevel: '',
             LogToConsole: true,
-            WriteLog: false
+            WriteLog: false,
+            FileManage: false,
+            Exts: '',
+            DefaultPages: '',
+            MaxLength: 1024 * 1024
         }
         api_receive(function (data) {
             if (data.Data.LogType) {
@@ -256,15 +284,19 @@
             setting.LogLevel = result.Data.LogLevel;
             setting.LogToConsole = result.Data.LogToConsole;
             setting.WriteLog = result.Data.WriteLog;
+            setting.Exts = result.Data.Exts;
+            setting.DefaultPages = result.Data.DefaultPages;
+            setting.MaxLength = result.Data.MaxLength;
+            setting.FileManage = result.Data.FileManage;
         }
 
         async function UpSetting() {
-            if (confirm('是否要更改设置？')) {
+            if (confirm('do you want to change the settings？')) {
                 var result = await _AdminSetting(setting);
                 if (result.Code == 403)
                     window.location.href = result.Data;
                 if (result.Code == 200)
-                    alert('设置成功');
+                    alert('succeed!');
             }
         }
         async function GetStatus() {

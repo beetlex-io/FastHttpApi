@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi.StaticResurce
 {
-    class FileContentType
+    public class FileContentType
     {
         public FileContentType(string filetype)
         {

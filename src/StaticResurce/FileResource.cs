@@ -16,11 +16,14 @@ namespace BeetleX.FastHttpApi.StaticResurce
             mInnerResource = innerResource;
             GZIP = true;
             Cached = false;
+            Ext = System.IO.Path.GetExtension(filename);
         }
 
         public System.Reflection.Assembly Assembly { get; set; }
 
         private bool mInnerResource;
+
+        public string Ext { get; set; }
 
         public string UrlName { get; set; }
 

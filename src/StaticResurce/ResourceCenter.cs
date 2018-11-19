@@ -26,6 +26,35 @@ namespace BeetleX.FastHttpApi.StaticResurce
 
         }
 
+        public void AddDefaultPage(string file)
+        {
+            if (!string.IsNullOrEmpty(file))
+                mDefaultPages.Add(file);
+        }
+
+        public void SetDefaultPages(string files)
+        {
+            if (files != null)
+            {
+                Server.ServerConfig.DefaultPage = files;
+                mDefaultPages.Clear();
+                mDefaultPages.AddRange(files.Split(";"));
+            }
+        }
+
+        public void SetFileExts(string exts)
+        {
+            if (exts != null)
+            {
+                Server.ServerConfig.StaticResurceType = exts;
+                foreach (string item in exts.ToLower().Split(';'))
+                {
+                    FileContentType fct = new FileContentType(item);
+                    mExts[fct.Ext] = fct;
+                }
+            }
+        }
+
         private ConcurrentDictionary<string, FileResource> mResources = new ConcurrentDictionary<string, FileResource>();
 
         private ConcurrentDictionary<string, FileContentType> mExts = new ConcurrentDictionary<string, FileContentType>();
@@ -33,6 +62,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
         private List<FileSystemWatcher> mFileWatch = new List<FileSystemWatcher>();
 
         private List<string> mDefaultPages = new List<string>();
+
+        public List<string> DefaultPages => mDefaultPages;
+
+        public ConcurrentDictionary<string, FileContentType> Exts => mExts;
 
         public HttpApiServer Server { get; private set; }
 
@@ -46,16 +79,16 @@ namespace BeetleX.FastHttpApi.StaticResurce
         {
             public string File { get; set; }
 
-            public HttpRequest Request { get; set; }
+            public HttpRequest Request { get; internal set; }
 
-            public string Url { get; set; }
+            public string Url { get; internal set; }
         }
 
         public class EventFileResponseArgs : System.EventArgs
         {
-            public HttpRequest Request { get; set; }
+            public HttpRequest Request { get; internal set; }
 
-            public HttpResponse Response { get; set; }
+            public HttpResponse Response { get; internal set; }
 
             public FileResource Resource { get; set; }
         }
