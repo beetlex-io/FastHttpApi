@@ -79,6 +79,10 @@ Install-Package BeetleX.FastHttpApi.Admin -Version 0.6.2
 ```
 mApiServer.Register(typeof(BeetleX.FastHttpApi.Admin._Admin).Assembly);
 ```
+### access url
+```
+/_admin/index.html
+```
 ![](https://i.imgur.com/mKrbW43.png)
 
 ![](https://i.imgur.com/ASTgD2r.png)
