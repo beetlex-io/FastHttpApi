@@ -11,16 +11,16 @@ namespace BeetleX.FastHttpApi
 
         private long mIndex = 0;
 
-        public ObjectPoolGroup(int maxItem = 1000)
+        public ObjectPoolGroup(int maxItem = 5000)
         {
             for (int i = 0; i < Math.Min(Environment.ProcessorCount, 16); i++)
             {
                 objectPools.Add(new ObjectPool<T>(maxItem));
             }
         }
-        public void Push(T data)
+        public bool Push(T data)
         {
-            objectPools[Math.Abs(data.GetHashCode()) % objectPools.Count].Push(data);
+            return objectPools[Math.Abs(data.GetHashCode()) % objectPools.Count].Push(data);
         }
         public bool TryPop(out T data)
         {
@@ -32,7 +32,7 @@ namespace BeetleX.FastHttpApi
     class ObjectPool<T>
     {
 
-        public ObjectPool(int maxItems = 1000)
+        public ObjectPool(int maxItems = 5000)
         {
             mMaxItems = maxItems;
 
@@ -44,16 +44,18 @@ namespace BeetleX.FastHttpApi
 
         private int mCount;
 
-        public void Push(T data)
+        public bool Push(T data)
         {
             int value = System.Threading.Interlocked.Increment(ref mCount);
             if (value < mMaxItems)
             {
                 mQueues.Push(data);
+                return true;
             }
             else
             {
                 System.Threading.Interlocked.Decrement(ref mCount);
+                return false;
             }
         }
 

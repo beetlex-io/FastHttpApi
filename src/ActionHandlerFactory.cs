@@ -10,14 +10,16 @@ namespace BeetleX.FastHttpApi
 {
     public class ActionHandlerFactory
     {
-        static ActionHandlerFactory()
+        public ActionHandlerFactory(HttpApiServer server)
         {
-
+            Server = server;
         }
+
+        public HttpApiServer Server { get; set; }
 
         private System.Collections.Generic.Dictionary<string, ActionHandler> mMethods = new Dictionary<string, ActionHandler>();
 
-        public void Register(HttpConfig config, HttpApiServer server, params Assembly[] assemblies)
+        public void Register(params Assembly[] assemblies)
         {
             foreach (Assembly item in assemblies)
             {
@@ -34,19 +36,19 @@ namespace BeetleX.FastHttpApi
                             OnControllerInstance(e);
                             if (e.Controller == null)
                             {
-                                Register(config, type, Activator.CreateInstance(type), ca.BaseUrl, server, ca);
+                                Register(Server.ServerConfig, type, Activator.CreateInstance(type), ca.BaseUrl, Server, ca);
                             }
                             else
                             {
-                                Register(config, type, e.Controller, ca.BaseUrl, server, ca);
+                                Register(Server.ServerConfig, type, e.Controller, ca.BaseUrl, Server, ca);
                             }
                         }
                         catch (Exception e_)
                         {
-                            if (server.EnableLog(EventArgs.LogType.Error))
+                            if (Server.EnableLog(EventArgs.LogType.Error))
                             {
                                 string msg = $"{type} controller register error {e_.Message} {e_.StackTrace}";
-                                server.Log(EventArgs.LogType.Error, msg);
+                                Server.Log(EventArgs.LogType.Error, msg);
                             }
                         }
                     }
@@ -62,6 +64,14 @@ namespace BeetleX.FastHttpApi
             return e.Controller;
         }
 
+        private void AddHandlers(string url, ActionHandler handler)
+        {
+            lock (mMethods)
+            {
+                mMethods[url] = handler;
+            }
+        }
+
         protected virtual void OnControllerInstance(EventControllerInstanceArgs e)
         {
             ControllerInstance?.Invoke(this, e);
@@ -69,25 +79,66 @@ namespace BeetleX.FastHttpApi
 
         public event System.EventHandler<EventControllerInstanceArgs> ControllerInstance;
 
-        public ICollection<ActionHandler> Handlers
+        public void Clear()
         {
-            get
+            lock (mMethods)
             {
-                return mMethods.Values;
-
+                mMethods.Clear();
             }
         }
 
-        public void Register(HttpConfig config, HttpApiServer server, object controller)
+        public void Remove(string assemblyName)
+        {
+            foreach (ActionHandler item in Handlers)
+            {
+                if (item.AssmblyName == assemblyName)
+                {
+                    Remove(item);
+                }
+            }
+        }
+
+        public void Remove(ActionHandler handler)
+        {
+            if (handler != null)
+            {
+                lock (mMethods)
+                {
+                    if (mMethods.ContainsKey(handler.Url))
+                    {
+                        mMethods.Remove(handler.Url);
+                        if (Server.EnableLog(EventArgs.LogType.Info))
+                        {
+                            Server.Log(EventArgs.LogType.Info, $"remove {handler.Url} action handler");
+                        }
+                    }
+
+                }
+            }
+        }
+
+        public ActionHandler[] Handlers
+        {
+            get
+            {
+                lock (mMethods)
+                {
+                    ActionHandler[] result = new ActionHandler[mMethods.Values.Count];
+                    mMethods.Values.CopyTo(result, 0);
+                    return result;
+                }
+            }
+        }
+
+        public void Register(object controller)
         {
             Type type = controller.GetType();
             ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
             if (ca != null)
             {
-                Register(config, type, controller, ca.BaseUrl, server, ca);
+                Register(this.Server.ServerConfig, type, controller, ca.BaseUrl, this.Server, ca);
             }
         }
-
 
         public static void RemoveFilter(List<FilterAttribute> filters, Type[] types)
         {
@@ -106,7 +157,6 @@ namespace BeetleX.FastHttpApi
             foreach (FilterAttribute item in removeItems)
                 filters.Remove(item);
         }
-
 
         private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca)
         {
@@ -200,11 +250,11 @@ namespace BeetleX.FastHttpApi
                 ActionHandler handler = GetAction(url);
                 if (handler != null)
                 {
-                    server.Log(EventArgs.LogType.Error, "{0} already exists!duplicate definition {1}.{2}!", url, controllerType.Name,
+                    server.Log(EventArgs.LogType.Warring, "{0} already exists!replaced with {1}.{2}!", url, controllerType.Name,
                         mi.Name);
-                    continue;
                 }
                 handler = new ActionHandler(obj, mi);
+                handler.Path = rooturl;
                 handler.NoConvert = noconvert;
                 handler.SingleInstance = ca.SingleInstance;
                 handler.DataConvert = actionConvert;
@@ -214,17 +264,17 @@ namespace BeetleX.FastHttpApi
                 handler.Filters.AddRange(filters);
                 fas = mi.GetCustomAttributes<FilterAttribute>(false);
                 handler.Filters.AddRange(fas);
+                handler.Url = url;
                 skipfilters = mi.GetCustomAttributes<SkipFilterAttribute>(false);
                 foreach (SkipFilterAttribute item in skipfilters)
                 {
                     RemoveFilter(handler.Filters, item.Types);
                 }
-                mMethods[url] = handler;
+                AddHandlers(url, handler);
                 server.Log(EventArgs.LogType.Info, "register {0}.{1} to {2}", controllerType.Name, mi.Name, url);
             }
 
         }
-
 
         private ActionHandler GetAction(string url)
         {
@@ -232,7 +282,6 @@ namespace BeetleX.FastHttpApi
             mMethods.TryGetValue(url, out result);
             return result;
         }
-
 
         public ActionResult ExecuteWithWS(HttpRequest request, HttpApiServer server, JToken token)
         {

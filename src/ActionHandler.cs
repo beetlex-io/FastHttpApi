@@ -11,8 +11,13 @@ namespace BeetleX.FastHttpApi
 {
     public class ActionHandler : IComparable
     {
+
+        private static int mIdSeed = 0;
+
         public ActionHandler(object controller, System.Reflection.MethodInfo method)
         {
+
+            ID = System.Threading.Interlocked.Increment(ref mIdSeed);
             Remark = "";
             Parameters = new List<ParameterBinder>();
             mMethod = method;
@@ -24,7 +29,20 @@ namespace BeetleX.FastHttpApi
             SingleInstance = true;
             ControllerType = Controller.GetType();
             NoConvert = false;
+            var aname = controller.GetType().Assembly.GetName();
+            this.AssmblyName = aname.Name;
+            this.Version = aname.Version.ToString();
         }
+
+        public string Path { get; set; }
+
+        public string Url { get; set; }
+
+        public int ID { get; set; }
+
+        public string Version { get; set; }
+
+        public string AssmblyName { get; set; }
 
         public bool NoConvert { get; set; }
 
@@ -44,9 +62,9 @@ namespace BeetleX.FastHttpApi
 
         private MethodHandler mMethodHandler;
 
-        private System.Reflection.MethodInfo mMethod;
+        private MethodInfo mMethod;
 
-        public System.Reflection.MethodInfo MethodInfo => mMethod;
+        public MethodInfo MethodInfo => mMethod;
 
         public object Controller { get; set; }
 
@@ -153,22 +171,24 @@ namespace BeetleX.FastHttpApi
 
         public object[] GetParameters(IHttpContext context)
         {
-            try
-            {
 
-                int count = this.Parameters.Count;
-                object[] parameters = new object[count];
-                for (int i = 0; i < count; i++)
+
+            int count = this.Parameters.Count;
+            object[] parameters = new object[count];
+            for (int i = 0; i < count; i++)
+            {
+                try
                 {
                     parameters[i] = Parameters[i].GetValue(context);
-
                 }
-                return parameters;
+                catch (Exception e_)
+                {
+                    throw new BXException($"{SourceUrl} bind {Parameters[i].Name} parameter error {e_.Message}", e_);
+                }
+
             }
-            catch (Exception e_)
-            {
-                throw new BXException($"{SourceUrl} bind parameters error {e_.Message}", e_);
-            }
+            return parameters;
+
         }
 
         public object Invoke(IHttpContext context, ActionHandlerFactory actionHandlerFactory, object[] parameters)
@@ -473,7 +493,7 @@ namespace BeetleX.FastHttpApi
 
     class PostFileParameter : ParameterBinder
     {
-        public override bool DataParameter => false;
+        public override bool DataParameter => true;
 
         public override object GetValue(IHttpContext context)
         {

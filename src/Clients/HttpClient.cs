@@ -227,7 +227,6 @@ namespace BeetleX.FastHttpApi
             return Execute(request, bodyType);
         }
 
-
         public Response Get(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, IClientBodyFormater formater, Type bodyType = null)
         {
             Request request = new Request();
@@ -289,5 +288,42 @@ namespace BeetleX.FastHttpApi
         {
 
         }
+
+        private System.Collections.Concurrent.ConcurrentDictionary<MethodInfo, ClientActionHanler> mHandlers = new System.Collections.Concurrent.ConcurrentDictionary<MethodInfo, ClientActionHanler>();
+
+        private ClientActionHanler GetHandler(MethodInfo method)
+        {
+            ClientActionHanler result;
+            if (!mHandlers.TryGetValue(method, out result))
+            {
+                result = new ClientActionHanler(method);
+                mHandlers[method] = result;
+            }
+            return result;
+        }
+
+        public object Invoke(MethodInfo targetMethod, object[] args)
+        {
+            ClientActionHanler handler = GetHandler(targetMethod);
+            var request = handler.GetRequest(args);
+            Response response;
+            switch (request.Method)
+            {
+                case Request.POST:
+                    response = Post(request.Url, request.Header, request.QueryString, request.Data, handler.Formater, request.Type);
+                    break;
+                case Request.PUT:
+                    response = Put(request.Url, request.Header, request.QueryString, request.Data, handler.Formater, request.Type);
+                    break;
+                case Request.DELETE:
+                    response = Delete(request.Url, request.Header, request.QueryString, handler.Formater, request.Type);
+                    break;
+                default:
+                    response = Get(request.Url, request.Header, request.QueryString, handler.Formater, request.Type);
+                    break;
+            }
+            return response.Body;
+        }
+
     }
 }

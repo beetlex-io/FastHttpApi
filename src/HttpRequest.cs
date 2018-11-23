@@ -43,6 +43,27 @@ namespace BeetleX.FastHttpApi
 
         }
 
+        internal HttpResponse Response { get; set; }
+
+        internal HttpResponse CreateResponse()
+        {
+
+            if (Response == null)
+                Response = new HttpResponse();
+            else
+                Response.Reset();
+            HttpResponse response = Response;
+            //HttpResponse response =  new HttpResponse();
+            response.HttpVersion = this.HttpVersion;
+            response.Session = this.Session;
+            response.HttpVersion = this.HttpVersion;
+            response.Request = this;
+            if (VersionNumber == "1.0" && this.KeepAlive)
+                response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
+            response.RequestID = mQueryString["_requestid"];
+            return response;
+        }
+
         internal void Recovery()
         {
             if (!WebSocket)
@@ -227,18 +248,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public HttpResponse CreateResponse()
-        {
-            HttpResponse response = new HttpResponse();
-            response.HttpVersion = this.HttpVersion;
-            response.Session = this.Session;
-            response.HttpVersion = this.HttpVersion;
-            response.Request = this;
-            if (VersionNumber == "1.0" && this.KeepAlive)
-                response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
-            response.RequestID = mQueryString["_requestid"];
-            return response;
-        }
+
 
         public override string ToString()
         {

@@ -152,9 +152,12 @@ namespace BeetleX.FastHttpApi
         {
             mWriteCount++;
             System.IO.StreamWriter writer = GetWriter();
-            writer.Write("[" + e.Type + "] ");
-            writer.Write(DateTime.Now + " ");
-            writer.Write(e.Message + " \r\n");
+            writer.Write("[");
+            writer.Write(DateTime.Now);
+            writer.Write("] [");
+            writer.Write(e.Type.ToString());
+            writer.Write("] ");
+            writer.WriteLine(e.Message);
             if (mWriteCount > 200 || mDispatcher.Count == 0)
             {
                 writer.Flush();

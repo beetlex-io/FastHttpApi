@@ -44,6 +44,7 @@ namespace BeetleX.FastHttpApi
 
         public bool UrlIgnoreCase { get; set; }
 
+        [JsonIgnore]
         public UrlRoute[] Routes { get; set; }
 
         public int PacketCombined { get; set; }

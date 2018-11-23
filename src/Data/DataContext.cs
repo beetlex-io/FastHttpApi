@@ -35,6 +35,316 @@ namespace BeetleX.FastHttpApi.Data
             return mProperties.TryGetValue(name, out value);
         }
 
+        public bool TryGetBoolean(string name, out bool value)
+        {
+            object data;
+            value = false;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Boolean)
+                    {
+                        string str = token.ToObject<string>();
+                        return bool.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<bool>();
+                    return true;
+                }
+                else
+                    return Boolean.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetDateTime(string name, out DateTime value)
+        {
+            object data;
+            value = DateTime.Now;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Date)
+                    {
+                        string str = token.ToObject<string>();
+                        return DateTime.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<DateTime>();
+                    return true;
+                }
+                else
+                    return DateTime.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetDecimal(string name, out decimal value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Float)
+                    {
+                        string str = token.ToObject<string>();
+                        return decimal.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<decimal>();
+                    return true;
+                }
+                else
+                    return decimal.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetDouble(string name, out double value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Float)
+                    {
+                        string str = token.ToObject<string>();
+                        return double.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<double>();
+                    return true;
+                }
+                else
+                    return double.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetFloat(string name, out float value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Float)
+                    {
+                        string str = token.ToObject<string>();
+                        return float.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<float>();
+                    return true;
+                }
+                else
+                    return float.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetInt(string name, out int value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return int.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<int>();
+                    return true;
+                }
+                else
+                    return int.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetLong(string name, out long value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return long.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<long>();
+                    return true;
+                }
+                else
+                    return long.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetShort(string name, out short value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return short.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<short>();
+                    return true;
+                }
+                else
+                    return short.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+
+
+        public bool TryGetUInt(string name, out uint value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return uint.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<uint>();
+                    return true;
+                }
+                else
+                    return uint.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetULong(string name, out ulong value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return ulong.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<ulong>();
+                    return true;
+                }
+                else
+                    return ulong.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetUShort(string name, out ushort value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return ushort.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<ushort>();
+                    return true;
+                }
+                else
+                    return ushort.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetByte(string name, out byte value)
+        {
+            object data;
+            value = 0;
+            if (GetProperty(name, out data))
+            {
+                JProperty token = data as JProperty;
+                if (token != null)
+                {
+                    if (token.Type != JTokenType.Integer)
+                    {
+                        string str = token.ToObject<string>();
+                        return byte.TryParse((string)str, out value);
+                    }
+                    value = token.ToObject<byte>();
+                    return true;
+                }
+                else
+                    return byte.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+        public bool TryGetChar(string name, out char value)
+        {
+            object data;
+            value = (char)0;
+            if (GetProperty(name, out data))
+            {
+                JToken token = data as JToken;
+                if (token != null)
+                    value = token.ToObject<char>();
+                else
+                    return char.TryParse((string)data, out value);
+            }
+            return false;
+        }
+
+
+        public bool TryGetString(string name, out string value)
+        {
+            object data;
+            value = null;
+            if (GetProperty(name, out data))
+            {
+                JToken token = data as JToken;
+                if (token != null)
+                    value = token.ToObject<string>();
+                else
+                    value = (string)data;
+                return true;
+            }
+            return false;
+        }
+
         public object GetObject(string name, Type type)
         {
             object value;
@@ -59,216 +369,6 @@ namespace BeetleX.FastHttpApi.Data
             return null;
         }
 
-        public bool TryGetBoolean(string name, out bool value)
-        {
-            object data;
-            value = false;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<bool>();
-                else
-                    return Boolean.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetDateTime(string name, out DateTime value)
-        {
-            object data;
-            value = DateTime.Now;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<DateTime>();
-                else
-                    return DateTime.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetDecimal(string name, out decimal value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<decimal>();
-                else
-                    return decimal.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetDouble(string name, out double value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<double>();
-                else
-                    return double.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetFloat(string name, out float value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<float>();
-                else
-                    return float.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetInt(string name, out int value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<int>();
-                else
-                    return int.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetLong(string name, out long value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<long>();
-                else
-                    return long.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetShort(string name, out short value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<short>();
-                else
-                    return short.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetString(string name, out string value)
-        {
-            object data;
-            value = null;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<string>();
-                else
-                    value = (string)data;
-                return true;
-            }
-            return false;
-        }
-
-        public bool TryGetUInt(string name, out uint value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<uint>();
-                else
-                    return uint.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetULong(string name, out ulong value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<ulong>();
-                else
-                    return ulong.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetUShort(string name, out ushort value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<ushort>();
-                else
-                    return ushort.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetByte(string name, out byte value)
-        {
-            object data;
-            value = 0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<byte>();
-                else
-                    return byte.TryParse((string)data, out value);
-            }
-            return false;
-        }
-
-        public bool TryGetChar(string name, out char value)
-        {
-            object data;
-            value = (char)0;
-            if (GetProperty(name, out data))
-            {
-                JToken token = data as JToken;
-                if (token != null)
-                    value = token.ToObject<char>();
-                else
-                    return char.TryParse((string)data, out value);
-            }
-            return false;
-        }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

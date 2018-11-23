@@ -12,6 +12,7 @@ namespace FastApiClient
         static void Main(string[] args)
         {
             HttpApiClient client = new HttpApiClient(Host);
+
             IDataService service = client.CreateWebapi<IDataService>();
 
             DateTime dt = service.GetTime();
@@ -55,28 +56,20 @@ namespace FastApiClient
     {
         [Get]
         DateTime GetTime();
-
         [Get]
         string Hello(string name);
-
         [Get]
         IList<Order> ListOrders();
-
         [Get]
         IList<Order> ListOrders(int employee, string customer);
-
         [Get]
         Employee GetEmployee(int id);
-
         [Post]
         Employee EditEmployee([CQuery]int id, Employee employee);
-
         [Get]
         bool Login(string name, string pwd);
-
         [Post]
         int AddEmployee(params Employee[] items);
-
     }
 
     public class Customer

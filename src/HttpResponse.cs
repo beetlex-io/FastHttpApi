@@ -15,19 +15,17 @@ namespace BeetleX.FastHttpApi
             AsyncResult = false;
         }
 
-        private string mCode = "200";
-
-        private string mCodeMsg = "OK";
+        private int mCompletedStatus = 0;
 
         private List<string> mSetCookies = new List<string>();
 
         private object mBody;
 
-        public string Code { get { return mCode; } set { mCode = value; } }
+        public string Code { get; set; } = "200";
 
-        public string CodeMsg { get { return mCodeMsg; } set { mCodeMsg = value; } }
+        public string CodeMsg { get; set; } = "OK";
 
-        public Header Header { get; set; }
+        public Header Header { get; internal set; }
 
         internal ISession Session { get; set; }
 
@@ -36,6 +34,17 @@ namespace BeetleX.FastHttpApi
         public string RequestID { get; set; }
 
         internal bool AsyncResult { get; set; }
+
+        internal void Reset()
+        {
+            AsyncResult = false;
+            Header.Clear();
+            mSetCookies.Clear();
+            mCompletedStatus = 0;
+            mBody = null;
+            Code = "200";
+            CodeMsg = "OK";
+        }
 
         public void Async()
         {
@@ -95,7 +104,7 @@ namespace BeetleX.FastHttpApi
             Completed(null);
         }
 
-        private int mCompletedStatus = 0;
+
 
         private void Completed(object data)
         {
@@ -103,7 +112,6 @@ namespace BeetleX.FastHttpApi
             {
                 mBody = data;
                 Session.Server.Send(this, this.Session);
-                Request.Recovery();
             }
         }
 
@@ -116,11 +124,11 @@ namespace BeetleX.FastHttpApi
 
         public void SetStatus(string code, string msg)
         {
-            mCode = code;
-            mCodeMsg = msg;
+            Code = code;
+            CodeMsg = msg;
         }
 
-        internal void Write(PipeStream stream)
+        private void OnWrite(PipeStream stream)
         {
             IResult result = mBody as IResult;
             if (result != null)
@@ -130,13 +138,12 @@ namespace BeetleX.FastHttpApi
             }
 
             byte[] buffer = HttpParse.GetByteBuffer();
-            //string line = string.Concat(HttpVersion, " ", mCode, " ", CodeMsg, "\r\n");
-            //var hlen = Encoding.ASCII.GetBytes(line, 0, line.Length, buffer, 0);
+
             int hlen = 0;
             hlen = hlen + Encoding.ASCII.GetBytes(HttpVersion, 0, HttpVersion.Length, buffer, hlen);
             buffer[hlen] = HeaderTypeFactory._SPACE_BYTE;
             hlen++;
-            hlen = hlen + Encoding.ASCII.GetBytes(mCode, 0, mCode.Length, buffer, hlen);
+            hlen = hlen + Encoding.ASCII.GetBytes(Code, 0, Code.Length, buffer, hlen);
             buffer[hlen] = HeaderTypeFactory._SPACE_BYTE;
             hlen++;
             hlen = hlen + Encoding.ASCII.GetBytes(CodeMsg, 0, CodeMsg.Length, buffer, hlen);
@@ -206,6 +213,18 @@ namespace BeetleX.FastHttpApi
             if (Session.Server.EnableLog(EventArgs.LogType.Info))
             {
                 Session.Server.Log(EventArgs.LogType.Info, Session, "{4} {0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg, Request.ClientIPAddress);
+            }
+        }
+
+        internal void Write(PipeStream stream)
+        {
+            try
+            {
+                OnWrite(stream);
+            }
+            finally
+            {
+                Request.Recovery();
             }
         }
 

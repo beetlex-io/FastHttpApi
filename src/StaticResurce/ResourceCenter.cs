@@ -175,8 +175,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         }
                         mResources[urlname] = fr;
                         fr.Load();
-                        if (Server.EnableLog(EventArgs.LogType.Info))
-                            Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
                     }
                 }
             }
@@ -460,15 +459,14 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     {
                         mResources[urlname] = fr;
                     }
-                    if (Server.EnableLog(EventArgs.LogType.Info))
-                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "upload {0} static resource success", urlname);
+
+                    Server.BaseServer.Log(EventArgs.LogType.Info, null, "upload {0} static resource success", urlname);
                     return fr;
                 }
             }
             catch (Exception e_)
             {
-                if (Server.EnableLog(EventArgs.LogType.Error))
-                    Server.BaseServer.Error(e_, null, "upload {0} resource error {1}", file, e_.Message);
+                Server.BaseServer.Error(e_, null, "upload {0} resource error {1}", file, e_.Message);
             }
             return null;
         }

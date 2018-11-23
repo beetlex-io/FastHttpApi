@@ -31,10 +31,7 @@ namespace BeetleX.FastHttpApi
 
         private void Add(UrlRoute item)
         {
-            if (mServer.EnableLog(EventArgs.LogType.Info))
-            {
-                mServer.Log(EventArgs.LogType.Info, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
-            }
+            mServer.Log(EventArgs.LogType.Info, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
             item.UrlIgnoreCase = this.UrlIgnoreCase;
             item.Init();
 
@@ -49,10 +46,12 @@ namespace BeetleX.FastHttpApi
             rg.Routes.Add(item);
         }
 
-        public void Add(string pattern, string rewritePattern)
+
+        public RouteRewrite Add(string url, string rewriteurl, string ext = null)
         {
-            UrlRoute route = new UrlRoute { Rewrite = rewritePattern, Url = pattern };
+            UrlRoute route = new UrlRoute { Rewrite = rewriteurl, Url = url, Ext = ext };
             Add(route);
+            return this;
         }
 
         public bool Match(HttpRequest request, ref RouteMatchResult result, QueryString queryString)

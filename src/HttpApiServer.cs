@@ -11,10 +11,11 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Net;
 using BeetleX.Dispatchs;
+using System.Reflection;
 
 namespace BeetleX.FastHttpApi
 {
-    public class HttpApiServer : ServerHandlerBase, BeetleX.ISessionSocketProcessHandler, WebSockets.IDataFrameSerializer, IWebSocketServer
+    public class HttpApiServer : ServerHandlerBase, BeetleX.ISessionSocketProcessHandler, WebSockets.IDataFrameSerializer, IWebSocketServer, IDisposable
     {
 
         public HttpApiServer() : this(null)
@@ -25,6 +26,7 @@ namespace BeetleX.FastHttpApi
         public HttpApiServer(HttpConfig serverConfig)
         {
             mFileLog = new FileLog();
+
             FrameSerializer = this;
             if (serverConfig != null)
             {
@@ -34,14 +36,17 @@ namespace BeetleX.FastHttpApi
             {
                 ServerConfig = LoadConfig();
             }
-            mActionFactory = new ActionHandlerFactory();
+            mActionFactory = new ActionHandlerFactory(this);
             mResourceCenter = new StaticResurce.ResourceCenter(this);
             mUrlRewrite = new RouteRewrite(this);
+            mModuleManage = new ModuleManage(this);
         }
 
-        string mConfigFile = "HttpConfig.json";
+        private string mConfigFile = "HttpConfig.json";
 
         private RouteRewrite mUrlRewrite;
+
+        private ModuleManage mModuleManage;
 
         private StaticResurce.ResourceCenter mResourceCenter;
 
@@ -52,6 +57,7 @@ namespace BeetleX.FastHttpApi
         public RouteRewrite UrlRewrite => mUrlRewrite;
 
         public ServerCounter ServerCounter => mServerCounter;
+
 
         private FileLog mFileLog;
 
@@ -68,6 +74,8 @@ namespace BeetleX.FastHttpApi
         private System.Collections.Concurrent.ConcurrentDictionary<string, object> mProperties = new System.Collections.Concurrent.ConcurrentDictionary<string, object>();
 
         public long CurrentHttpRequests => mCurrentHttpRequests;
+
+        public ModuleManage ModuleManage => mModuleManage;
 
         public long CurrentWebSocketRequests => mCurrentWebSocketRequests;
 
@@ -96,9 +104,13 @@ namespace BeetleX.FastHttpApi
 
         internal void Recovery(HttpRequest request)
         {
-            mRequestPool.Push(request);
-        }
 
+            if (!mRequestPool.Push(request))
+            {
+
+                request.Response = null;
+            }
+        }
 
         public void SaveConfig()
         {
@@ -178,7 +190,7 @@ namespace BeetleX.FastHttpApi
             mAssemblies.AddRange(assemblies);
             try
             {
-                mActionFactory.Register(this.ServerConfig, this, assemblies);
+                mActionFactory.Register(assemblies);
             }
             catch (Exception e_)
             {
@@ -217,9 +229,7 @@ namespace BeetleX.FastHttpApi
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
-            //if (Environment.ProcessorCount >= 10)
-            //    config.IOQueueEnabled = true;
-
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this);
             mServer = SocketFactory.CreateTcpServer(config, this, hp);
             Name = "BeetleX Http Server";
@@ -234,6 +244,7 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Path = ServerConfig.StaticResourcePath;
             mResourceCenter.Debug = ServerConfig.Debug;
             mResourceCenter.Load();
+            ModuleManage.Load();
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
@@ -264,8 +275,18 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
-            mServer.Log(LogType.Info, null, "FastHttpApi Server started [v:{0}]", typeof(HttpApiServer).Assembly.GetName().Version);
+            mServer.Log(LogType.Info, null, "Http Server started [v:{0}]", typeof(HttpApiServer).Assembly.GetName().Version);
 
+
+        }
+
+        public Assembly ResolveHandler(object sender, ResolveEventArgs args)
+        {
+            string path = System.IO.Path.GetDirectoryName(args.RequestingAssembly.Location) + System.IO.Path.DirectorySeparatorChar;
+            string name = args.Name.Substring(0, args.Name.IndexOf(','));
+            string file = path + name + ".dll";
+            Assembly result = Assembly.LoadFile(file);
+            return result;
         }
 
         public string Name { get { return mServer.Name; } set { mServer.Name = value; } }
@@ -325,6 +346,9 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
+                HttpToken token = (HttpToken)e.Session.Tag;
+                if (token != null && token.WebSocketRequest != null)
+                    token.WebSocketRequest.Response = null;
                 if (LogOutput == e.Session)
                     LogOutput = null;
                 HttpDisconnect?.Invoke(server, e);
@@ -363,7 +387,6 @@ namespace BeetleX.FastHttpApi
         {
             base.Error(server, e);
         }
-
 
 
         #region websocket
@@ -571,7 +594,7 @@ namespace BeetleX.FastHttpApi
                     }
                     if (EnableLog(LogType.Debug))
                     {
-                        mServer.Log(LogType.Debug, e.Session, "{0} {1}", request.ClientIPAddress, request.ToString());
+                        mServer.Log(LogType.Debug, e.Session, "{0} request info {1}", request.ClientIPAddress, request.ToString());
                     }
                     request.Server = this;
                     HttpResponse response = request.CreateResponse();
@@ -711,6 +734,10 @@ namespace BeetleX.FastHttpApi
             return (int)(this.ServerConfig.LogLevel) <= (int)logType;
         }
 
-
+        public void Dispose()
+        {
+            if (BaseServer != null)
+                BaseServer.Dispose();
+        }
     }
 }
