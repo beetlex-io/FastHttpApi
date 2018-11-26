@@ -41,12 +41,12 @@ namespace BeetleX.FastHttpApi
 
             if (!string.IsNullOrEmpty(AllowHeaders))
             {
-                response.Header["Access-Control-Allow-Headers"] = AllowMethods;
+                response.Header["Access-Control-Allow-Headers"] = AllowHeaders;
             }
 
             if (!string.IsNullOrEmpty(AllowMaxAge))
             {
-                response.Header["Access-Control-Max-Age"] = AllowMethods;
+                response.Header["Access-Control-Max-Age"] = AllowMaxAge;
             }
         }
 
