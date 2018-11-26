@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BeetleX.FastHttpApi
 {
@@ -21,7 +22,7 @@ namespace BeetleX.FastHttpApi
 
         public int Port { get; set; }
 
-        private System.Collections.Concurrent.ConcurrentStack<TcpClient> mPools = new System.Collections.Concurrent.ConcurrentStack<TcpClient>();
+        private System.Collections.Concurrent.ConcurrentStack<AsyncTcpClient> mPools = new System.Collections.Concurrent.ConcurrentStack<AsyncTcpClient>();
 
         private int mConnections = 0;
 
@@ -38,9 +39,9 @@ namespace BeetleX.FastHttpApi
         }
         public int TimeOut { get; set; }
 
-        public TcpClient Pop()
+        public AsyncTcpClient Pop()
         {
-            TcpClient result;
+            AsyncTcpClient result;
             if (!mPools.TryPop(out result))
             {
                 int value = System.Threading.Interlocked.Increment(ref mConnections);
@@ -50,7 +51,7 @@ namespace BeetleX.FastHttpApi
                     throw new Exception("Unable to reach HTTP request, exceeding maximum number of connections");
                 }
                 var packet = new HttpClientPacket();
-                result = SocketFactory.CreateClient<TcpClient>(packet, Host, Port);
+                result = SocketFactory.CreateClient<AsyncTcpClient>(packet, Host, Port);
                 packet.Client = result;
                 result.Connected = c => { c.Socket.NoDelay = true; };
                 result.Connect();
@@ -64,7 +65,7 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
-        public void Push(TcpClient client)
+        public void Push(AsyncTcpClient client)
         {
             var value = System.Threading.Interlocked.Increment(ref mPoolConnectins);
             if (value > mMinConnections)
@@ -138,7 +139,13 @@ namespace BeetleX.FastHttpApi
             Formater = new FormUrlFormater();
             Host = Uri.Host;
             mPoolKey = $"{Uri.Host}:{Uri.Port}";
+            mPool = HttpClientPoolFactory.GetPool(mPoolKey, this.Uri);
         }
+
+
+        private HttpClientPool mPool;
+
+        public HttpClientPool Pool => mPool;
 
         private string mPoolKey;
 
@@ -175,7 +182,7 @@ namespace BeetleX.FastHttpApi
             set { mResponseHeader = value; }
         }
 
-        public Response Put(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, Dictionary<string, object> data, IClientBodyFormater formater, Type bodyType = null)
+        public Task<Response> Put(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, Dictionary<string, object> data, IClientBodyFormater formater, Type bodyType = null)
         {
             Request request = new Request();
             request.Method = Request.PUT;
@@ -193,7 +200,7 @@ namespace BeetleX.FastHttpApi
             return Execute(request, bodyType);
         }
 
-        public Response Post(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, Dictionary<string, object> data, IClientBodyFormater formater, Type bodyType = null)
+        public Task<Response> Post(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, Dictionary<string, object> data, IClientBodyFormater formater, Type bodyType = null)
         {
             Request request = new Request();
             request.Method = Request.POST;
@@ -211,7 +218,7 @@ namespace BeetleX.FastHttpApi
             return Execute(request, bodyType);
         }
 
-        public Response Delete(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, IClientBodyFormater formater, Type bodyType = null)
+        public Task<Response> Delete(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, IClientBodyFormater formater, Type bodyType = null)
         {
             Request request = new Request();
             request.Header = new Header();
@@ -227,7 +234,7 @@ namespace BeetleX.FastHttpApi
             return Execute(request, bodyType);
         }
 
-        public Response Get(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, IClientBodyFormater formater, Type bodyType = null)
+        public Task<Response> Get(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, IClientBodyFormater formater, Type bodyType = null)
         {
             Request request = new Request();
             request.Header = new Header();
@@ -243,15 +250,12 @@ namespace BeetleX.FastHttpApi
             return Execute(request, bodyType);
         }
 
-        public Response Execute(Request request, Type bodyType = null)
+        public async Task<Response> Execute(Request request, Type bodyType = null)
         {
-            HttpClientPool pool = HttpClientPoolFactory.GetPool(mPoolKey, this.Uri);
-            TcpClient tcpClient = pool.Pop();
-
+            AsyncTcpClient tcpClient = mPool.Pop();
             try
             {
-                tcpClient.SendMessage(request);
-                var result = tcpClient.ReadMessage<Response>();
+                var result = await tcpClient.Send(request).ReceiveMessage<Response>();
                 ResponseHeader = result.Header;
                 int code = int.Parse(result.Code);
                 if (result.Length > 0)
@@ -280,7 +284,7 @@ namespace BeetleX.FastHttpApi
             finally
             {
                 if (tcpClient != null)
-                    pool.Push(tcpClient);
+                    mPool.Push(tcpClient);
             }
         }
 
@@ -302,11 +306,11 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
-        public object Invoke(MethodInfo targetMethod, object[] args)
+        public Task<Response> Invoke(MethodInfo targetMethod, object[] args)
         {
             ClientActionHanler handler = GetHandler(targetMethod);
             var request = handler.GetRequest(args);
-            Response response;
+            Task<Response> response;
             switch (request.Method)
             {
                 case Request.POST:
@@ -322,8 +326,24 @@ namespace BeetleX.FastHttpApi
                     response = Get(request.Url, request.Header, request.QueryString, handler.Formater, request.Type);
                     break;
             }
-            return response.Body;
+            return response;
         }
 
+    }
+
+    public abstract class HttpApiBase
+    {
+        public HttpApiBase(string host)
+        {
+            Client = new HttpApiClient(host);
+        }
+
+        protected HttpApiClient Client { get; set; }
+
+        protected async ValueTask<T> OnExecute<T>(MethodBase targetMethod, params object[] args)
+        {
+            var response = await Client.Invoke((MethodInfo)targetMethod, args);
+            return (T)response.Body;
+        }
     }
 }

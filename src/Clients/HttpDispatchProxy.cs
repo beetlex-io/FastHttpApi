@@ -16,7 +16,10 @@ namespace BeetleX.FastHttpApi.Clients
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
-            return HttpApiClient.Invoke(targetMethod, args);
+            var response = HttpApiClient.Invoke(targetMethod, args);
+
+            response.Wait(HttpApiClient.Pool.TimeOut + 500);
+            return response.Result.Body;
         }
 
     }

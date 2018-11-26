@@ -38,12 +38,26 @@ namespace BeetleX.FastHttpApi.Clients
         public Type DeclaringType
         { get; set; }
 
+
+        public Type ReturnType { get; set; }
+
         public ClientActionHanler(MethodInfo method)
         {
             MethodInfo = method;
             Method = "GET";
             Name = method.Name;
             DeclaringType = method.DeclaringType;
+            if (MethodInfo.ReturnType != typeof(void))
+            {
+                if (MethodInfo.ReturnType.Name == "ValueTask`1" || MethodInfo.ReturnType.Name == "Task`1")
+                {
+                    ReturnType = MethodInfo.ReturnType.GetGenericArguments()[0];
+                }
+                else
+                {
+                    ReturnType = MethodInfo.ReturnType;
+                }
+            }
             foreach (CHeaderAttribute h in DeclaringType.GetCustomAttributes<CHeaderAttribute>())
             {
                 if (!string.IsNullOrEmpty(h.Name) && !string.IsNullOrEmpty(h.Value))
@@ -248,10 +262,7 @@ namespace BeetleX.FastHttpApi.Clients
                         result.QueryString[item.Name] = parameters[item.Index].ToString();
                 }
             }
-            if (this.MethodInfo.ReturnType != typeof(void))
-            {
-                result.Type = MethodInfo.ReturnType;
-            }
+            result.Type = ReturnType;
             result.Url = sb.ToString();
             return result;
         }

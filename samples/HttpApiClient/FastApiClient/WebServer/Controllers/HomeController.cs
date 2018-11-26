@@ -14,6 +14,7 @@ namespace WebServer.Controllers
         {
             return DateTime.Now;
         }
+
         public IActionResult Hello(string name)
         {
             return new JsonResult($"hello {name}");

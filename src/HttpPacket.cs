@@ -53,6 +53,7 @@ namespace BeetleX.FastHttpApi
                 int length = mRequest.Length;
                 if (mRequest.Method == HttpParse.POST_TAG || mRequest.Method == HttpParse.GET_TAG
                     || mRequest.Method == HttpParse.PUT_TAG || mRequest.Method == HttpParse.DELETE_TAG
+                    || mRequest.Method == HttpParse.OPTIONS_TAG
                     )
                 {
                     Completed?.Invoke(this, mCompletedArgs.SetInfo(session, mRequest));

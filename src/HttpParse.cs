@@ -16,6 +16,8 @@ namespace BeetleX.FastHttpApi
 
         public const string PUT_TAG = "PUT";
 
+        public const string OPTIONS_TAG = "OPTIONS";
+
         [ThreadStatic]
         private static char[] mCharCacheBuffer;
 

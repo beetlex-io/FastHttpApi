@@ -161,6 +161,7 @@ namespace BeetleX.FastHttpApi
         private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca)
         {
             DataConvertAttribute controllerDataConvert = controllerType.GetCustomAttribute<DataConvertAttribute>(false);
+            OptionsAttribute controllerOptionsAttribute = controllerType.GetCustomAttribute<OptionsAttribute>(false);
             if (string.IsNullOrEmpty(rooturl))
                 rooturl = "/";
             else
@@ -196,6 +197,7 @@ namespace BeetleX.FastHttpApi
                     continue;
                 bool noconvert = false;
                 DataConvertAttribute actionConvert = mi.GetCustomAttribute<DataConvertAttribute>();
+                OptionsAttribute methodOptionsAttribute = mi.GetCustomAttribute<OptionsAttribute>();
                 if (mi.GetCustomAttribute<NoDataConvertAttribute>(false) != null)
                 {
                     noconvert = true;
@@ -255,6 +257,10 @@ namespace BeetleX.FastHttpApi
                 }
                 handler = new ActionHandler(obj, mi);
                 handler.Path = rooturl;
+                if (methodOptionsAttribute == null)
+                    handler.OptionsAttribute = controllerOptionsAttribute;
+                else
+                    handler.OptionsAttribute = methodOptionsAttribute;
                 handler.NoConvert = noconvert;
                 handler.SingleInstance = ca.SingleInstance;
                 handler.DataConvert = actionConvert;
@@ -388,10 +394,20 @@ namespace BeetleX.FastHttpApi
                 {
                     if (request.Method != handler.Method)
                     {
-                        if (server.EnableLog(EventArgs.LogType.Warring))
-                            server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} execute {1} action  {1} not support", request.ClientIPAddress, request.Url, request.Method);
-                        NotSupportResult notSupportResult = new NotSupportResult("{0} action not support {1}", request.Url, request.Method);
-                        response.Result(notSupportResult);
+
+                        if (request.Method == HttpParse.OPTIONS_TAG && handler.OptionsAttribute != null)
+                        {
+                            response.Result(handler.OptionsAttribute);
+                            if (server.EnableLog(EventArgs.LogType.Info))
+                                server.BaseServer.Log(EventArgs.LogType.Info, request.Session, $"{request.ClientIPAddress} {request.Method} action {request.Url}");
+                        }
+                        else
+                        {
+                            if (server.EnableLog(EventArgs.LogType.Warring))
+                                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} execute {1} action  {1} not support", request.ClientIPAddress, request.Url, request.Method);
+                            NotSupportResult notSupportResult = new NotSupportResult("{0} action not support {1}", request.Url, request.Method);
+                            response.Result(notSupportResult);
+                        }
                         return;
                     }
                     if (!handler.NoConvert && handler.DataConvert == null)

@@ -54,6 +54,8 @@ namespace BeetleX.FastHttpApi
 
         public DataConvertAttribute DataConvert { get; set; }
 
+        public OptionsAttribute OptionsAttribute { get; set; }
+
         public string Method { get; set; }
 
         public string Remark { get; set; }

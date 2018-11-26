@@ -18,7 +18,7 @@ namespace BeetleX.FastHttpApi.Clients
         object Deserialization(BeetleX.Buffers.PipeStream stream, Type type, int length);
     }
 
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface | AttributeTargets.Class)]
     public abstract class FormaterAttribute : Attribute, IClientBodyFormater
     {
         public abstract string ContentType { get; }
