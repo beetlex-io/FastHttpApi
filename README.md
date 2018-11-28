@@ -30,7 +30,7 @@ Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
         // Get /hello?name=henry 
         // or
         // Get /hello/henry
-        [G("{name}")]
+        [Get("{name}")]
         public object Hello(string name)
         {
             return $"hello {name} {DateTime.Now}";
