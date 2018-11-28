@@ -449,7 +449,7 @@ namespace BeetleX.FastHttpApi
                 request.BaseUrl = new string(url);
             for (int i = url.Length - 1; i >= 0; i--)
             {
-                if (url[i] == '.')
+                if (url[i] == '.' && request.Ext == null)
                 {
                     if (urlIgnoreCase)
                         request.Ext = CharToLower(url.Slice(i + 1, url.Length - i - 1));

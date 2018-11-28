@@ -65,3 +65,5 @@ samples/HttpApiClient/FastApiClient/FastApiClient/obj/
 samples/HttpApiServer.Options/bin/
 samples/HttpApiServer.Options/obj/
 src/License.txt
+samples/HttpApiServer.TaskActions/bin/
+samples/HttpApiServer.TaskActions/obj/

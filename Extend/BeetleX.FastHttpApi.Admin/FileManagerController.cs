@@ -217,11 +217,12 @@ namespace BeetleX.FastHttpApi.Admin
 
     public class FileManagerFilter : FilterAttribute
     {
-        public override void Execute(ActionContext context)
+
+        public override bool Executing(ActionContext context)
         {
             if (context.HttpContext.Server.ServerConfig.FileManager)
             {
-                context.Execute();
+                return true;
             }
             else
             {
@@ -229,8 +230,9 @@ namespace BeetleX.FastHttpApi.Admin
                 Result.Code = 503;
                 Result.Error = "file manager prohibited use!";
                 context.Result = Result;
-
+                return false;
             }
         }
+
     }
 }

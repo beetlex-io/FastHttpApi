@@ -5,9 +5,16 @@ using System.Text;
 namespace BeetleX.FastHttpApi
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public abstract class FilterAttribute : Attribute
+    public class FilterAttribute : Attribute
     {
-        public abstract void Execute(ActionContext context);
+        public virtual bool Executing(ActionContext context)
+        {
+            return true;
+        }
 
+        public virtual void Executed(ActionContext context)
+        {
+
+        }
     }
 }

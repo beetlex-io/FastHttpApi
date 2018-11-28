@@ -54,5 +54,13 @@ namespace BeetleX.FastHttpApi
         {
 
         }
+
+        public virtual void SetResponse(HttpRequest request, HttpResponse response)
+        {
+            HttpApiServer server = request.Server;
+            if (server.EnableLog(EventArgs.LogType.Debug))
+                server.Log(EventArgs.LogType.Info, $"{request.ClientIPAddress} {request.Method} {request.Url} set options");
+            response.Header["Access-Control-Allow-Origin"] = AllowOrigin;
+        }
     }
 }

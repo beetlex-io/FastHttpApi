@@ -34,18 +34,20 @@ namespace HttpApiServer.JWT
 
     public class JWTFilter : FilterAttribute
     {
-        public override void Execute(ActionContext context)
+        public override bool Executing(ActionContext context)
         {
             string token = context.HttpContext.Request.Header[HeaderTypeFactory.AUTHORIZATION];
             var user = Program.JWTHelper.GetUserInfo(token);
             if (!string.IsNullOrEmpty(user.Name))
             {
-                context.Execute();
+                return true;
             }
             else
             {
                 context.Result = new TextResult("token not found");
+                return false;
             }
         }
+
     }
 }

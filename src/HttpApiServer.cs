@@ -95,11 +95,13 @@ namespace BeetleX.FastHttpApi
 
         internal HttpRequest CreateRequest(ISession session)
         {
-            HttpRequest request;
-            if (!mRequestPool.TryPop(out request))
-                request = new HttpRequest();
-            request.Init(session, this);
-            return request;
+            //HttpRequest request;
+            //if (!mRequestPool.TryPop(out request))
+            //    request = new HttpRequest();
+            //request.Init(session, this);
+            //return request;
+            HttpToken token = (HttpToken)session.Tag;
+            return token.Request;
         }
 
         internal void Recovery(HttpRequest request)
@@ -187,6 +189,7 @@ namespace BeetleX.FastHttpApi
 
         public void Register(params System.Reflection.Assembly[] assemblies)
         {
+            mUrlRewrite.UrlIgnoreCase = ServerConfig.UrlIgnoreCase;
             mAssemblies.AddRange(assemblies);
             try
             {
@@ -212,7 +215,6 @@ namespace BeetleX.FastHttpApi
             {
                 ServerConfig.StaticResourcePath = viewpath;
             }
-
         }
 
         public void Open()
@@ -225,7 +227,9 @@ namespace BeetleX.FastHttpApi
             config.BufferSize = ServerConfig.BufferSize;
             config.LogLevel = ServerConfig.LogLevel;
             config.Combined = ServerConfig.PacketCombined;
+            config.SessionTimeOut = ServerConfig.SessionTimeOut;
             config.UseIPv6 = ServerConfig.UseIPv6;
+            config.BufferPoolMaxMemory = ServerConfig.BufferPoolMaxMemory;
             if (!string.IsNullOrEmpty(config.CertificateFile))
                 config.SSL = true;
             config.LittleEndian = false;
@@ -336,7 +340,10 @@ namespace BeetleX.FastHttpApi
         public override void Connected(IServer server, ConnectedEventArgs e)
         {
             System.Threading.Interlocked.Increment(ref mTotalConnections);
-            e.Session.Tag = new HttpToken();
+            HttpToken token = new HttpToken();
+            token.Request = new HttpRequest();
+            token.Request.Init(e.Session, this);
+            e.Session.Tag = token;
             e.Session.SocketProcessHandler = this;
             HttpConnected?.Invoke(server, e);
             base.Connected(server, e);
@@ -347,8 +354,13 @@ namespace BeetleX.FastHttpApi
             try
             {
                 HttpToken token = (HttpToken)e.Session.Tag;
-                if (token != null && token.WebSocketRequest != null)
-                    token.WebSocketRequest.Response = null;
+                if (token != null)
+                {
+                    if (token.Request != null)
+                        token.Request.Response = null;
+                    token.Request = null;
+                }
+
                 if (LogOutput == e.Session)
                     LogOutput = null;
                 HttpDisconnect?.Invoke(server, e);
@@ -422,7 +434,7 @@ namespace BeetleX.FastHttpApi
         {
             HttpToken token = (HttpToken)request.Session.Tag;
             token.KeepAlive = true;
-            token.WebSocketRequest = request;
+            // token.Request = request;
             token.WebSocket = true;
             request.WebSocket = true;
             if (EnableLog(LogType.Info))
@@ -495,7 +507,7 @@ namespace BeetleX.FastHttpApi
                     {
                         if (data.Type == DataPacketType.text)
                         {
-                            ActionResult result = ExecuteWS(token.WebSocketRequest, data);
+                            ActionResult result = ExecuteWS(token.Request, data);
                         }
                     }
                     else
@@ -504,7 +516,7 @@ namespace BeetleX.FastHttpApi
                         args.Frame = data;
                         args.Sesson = session;
                         args.Server = this;
-                        args.Request = token.WebSocketRequest;
+                        args.Request = token.Request;
                         WebSocketReceive?.Invoke(this, args);
                     }
 
@@ -552,7 +564,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (EnableLog(LogType.Error))
                     {
-                        BaseServer.Error(e_, request.Session, "{0} response file error {1}", request.ClientIPAddress, e_.Message);
+                        BaseServer.Error(e_, request.Session, $"{request.ClientIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
                         InnerErrorResult result = new InnerErrorResult($"response file error ", e_, ServerConfig.OutputStackTrace);
                         response.Result(result);
                     }
@@ -560,8 +572,11 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                NotSupportResult notSupport = new NotSupportResult("{0} method {1} not support", request.Url, request.Method);
+                if (EnableLog(LogType.Info))
+                    Log(LogType.Info, $"{request.ClientIPAddress}{request.Method} {request.Url} not support");
+                NotSupportResult notSupport = new NotSupportResult($"{request.Method} {request.Url} not support");
                 response.Result(notSupport);
+
             }
         }
 
@@ -590,11 +605,11 @@ namespace BeetleX.FastHttpApi
                     }
                     if (EnableLog(LogType.Info))
                     {
-                        mServer.Log(LogType.Info, e.Session, "{0} {1} {2}", request.ClientIPAddress, request.Method, request.Url);
+                        mServer.Log(LogType.Info, e.Session, $"{request.ClientIPAddress} {request.Method} {request.Url} request");
                     }
                     if (EnableLog(LogType.Debug))
                     {
-                        mServer.Log(LogType.Debug, e.Session, "{0} request info {1}", request.ClientIPAddress, request.ToString());
+                        mServer.Log(LogType.Debug, e.Session, $"{request.ClientIPAddress} {request.Method} {request.Url} request detail {request.ToString()}");
                     }
                     request.Server = this;
                     HttpResponse response = request.CreateResponse();
@@ -619,6 +634,10 @@ namespace BeetleX.FastHttpApi
 
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
+            if (ServerConfig.SessionTimeOut > 0)
+            {
+                BaseServer.UpdateSession(e.Session);
+            }
             OnRequestHandler(e);
         }
 
@@ -713,7 +732,7 @@ namespace BeetleX.FastHttpApi
                             {
                                 HttpToken token = (HttpToken)items[i].Tag;
                                 if (token != null && token.WebSocket)
-                                    lst.Add(token.WebSocketRequest);
+                                    lst.Add(token.Request);
                             }
                             mOnlines = lst;
                             mVersion = BaseServer.Version;

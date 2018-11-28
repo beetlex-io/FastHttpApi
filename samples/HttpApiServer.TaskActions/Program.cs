@@ -1,13 +1,12 @@
 ﻿using BeetleX.FastHttpApi;
 using System;
+using System.Threading.Tasks;
 
-namespace HttpApiServer.Options
+namespace HttpApiServer.TaskActions
 {
     [BeetleX.FastHttpApi.Controller]
-    [Options(AllowOrigin = "*")]
-    public class Program
+    class Program
     {
-
         private static BeetleX.FastHttpApi.HttpApiServer mApiServer;
 
         static void Main(string[] args)
@@ -20,18 +19,17 @@ namespace HttpApiServer.Options
             Console.Write(mApiServer.BaseServer);
             Console.Read();
         }
-
-
-
-        public object Hello(string name)
+        [Get(Route = "{name}")]
+        public Task<String> Hello(string name)
         {
-            return new { Hello = "hello " + name, Time = DateTime.Now };
+            string result = $"hello {name} {DateTime.Now}";
+            return Task.FromResult(result);
         }
 
-        [Options(AllowOrigin = "www.ikende.com")]
-        public string GetTime(IHttpContext context)
+        public async Task<String> Wait()
         {
-            return DateTime.Now.ToShortDateString();
+            await Task.Delay(2000);
+            return $"{DateTime.Now}";
         }
     }
 }

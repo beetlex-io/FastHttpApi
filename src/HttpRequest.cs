@@ -73,7 +73,7 @@ namespace BeetleX.FastHttpApi
                 mDataContxt.Clear();
                 mCookies.Clear();
                 Reset();
-                this.Server.Recovery(this);
+                // this.Server.Recovery(this);
             }
         }
 
@@ -190,7 +190,6 @@ namespace BeetleX.FastHttpApi
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.ServerConfig);
                 else
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.ServerConfig);
-
                 RouteMatchResult routeMatchResult = new RouteMatchResult();
                 if (Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
                 {

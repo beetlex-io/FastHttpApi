@@ -21,7 +21,7 @@ namespace BeetleX.FastHttpApi
 
         public bool WebSocket { get; internal set; }
 
-        public HttpRequest WebSocketRequest { get; internal set; }
+        public HttpRequest Request { get; internal set; }
 
         internal bool FirstRequest { get; set; }
 

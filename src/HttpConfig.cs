@@ -1,4 +1,5 @@
-﻿using BeetleX.FastHttpApi;
+﻿using BeetleX.EventArgs;
+using BeetleX.FastHttpApi;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -37,8 +38,13 @@ namespace BeetleX.FastHttpApi
             PacketCombined = 0;
             UrlIgnoreCase = true;
             UseIPv6 = true;
+            SessionTimeOut = 60 * 60;
+            BufferPoolMaxMemory = 500;
         }
 
+        public int BufferPoolMaxMemory { get; set; }
+
+        public int SessionTimeOut { get; set; }
 
         public bool UseIPv6 { get; set; }
 
@@ -61,7 +67,7 @@ namespace BeetleX.FastHttpApi
 
         public int CacheFileSize { get; set; }
 
-        public BeetleX.EventArgs.LogType LogLevel { get; set; }
+        public LogType LogLevel { get; set; }
 
         public int WebSocketMaxRPS { get; set; }
 

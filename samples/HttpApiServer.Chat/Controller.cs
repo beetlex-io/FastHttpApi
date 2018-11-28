@@ -218,7 +218,7 @@ namespace HttpApiServer.Chat
             if (session.Name != null && token != null)
             {
                 Room room = GetRoom(e.Session);
-                room?.CheckOut(token.WebSocketRequest, mServer);
+                room?.CheckOut(token.Request, mServer);
             }
             lock (mAdminList)
                 mAdminList.Remove(session);

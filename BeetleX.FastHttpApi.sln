@@ -48,6 +48,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.UploadFile", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.Options", "samples\HttpApiServer.Options\HttpApiServer.Options.csproj", "{F73141EE-158F-440E-8B33-A204EE25FD80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.TaskActions", "samples\HttpApiServer.TaskActions\HttpApiServer.TaskActions.csproj", "{0A2E21F0-EE1C-4E23-938D-67BA02D4EE11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +128,10 @@ Global
 		{F73141EE-158F-440E-8B33-A204EE25FD80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F73141EE-158F-440E-8B33-A204EE25FD80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F73141EE-158F-440E-8B33-A204EE25FD80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A2E21F0-EE1C-4E23-938D-67BA02D4EE11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A2E21F0-EE1C-4E23-938D-67BA02D4EE11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A2E21F0-EE1C-4E23-938D-67BA02D4EE11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A2E21F0-EE1C-4E23-938D-67BA02D4EE11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{4603CF26-DCAF-4FFD-950F-BB0AAF33383D} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{A2694429-207E-49B5-9F76-F851E873C620} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{F73141EE-158F-440E-8B33-A204EE25FD80} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
+		{0A2E21F0-EE1C-4E23-938D-67BA02D4EE11} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {988EEA11-1C48-44A4-9DF0-1C3D08600A4F}

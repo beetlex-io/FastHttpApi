@@ -47,32 +47,45 @@ namespace HttpApiServer.Filters
 
     public class GlobalFilter : FilterAttribute
     {
-        public override void Execute(ActionContext context)
+        public override bool Executing(ActionContext context)
         {
             Console.WriteLine(DateTime.Now + " globalFilter execting...");
-            context.Execute();
+            return base.Executing(context);
+        }
+        public override void Executed(ActionContext context)
+        {
+            base.Executed(context);
             Console.WriteLine(DateTime.Now + " globalFilter executed");
         }
     }
 
     public class NotFoundFilter : FilterAttribute
     {
-        public override void Execute(ActionContext context)
+        public override bool Executing(ActionContext context)
         {
             Console.WriteLine(DateTime.Now + " NotFoundFilter execting...");
             NotFoundResult notFound = new NotFoundResult("not found");
-            context.HttpContext.Response.Result(notFound);
-            Console.WriteLine(DateTime.Now + " NotFoundFilter executed");
+            context.Result = notFound;
+            return false;
         }
+        public override void Executed(ActionContext context)
+        {
+            base.Executed(context);
+        }
+
     }
 
     public class CustomFilter : FilterAttribute
     {
-        public override void Execute(ActionContext context)
+        public override bool Executing(ActionContext context)
         {
             Console.WriteLine(DateTime.Now + " CustomFilter execting...");
-            context.Execute();
+            return base.Executing(context);
+        }
+        public override void Executed(ActionContext context)
+        {
             Console.WriteLine(DateTime.Now + " CustomFilter executed");
+            base.Executed(context);
         }
     }
 

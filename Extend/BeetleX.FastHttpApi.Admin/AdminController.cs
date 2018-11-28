@@ -87,7 +87,7 @@ namespace BeetleX.FastHttpApi.Admin
             Server.ServerConfig.LogToConsole = setting.LogToConsole;
             Server.ServerConfig.WriteLog = setting.WriteLog;
             Server.ServerConfig.FileManager = setting.FileManage;
-            
+
             Server.ResourceCenter.SetDefaultPages(setting.DefaultPages);
             Server.ResourceCenter.SetFileExts(setting.Exts);
             Server.SaveConfig();
@@ -210,7 +210,7 @@ namespace BeetleX.FastHttpApi.Admin
 
         public string LoginUrl { get; set; }
 
-        public override void Execute(ActionContext context)
+        public override bool Executing(ActionContext context)
         {
             string tokey = context.HttpContext.Request.Cookies[_Admin.LOGIN_TOKEN];
             string ip = context.HttpContext.Request.ClientIPAddress.Split(':')[0];
@@ -219,7 +219,7 @@ namespace BeetleX.FastHttpApi.Admin
                 + ip);
             if (tokey == stokey)
             {
-                context.Execute();
+                return true;
             }
             else
             {
@@ -227,6 +227,7 @@ namespace BeetleX.FastHttpApi.Admin
                 Result.Code = 403;
                 Result.Data = LoginUrl;
                 context.Result = Result;
+                return false;
             }
         }
     }
