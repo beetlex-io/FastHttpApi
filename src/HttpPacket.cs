@@ -76,6 +76,8 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
+                if (session.Server.EnableLog(LogType.Warring))
+                    session.Server.Log(LogType.Warring, session, $"{session.RemoteEndPoint} Multi receive to http request");
                 if ((int)mRequest.State < (int)LoadedState.Header && pstream.Length > 1024 * 4)
                 {
                     if (session.Server.EnableLog(LogType.Warring))
@@ -200,7 +202,7 @@ namespace BeetleX.FastHttpApi
         public byte[] Encode(object data, IServer server)
         {
             byte[] result = null;
-            using (Buffers.PipeStream stream = new PipeStream(server.BufferPool.Next(), server.Config.LittleEndian, server.Config.Encoding))
+            using (Buffers.PipeStream stream = new PipeStream(server.SendBufferPool.Next(), server.Config.LittleEndian, server.Config.Encoding))
             {
                 OnEncode(null, data, stream);
                 stream.Position = 0;
@@ -212,7 +214,7 @@ namespace BeetleX.FastHttpApi
 
         public ArraySegment<byte> Encode(object data, IServer server, byte[] buffer)
         {
-            using (Buffers.PipeStream stream = new PipeStream(server.BufferPool.Next(), server.Config.LittleEndian, server.Config.Encoding))
+            using (Buffers.PipeStream stream = new PipeStream(server.SendBufferPool.Next(), server.Config.LittleEndian, server.Config.Encoding))
             {
                 OnEncode(null, data, stream);
                 stream.Position = 0;

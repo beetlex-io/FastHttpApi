@@ -17,6 +17,8 @@ namespace BeetleX.FastHttpApi.Clients
             this.KeepAlive = true;
         }
 
+        public Exception Exception { get; set; }
+
         public Cookies Cookies { get; private set; }
 
         public string Code { get; set; }

@@ -19,6 +19,7 @@ namespace WebServer.Controllers
         {
             return new JsonResult($"hello {name}");
         }
+
         public IEnumerable<Order> ListOrders(int employee, string customer)
         {
             Func<Order, bool> exp = o => (employee == 0 || o.EmployeeID == employee)
@@ -26,11 +27,13 @@ namespace WebServer.Controllers
             var result = DataHelper.Orders.Where(exp);
             return result;
         }
+
         public Employee GetEmployee(int id)
         {
             Employee result = DataHelper.Employees.Find(e => e.EmployeeID == id);
             return result;
         }
+
         [HttpPost]
         public int AddEmployee([FromBody] List<Employee> items)
         {
@@ -38,12 +41,14 @@ namespace WebServer.Controllers
                 return 0;
             return items.Count;
         }
+
         [HttpPost]
         public Employee EditEmployee(int id, [FromBody]Employee employee)
         {
             employee.EmployeeID = id;
             return employee;
         }
+
         public bool Login(string name, string pwd)
         {
             if (name == "admin" && pwd == "123456")

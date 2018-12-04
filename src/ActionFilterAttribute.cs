@@ -17,4 +17,13 @@ namespace BeetleX.FastHttpApi
 
         }
     }
+
+    public class DefaultJsonFilter : FilterAttribute
+    {
+        public override void Executed(ActionContext context)
+        {
+            base.Executed(context);
+            context.Result = new JsonResult(context.Result);
+        }
+    }
 }

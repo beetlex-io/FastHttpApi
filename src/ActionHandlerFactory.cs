@@ -287,7 +287,7 @@ namespace BeetleX.FastHttpApi
                     RemoveFilter(handler.Filters, item.Types);
                 }
                 AddHandlers(url, handler);
-                server.Log(EventArgs.LogType.Info, "register {0}.{1} to {2}", controllerType.Name, mi.Name, url);
+                server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} to [{handler.Method}:{url}]");
             }
 
         }
@@ -431,26 +431,34 @@ namespace BeetleX.FastHttpApi
             {
                 context.Execute();
                 var result = context.Result;
-                if (result is Task task)
+                if (context.Exception == null)
                 {
-                    await task;
-                    if (context.Handler.PropertyHandler != null)
+                    if (result is Task task)
                     {
-                        result = context.Handler.PropertyHandler.Get(task);
+                        await task;
+                        if (context.Handler.PropertyHandler != null)
+                        {
+                            result = context.Handler.PropertyHandler.Get(task);
+                        }
+                        else
+                        {
+                            result = null;
+                        }
+                        handler.Success(result);
+                    }
+                    else if (result is Exception error)
+                    {
+                        handler.Error(error);
                     }
                     else
                     {
-                        result = null;
+
+                        handler.Success(result);
                     }
-                    handler.Success(result);
-                }
-                else if (result is Exception error)
-                {
-                    handler.Error(error);
                 }
                 else
                 {
-                    handler.Success(result);
+                    handler.Error(context.Exception);
                 }
             }
             catch (Exception e_)

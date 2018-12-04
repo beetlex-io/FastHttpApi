@@ -279,18 +279,27 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
-            mServer.Log(LogType.Info, null, "Http Server started [v:{0}]", typeof(HttpApiServer).Assembly.GetName().Version);
+            mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi start@[v:{typeof(HttpApiServer).Assembly.GetName().Version}]");
 
 
         }
 
         public Assembly ResolveHandler(object sender, ResolveEventArgs args)
         {
-            string path = System.IO.Path.GetDirectoryName(args.RequestingAssembly.Location) + System.IO.Path.DirectorySeparatorChar;
-            string name = args.Name.Substring(0, args.Name.IndexOf(','));
-            string file = path + name + ".dll";
-            Assembly result = Assembly.LoadFile(file);
-            return result;
+            try
+            {
+                string path = System.IO.Path.GetDirectoryName(args.RequestingAssembly.Location) + System.IO.Path.DirectorySeparatorChar;
+                string name = args.Name.Substring(0, args.Name.IndexOf(','));
+                string file = path + name + ".dll";
+                Assembly result = Assembly.LoadFile(file);
+                return result;
+            }
+            catch (Exception e_)
+            {
+                if (EnableLog(LogType.Error))
+                    Log(LogType.Error, $"load assembly error {e_.Message}");
+            }
+            return null;
         }
 
         public string Name { get { return mServer.Name; } set { mServer.Name = value; } }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using static BeetleX.FastHttpApi.RouteTemplateMatch;
 
 namespace BeetleX.FastHttpApi.Clients
@@ -38,8 +39,11 @@ namespace BeetleX.FastHttpApi.Clients
         public Type DeclaringType
         { get; set; }
 
+        public bool Async { get; set; }
 
         public Type ReturnType { get; set; }
+
+        public Type MethodType { get; set; }
 
         public ClientActionHanler(MethodInfo method)
         {
@@ -47,14 +51,19 @@ namespace BeetleX.FastHttpApi.Clients
             Method = "GET";
             Name = method.Name;
             DeclaringType = method.DeclaringType;
+            MethodType = MethodInfo.ReturnType;
+            Async = false;
             if (MethodInfo.ReturnType != typeof(void))
             {
-                if (MethodInfo.ReturnType.Name == "ValueTask`1" || MethodInfo.ReturnType.Name == "Task`1")
+                if (MethodInfo.ReturnType.Name == "Task`1" || MethodInfo.ReturnType.Name == "ValueTask`1" || MethodInfo.ReturnType == typeof(ValueTask))
                 {
-                    ReturnType = MethodInfo.ReturnType.GetGenericArguments()[0];
+                    Async = true;
+                    if (MethodInfo.ReturnType.IsGenericType)
+                        ReturnType = MethodInfo.ReturnType.GetGenericArguments()[0];
                 }
                 else
                 {
+
                     ReturnType = MethodInfo.ReturnType;
                 }
             }
@@ -172,7 +181,7 @@ namespace BeetleX.FastHttpApi.Clients
             }
         }
 
-        public RequestInfo GetRequest(object[] parameters)
+        public RequestInfo GetRequestInfo(object[] parameters)
         {
             RequestInfo result = new RequestInfo();
             if (mHeaders.Count > 0)
@@ -264,6 +273,7 @@ namespace BeetleX.FastHttpApi.Clients
             }
             result.Type = ReturnType;
             result.Url = sb.ToString();
+            result.Formatter = this.Formater;
             return result;
         }
 
@@ -275,11 +285,28 @@ namespace BeetleX.FastHttpApi.Clients
 
             public string Url;
 
+            public IClientBodyFormater Formatter;
+
             public Dictionary<string, object> Data;
 
             public Dictionary<string, string> Header;
 
             public Dictionary<string, string> QueryString;
+
+            public Request GetRequest(HttpHost httpApiClient)
+            {
+                switch (Method)
+                {
+                    case Request.POST:
+                        return httpApiClient.Post(Url, Header, QueryString, Data, Formatter, Type);
+                    case Request.PUT:
+                        return httpApiClient.Put(Url, Header, QueryString, Data, Formatter, Type);
+                    case Request.DELETE:
+                        return httpApiClient.Delete(Url, Header, QueryString, Formatter, Type);
+                    default:
+                        return httpApiClient.Get(Url, Header, QueryString, Formatter, Type);
+                }
+            }
         }
 
     }
@@ -293,5 +320,21 @@ namespace BeetleX.FastHttpApi.Clients
 
         public int Index { get; set; }
 
+    }
+
+    class ClientActionFactory
+    {
+        static System.Collections.Concurrent.ConcurrentDictionary<MethodInfo, ClientActionHanler> mHandlers = new System.Collections.Concurrent.ConcurrentDictionary<MethodInfo, ClientActionHanler>();
+
+        public static ClientActionHanler GetHandler(MethodInfo method)
+        {
+            ClientActionHanler result;
+            if (!mHandlers.TryGetValue(method, out result))
+            {
+                result = new ClientActionHanler(method);
+                mHandlers[method] = result;
+            }
+            return result;
+        }
     }
 }

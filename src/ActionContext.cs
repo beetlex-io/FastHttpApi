@@ -24,8 +24,6 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        private int mIndex = -1;
-
         private List<FilterAttribute> mFilters;
 
         public object[] Parameters { get; set; }
