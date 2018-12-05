@@ -1,5 +1,5 @@
 ### introduction
-Fasthttpapi is a lightweight and high-performance HTTP service component in the dotnet core platform that supports WebSocket and SSL！**[Document](https://github.com/IKende/FastHttpApi/wiki/Document)**.
+Fasthttpapi is a lightweight and high-performance HTTP service component in the dotnet core platform that supports WebSocket and SSL！**[Document](https://ikende.github.io/FastHttpApi/)**.
 
 **[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest)**
 ![](https://i.imgur.com/lyvQIhu.png)
