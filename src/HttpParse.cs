@@ -54,7 +54,7 @@ namespace BeetleX.FastHttpApi
             IMemoryBlock memory = result.Start;
             for (int i = result.StartPostion; i < memory.Length; i++)
             {
-                data[offset] = (char)result.Start.Bytes[i];
+                data[offset] = (char)result.Start.Data[i];
                 offset++;
                 if (offset == result.Length)
                     break;
@@ -75,7 +75,7 @@ namespace BeetleX.FastHttpApi
                 }
                 for (int i = 0; i < count; i++)
                 {
-                    data[offset] = (char)memory.Bytes[i];
+                    data[offset] = (char)memory.Data[i];
                     offset++;
                     if (offset == result.Length)
                         break;

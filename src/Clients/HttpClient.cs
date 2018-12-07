@@ -144,17 +144,24 @@ namespace BeetleX.FastHttpApi
             mPoolKey = $"{Uri.Host}:{Uri.Port}";
             mPool = HttpClientPoolFactory.GetPool(mPoolKey, this.Uri);
             Available = true;
+            InVerify = false;
         }
 
         private HttpClientPool mPool;
 
         private long mSuccess;
 
+        private long mLastSuccess;
+
         private long mError;
+
+        private int mSocketErrors;
 
         public HttpClientPool Pool => mPool;
 
         private string mPoolKey;
+
+        public static int DisconnectErrors { get; set; } = 5;
 
         public string Host { get; set; }
 
@@ -170,14 +177,37 @@ namespace BeetleX.FastHttpApi
 
         public long Error => mError;
 
+        internal int SocketErrors => mSocketErrors;
+
+        internal bool InVerify { get; set; }
+
         internal void AddSuccess()
         {
             System.Threading.Interlocked.Increment(ref mSuccess);
         }
 
-        internal void AddError()
+        internal void AddError(bool socketError)
         {
+            if (socketError)
+            {
+                System.Threading.Interlocked.Increment(ref mSocketErrors);
+            }
+            else
+            {
+                System.Threading.Interlocked.Exchange(ref mSocketErrors, 0);
+            }
+            if (mSocketErrors >= DisconnectErrors)
+                Available = false;
+            else
+                Available = true;
             System.Threading.Interlocked.Increment(ref mError);
+        }
+
+        public override string ToString()
+        {
+            string result = $"{mSuccess - mLastSuccess}/{mSuccess}";
+            mLastSuccess = mSuccess;
+            return result;
         }
 
         public Request Put(string url, Dictionary<string, string> header, Dictionary<string, string> queryString, Dictionary<string, object> data, IClientBodyFormater formater, Type bodyType = null)

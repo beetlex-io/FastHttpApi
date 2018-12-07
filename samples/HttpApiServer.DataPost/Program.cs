@@ -11,7 +11,7 @@ namespace HttpApiServer.DataPost
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.LogLevel = BeetleX.EventArgs.LogType.Trace;
+            mApiServer.ServerConfig.LogLevel = BeetleX.EventArgs.LogType.Warring;
             mApiServer.ServerConfig.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
@@ -26,11 +26,18 @@ namespace HttpApiServer.DataPost
         // Get /hello?name=henry 
         // or
         // Get /hello/henry
-        [RouteTemplate("{name}")]
+        [Get(Route = "{name}")]
         public object Hello(string name, IHttpContext context)
         {
             return $"hello {name} {DateTime.Now}";
         }
+
+        [Get(Route = "{id}-{value}")]
+        public object SetValue(string id, string value, IHttpContext context)
+        {
+            return $"{id}={value} {DateTime.Now}";
+        }
+
         [Post]
         [NoDataConvert]
         public object PostStream(IHttpContext context)
@@ -41,6 +48,7 @@ namespace HttpApiServer.DataPost
         }
         //json {"name":"","value":""}
         [Post]
+        [JsonDataConvert]
         public object Post(string name, string value, IHttpContext context)
         {
             Console.WriteLine(context.Data);

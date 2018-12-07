@@ -17,7 +17,7 @@ namespace BeetleX.FastHttpApi.Clients
             this.KeepAlive = true;
         }
 
-        public Exception Exception { get; set; }
+        public HttpClientException Exception { get; set; }
 
         public Cookies Cookies { get; private set; }
 
@@ -39,11 +39,11 @@ namespace BeetleX.FastHttpApi.Clients
 
         public bool Gzip { get; set; }
 
-        public PipeStream Stream { get; set; }
+        internal PipeStream Stream { get; set; }
 
         private LoadedState mState;
 
-        public LoadedState Load(PipeStream stream)
+        internal LoadedState Load(PipeStream stream)
         {
             string line;
             if (mState == LoadedState.None)
@@ -82,6 +82,20 @@ namespace BeetleX.FastHttpApi.Clients
                 mState = LoadedState.Completed;
             }
             return mState;
+        }
+
+        [ThreadStatic]
+        private static Response mCurrent;
+        public static Response Current
+        {
+            get
+            {
+                return mCurrent;
+            }
+            set
+            {
+                mCurrent = value;
+            }
         }
     }
 }

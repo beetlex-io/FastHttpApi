@@ -347,7 +347,8 @@ namespace BeetleX.FastHttpApi
                     ActionContext context = new ActionContext(handler, dc, this);
                     long startTime = server.BaseServer.GetRunTime();
                     WSActionResultHandler wSActionResultHandler = new WSActionResultHandler(dc, server, request, result, dataFrame, startTime);
-                    ExecuteActionContext(context, wSActionResultHandler);
+                    // ExecuteActionContext(context, wSActionResultHandler);
+                    context.Execute(wSActionResultHandler);
                 }
                 catch (Exception e_)
                 {
@@ -412,7 +413,8 @@ namespace BeetleX.FastHttpApi
                     ActionContext context = new ActionContext(handler, pc, this);
                     if (handler.OptionsAttribute != null)
                         handler.OptionsAttribute.SetResponse(request, response);
-                    ExecuteActionContext(context, actionResult);
+                    // ExecuteActionContext(context, actionResult);
+                    context.Execute(actionResult);
                 }
                 catch (Exception e_)
                 {
@@ -425,46 +427,46 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        private async void ExecuteActionContext(ActionContext context, IActionResultHandler handler)
-        {
-            try
-            {
-                context.Execute();
-                var result = context.Result;
-                if (context.Exception == null)
-                {
-                    if (result is Task task)
-                    {
-                        await task;
-                        if (context.Handler.PropertyHandler != null)
-                        {
-                            result = context.Handler.PropertyHandler.Get(task);
-                        }
-                        else
-                        {
-                            result = null;
-                        }
-                        handler.Success(result);
-                    }
-                    else if (result is Exception error)
-                    {
-                        handler.Error(error);
-                    }
-                    else
-                    {
+        //private async void ExecuteActionContext(ActionContext context, IActionResultHandler handler)
+        //{
+        //    try
+        //    {
+        //        context.Execute();
+        //        var result = context.Result;
+        //        if (context.Exception == null)
+        //        {
+        //            if (result is Task task)
+        //            {
+        //                await task;
+        //                if (context.Handler.PropertyHandler != null)
+        //                {
+        //                    result = context.Handler.PropertyHandler.Get(task);
+        //                }
+        //                else
+        //                {
+        //                    result = null;
+        //                }
+        //                handler.Success(result);
+        //            }
+        //            else if (result is Exception error)
+        //            {
+        //                handler.Error(error);
+        //            }
+        //            else
+        //            {
 
-                        handler.Success(result);
-                    }
-                }
-                else
-                {
-                    handler.Error(context.Exception);
-                }
-            }
-            catch (Exception e_)
-            {
-                handler.Error(e_);
-            }
-        }
+        //                handler.Success(result);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            handler.Error(context.Exception);
+        //        }
+        //    }
+        //    catch (Exception e_)
+        //    {
+        //        handler.Error(e_);
+        //    }
+        //}
     }
 }

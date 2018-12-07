@@ -10,6 +10,7 @@ namespace BeetleX.FastHttpApi.Clients
         {
             Request = request;
             Host = host;
+            SocketError = false;
         }
         public Uri Host { get; set; }
 

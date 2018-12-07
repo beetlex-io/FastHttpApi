@@ -40,35 +40,82 @@ namespace BeetleX.FastHttpApi
 
         public object Controller { get; set; }
 
-        internal async void Execute()
+
+        private void OnExecute(IActionResultHandler resultHandler)
         {
             try
             {
                 if (FilterExecuting())
                 {
-                    Result = Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
-                    if (Result is Task task)
+
+                    try
                     {
-                        await task;
-                        if (Handler.PropertyHandler != null)
-                        {
-                            Result = Handler.PropertyHandler.Get(task);
-                        }
-                        else
-                        {
-                            Result = null;
-                        }
+                        Result = Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
+                    }
+                    catch (Exception error)
+                    {
+                        Exception = error;
+                    }
+                    finally
+                    {
                         FilterExecuted();
                     }
+                    if (Exception != null)
+                        resultHandler.Error(Exception);
                     else
-                    {
-                        FilterExecuted();
-                    }
+                        resultHandler.Success(Result);
                 }
             }
             catch (Exception e_)
             {
-                this.Exception = e_;
+                resultHandler.Error(e_);
+            }
+        }
+
+        private async void OnAsyncExecute(IActionResultHandler resultHandler)
+        {
+            try
+            {
+                if (FilterExecuting())
+                {
+                    try
+                    {
+                        var task = (Task)Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
+                        await task;
+                        if (Handler.PropertyHandler != null)
+                            Result = Handler.PropertyHandler.Get(task);
+                        else
+                            Result = null;
+                    }
+                    catch (Exception error)
+                    {
+                        Exception = error;
+                    }
+                    finally
+                    {
+                        FilterExecuted();
+                    }
+                    if (Exception != null)
+                        resultHandler.Error(Exception);
+                    else
+                        resultHandler.Success(Result);
+                }
+            }
+            catch (Exception e_)
+            {
+                resultHandler.Error(e_);
+            }
+        }
+
+        internal void Execute(IActionResultHandler resultHandler)
+        {
+            if (Handler.Async)
+            {
+                OnAsyncExecute(resultHandler);
+            }
+            else
+            {
+                OnExecute(resultHandler);
             }
         }
         private bool FilterExecuting()
@@ -89,7 +136,8 @@ namespace BeetleX.FastHttpApi
         {
             if (mFilters.Count > 0)
             {
-                for (int i = 0; i < mFilters.Count; i++)
+                int start = mFilters.Count - 1;
+                for (int i = start; i >= 0; i--)
                 {
                     mFilters[i].Executed(this);
                 }

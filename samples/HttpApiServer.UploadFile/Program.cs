@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BeetleX.FastHttpApi;
+using BeetleX.FastHttpApi.Data;
+using System;
 using System.Linq;
 
 namespace HttpApiServer.UploadFile
@@ -19,8 +21,9 @@ namespace HttpApiServer.UploadFile
             Console.Read();
         }
 
-        [BeetleX.FastHttpApi.Post]
-        public object UploadFile(string name, BeetleX.FastHttpApi.IHttpContext context)
+        [Post]
+        [MultiDataConvert]
+        public object UploadFile(string name, IHttpContext context)
         {
             foreach (var file in context.Request.Files)
                 using (System.IO.Stream stream = System.IO.File.Create(file.FileName))

@@ -171,7 +171,7 @@ namespace BeetleX.FastHttpApi.Data
                                         {
                                             length = indexOf.EndPostion + 1;
                                         }
-                                        memoryStream.Write(block.Bytes, offset, length - offset);
+                                        memoryStream.Write(block.Data, offset, length - offset);
                                         if (block.ID == indexOf.End.ID)
                                         {
                                             stream.ReadFree(indexOf.Length);

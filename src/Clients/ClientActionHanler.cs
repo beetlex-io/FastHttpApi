@@ -255,7 +255,7 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 if (result.Header == null)
                     result.Header = new Dictionary<string, string>();
-                foreach (var item in mDataParameters)
+                foreach (var item in mHeaderParameters)
                 {
                     if (parameters[item.Index] != null)
                         result.Header[item.Name] = parameters[item.Index].ToString();
@@ -308,6 +308,8 @@ namespace BeetleX.FastHttpApi.Clients
                 }
             }
         }
+
+        public IHttpNode Node { get; set; }
 
     }
 

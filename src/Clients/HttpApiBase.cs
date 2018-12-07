@@ -12,7 +12,6 @@ namespace BeetleX.FastHttpApi.Clients
         public HttpApiProxy()
         {
             TimeOut = 10000;
-
         }
 
         public HttpHost Host { get; set; }

@@ -67,3 +67,5 @@ samples/HttpApiServer.Options/obj/
 src/License.txt
 samples/HttpApiServer.TaskActions/bin/
 samples/HttpApiServer.TaskActions/obj/
+samples/HttpApiServer.DataPost/Properties/
+samples/HttpApiServer.DataPost/HttpApiServer.DataPost.csproj.user

@@ -23,6 +23,7 @@ namespace HttpApiServer.Cookies
     {
         public bool setCookie(string name, string value, IHttpContext context)
         {
+
             context.Response.SetCookie(name, value);
             return true;
         }
@@ -32,5 +33,7 @@ namespace HttpApiServer.Cookies
             string value = context.Request.Cookies[name];
             return value;
         }
+
+
     }
 }

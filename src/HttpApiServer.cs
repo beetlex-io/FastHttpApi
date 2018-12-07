@@ -539,8 +539,6 @@ namespace BeetleX.FastHttpApi
 
         #endregion
 
-
-
         public override void Log(IServer server, ServerLogEventArgs e)
         {
             if (ServerLog == null)

@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace BeetleX.FastHttpApi.Clients
 {
@@ -12,7 +13,7 @@ namespace BeetleX.FastHttpApi.Clients
         public HttpClusterApi()
         {
             DefaultNode = new HttpNode();
-            DetectionTime = 10000;
+            DetectionTime = 5000;
             mDetectionTimer = new System.Threading.Timer(OnVerifyClients, null, DetectionTime, DetectionTime);
         }
 
@@ -26,14 +27,36 @@ namespace BeetleX.FastHttpApi.Clients
 
         public IHttpNode DefaultNode { get; set; }
 
+        private IHttpNode SearchNode(string url)
+        {
+            foreach (string key in mNodes.Keys)
+            {
+                if (Regex.IsMatch(url, key, RegexOptions.IgnoreCase))
+                {
+                    return mNodes[key];
+                }
+            }
+            return null;
+        }
+
         private IHttpNode GetNode(string url)
         {
+            url = url.ToLower();
+            if (mNodes.TryGetValue(url, out IHttpNode node))
+                return node;
+            return null;
+        }
 
-            string key = url.ToLower();
-            IHttpNode result;
-            if (!mNodes.TryGetValue(key, out result))
-                return DefaultNode;
-            return result;
+        public IHttpNode this[string url]
+        {
+            get
+            {
+                IHttpNode node = SearchNode(url);
+                if (node == null)
+                    node = DefaultNode;
+                return node;
+            }
+
         }
 
         public HttpClusterApi AddHost(string url, IHttpNode node)
@@ -61,11 +84,12 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 if (host != null)
                 {
+                    url = url.ToLower();
                     IHttpNode node = GetNode(url);
                     if (node == null)
                     {
                         node = new HttpNode();
-                        mNodes[url.ToLower()] = node;
+                        mNodes[url] = node;
                     }
                     foreach (string item in host)
                     {
@@ -74,14 +98,6 @@ namespace BeetleX.FastHttpApi.Clients
                 }
             }
             return this;
-        }
-
-        public virtual HttpHost GetClient(string url)
-        {
-            IHttpNode node = GetNode(url);
-            if (node == null)
-                return null;
-            return node.GetClient();
         }
 
         private System.Collections.Concurrent.ConcurrentDictionary<Type, object> mAPI = new System.Collections.Concurrent.ConcurrentDictionary<Type, object>();
@@ -97,17 +113,6 @@ namespace BeetleX.FastHttpApi.Clients
                 ((HttpClusterApiProxy)result).Cluster = this;
             }
             return (T)result;
-        }
-
-        protected async Task<T> OnExecute<T>(MethodBase targetMethod, params object[] args)
-        {
-            var request = ClientActionFactory.GetHandler((MethodInfo)targetMethod).GetRequestInfo(args);
-            HttpHost host = GetClient(request.Url);
-            if (host == null)
-                throw new HttpClientException(null, null, "no http nodes are available");
-            var r = request.GetRequest(host);
-            var response = await r.Execute();
-            return (T)response.Body;
         }
 
         private void OnVerifyClients(object state)
@@ -158,6 +163,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         public class UrlStats : IComparable
         {
+
             public string Url { get; set; }
 
             public IHttpNode Node { get; set; }
@@ -167,14 +173,25 @@ namespace BeetleX.FastHttpApi.Clients
                 return Url.CompareTo(((UrlStats)obj).Url);
             }
         }
+
         public override string ToString()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("* HttpClusterApi stats");
+            stringBuilder.AppendLine("HttpClusterApi");
+            for (int i = 0; i < Items.Count; i++)
+            {
+                var item = Items[i];
+                stringBuilder.AppendLine($"  |-Url:{item.Url}");
+                if (item.Node.Clients != null)
+                    foreach (var client in item.Node.Clients)
+                    {
+                        string available = client.Available ? "Y" : "N";
+                        stringBuilder.AppendLine($"  |--{client.Host}[{available}] [{client}]");
+                    }
+            }
             return stringBuilder.ToString();
         }
     }
-
 
     public class HttpClusterApiProxy : System.Reflection.DispatchProxy
     {
@@ -189,7 +206,9 @@ namespace BeetleX.FastHttpApi.Clients
         {
             ClientActionHanler handler = ClientActionFactory.GetHandler((MethodInfo)targetMethod);
             var rinfo = handler.GetRequestInfo(args);
-            HttpHost host = Cluster.GetClient(rinfo.Url);
+            if (handler.Node == null)
+                handler.Node = Cluster[rinfo.Url];
+            HttpHost host = handler.Node.GetClient();
             if (host == null)
                 throw new HttpClientException(null, null, "no http nodes are available");
             if (!handler.Async)
@@ -257,6 +276,8 @@ namespace BeetleX.FastHttpApi.Clients
         [ThreadStatic]
         private static int mIndex;
 
+
+
         public HttpHost GetClient()
         {
             int count = 0;
@@ -276,8 +297,11 @@ namespace BeetleX.FastHttpApi.Clients
             for (int i = 0; i < mClients.Count; i++)
             {
                 HttpHost client = mClients[i];
-                if (!client.Available)
-                    OnVerify(client);
+                if (!client.Available && !client.InVerify)
+                {
+                    client.InVerify = true;
+                    Task.Run(() => OnVerify(client));
+                }
             }
         }
 
@@ -287,11 +311,15 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 var request = host.Get("/", null, null, null, null);
                 var result = request.Execute();
-                result.Wait(2000);
+                result.Wait(20000);
             }
             catch
             {
 
+            }
+            finally
+            {
+                host.InVerify = false;
             }
         }
     }

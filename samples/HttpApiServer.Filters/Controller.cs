@@ -28,6 +28,8 @@ namespace HttpApiServer.Filters
             return data;
         }
         // /listcustomer?count
+        [SkipFilter(typeof(NotFoundFilter))]
+        [CustomFilter]
         public IList<Customer> ListCustomer(int count)
         {
             return Customer.List(count);

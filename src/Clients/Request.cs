@@ -133,9 +133,6 @@ namespace BeetleX.FastHttpApi.Clients
                 {
                     AsyncTcpClient asyncClient = (AsyncTcpClient)client;
                     var a = asyncClient.ReceiveMessage<Response>();
-                    //asyncClient.Connect();
-                    //if (asyncClient.Stream.ToPipeStream().CacheLength > 0)
-                    //    throw new Exception("client request method has cache data");
                     if (!a.IsCompleted)
                     {
                         asyncClient.Send(this);
@@ -144,7 +141,10 @@ namespace BeetleX.FastHttpApi.Clients
                     }
                     Response = await a;
                     if (Response.Exception != null)
+                    {
                         Status = RequestStatus.Error;
+                        throw Response.Exception;
+                    }
                     else
                         Status = RequestStatus.Received;
                 }
@@ -155,7 +155,10 @@ namespace BeetleX.FastHttpApi.Clients
                     Status = RequestStatus.SendCompleted;
                     Response = syncClient.ReceiveMessage<Response>();
                     if (Response.Exception != null)
+                    {
                         Status = RequestStatus.Error;
+                        throw Response.Exception;
+                    }
                     else
                         Status = RequestStatus.Received;
                 }
@@ -181,7 +184,6 @@ namespace BeetleX.FastHttpApi.Clients
                     client.DisConnect();
                 if (code >= 400)
                     throw new System.Net.WebException($"{this.Method} {this.Url} {Response.Code} {Response.CodeMsg} {Response.Body}");
-                HttpHost.Available = true;
                 Status = RequestStatus.Completed;
             }
             catch (Exception e_)
@@ -191,11 +193,6 @@ namespace BeetleX.FastHttpApi.Clients
                 if (e_ is System.Net.Sockets.SocketException || e_ is ObjectDisposedException)
                 {
                     clientException.SocketError = true;
-                    HttpHost.Available = false;
-                }
-                else
-                {
-                    HttpHost.Available = true;
                 }
                 Response = new Response { Exception = clientException };
                 Status = RequestStatus.Error;
@@ -205,9 +202,10 @@ namespace BeetleX.FastHttpApi.Clients
                 HttpHost.Pool.Push(client);
             }
             if (Response.Exception != null)
-                HttpHost.AddError();
+                HttpHost.AddError(Response.Exception.SocketError);
             else
                 HttpHost.AddSuccess();
+            Response.Current = Response;
             return Response;
         }
     }

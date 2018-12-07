@@ -93,7 +93,7 @@ namespace BeetleX.FastHttpApi.Admin
         {
             mPath = server.ServerConfig.FileManagerPath;
             if (string.IsNullOrEmpty(mPath))
-                mPath = server.ServerConfig.StaticResourcePath;
+                mPath = System.IO.Directory.GetCurrentDirectory();
             if (!System.IO.Directory.Exists(mPath))
                 System.IO.Directory.CreateDirectory(mPath);
             if (mPath[mPath.Length - 1] == System.IO.Path.DirectorySeparatorChar)

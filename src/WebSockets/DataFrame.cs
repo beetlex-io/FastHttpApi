@@ -143,22 +143,22 @@ namespace BeetleX.FastHttpApi.WebSockets
             ulong index = 0;
             if (result.Start.ID == result.End.ID)
             {
-                index = MarkBytes(result.Start.Bytes, result.StartPostion, result.EndPostion, index);
+                index = MarkBytes(result.Start.Data, result.StartPostion, result.EndPostion, index);
             }
             else
             {
-                index = MarkBytes(result.Start.Bytes, result.StartPostion, result.Start.Length - 1, index);
+                index = MarkBytes(result.Start.Data, result.StartPostion, result.Start.Length - 1, index);
                 IMemoryBlock next = result.Start.NextMemory;
                 while (next != null && index < this.Length)
                 {
                     if (next.ID == result.End.ID)
                     {
-                        index = MarkBytes(next.Bytes, 0, result.EndPostion, index);
+                        index = MarkBytes(next.Data, 0, result.EndPostion, index);
                         break;
                     }
                     else
                     {
-                        index = MarkBytes(next.Bytes, 0, next.Length - 1, index);
+                        index = MarkBytes(next.Data, 0, next.Length - 1, index);
                     }
                     next = next.NextMemory;
                 }
