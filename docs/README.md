@@ -7,4 +7,5 @@
 6. [WebApi之集成JWT验证](http://www.ikende.com/Doc/b69b518e4ae64a2695fd9c59fd33b5fc.html)
 7. [WebApi之自定义返回内容](http://www.ikende.com/Doc/7e448afb6f0749dc981d2e55bc0d1ceb.html)
 8. [WebApi之异步处理](http://www.ikende.com/Doc/9c502fd684c54dd8ad1c168bb497e2e5.html)
+9. [WebApi之基准性能测试](http://www.ikende.com/Doc/9832421ae5b34992a9686e20fc8d795d.html)
 ## ClientApi
