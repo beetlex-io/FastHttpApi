@@ -443,7 +443,6 @@ namespace BeetleX.FastHttpApi
         {
             HttpToken token = (HttpToken)request.Session.Tag;
             token.KeepAlive = true;
-            // token.Request = request;
             token.WebSocket = true;
             request.WebSocket = true;
             if (EnableLog(LogType.Info))
@@ -561,7 +560,7 @@ namespace BeetleX.FastHttpApi
 
         protected virtual void OnProcessResource(HttpRequest request, HttpResponse response)
         {
-            if (string.Compare(request.Method, "GET", true) == 0)
+            if (request.Method == HttpParse.GET_TAG)
             {
                 try
                 {
@@ -571,7 +570,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (EnableLog(LogType.Error))
                     {
-                        BaseServer.Error(e_, request.Session, $"{request.ClientIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
+                        BaseServer.Error(e_, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
                         InnerErrorResult result = new InnerErrorResult($"response file error ", e_, ServerConfig.OutputStackTrace);
                         response.Result(result);
                     }
@@ -580,7 +579,7 @@ namespace BeetleX.FastHttpApi
             else
             {
                 if (EnableLog(LogType.Info))
-                    Log(LogType.Info, $"{request.ClientIPAddress}{request.Method} {request.Url} not support");
+                    Log(LogType.Info, $"{request.RemoteIPAddress}{request.Method} {request.Url} not support");
                 NotSupportResult notSupport = new NotSupportResult($"{request.Method} {request.Url} not support");
                 response.Result(notSupport);
 
@@ -601,22 +600,13 @@ namespace BeetleX.FastHttpApi
                 else
                 {
                     HttpRequest request = (HttpRequest)e.Message;
-                    if (request.ClientIPAddress == null)
-                    {
-                        IPEndPoint IP = e.Session.RemoteEndPoint as IPEndPoint;
-                        if (IP != null)
-                        {
-                            string ipstr = IP.Address.ToString() + ":" + IP.Port.ToString();
-                            request.Header.Add(HeaderTypeFactory.CLIENT_IPADDRESS, ipstr);
-                        }
-                    }
                     if (EnableLog(LogType.Info))
                     {
-                        mServer.Log(LogType.Info, e.Session, $"{request.ClientIPAddress} {request.Method} {request.Url} request");
+                        mServer.Log(LogType.Info, e.Session, $"{request.RemoteIPAddress} {request.Method} {request.Url} request");
                     }
                     if (EnableLog(LogType.Debug))
                     {
-                        mServer.Log(LogType.Debug, e.Session, $"{request.ClientIPAddress} {request.Method} {request.Url} request detail {request.ToString()}");
+                        mServer.Log(LogType.Debug, e.Session, $"{request.RemoteIPAddress} {request.Method} {request.Url} request detail {request.ToString()}");
                     }
                     request.Server = this;
                     HttpResponse response = request.CreateResponse();

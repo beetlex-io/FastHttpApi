@@ -208,11 +208,11 @@ namespace BeetleX.FastHttpApi
             }
 
             if (Session.Server.EnableLog(EventArgs.LogType.Debug))
-                Session.Server.Log(EventArgs.LogType.Debug, Session, "{0} {1}", Request.ClientIPAddress, this.ToString());
+                Session.Server.Log(EventArgs.LogType.Debug, Session, "{0} {1}", Request.RemoteIPAddress, this.ToString());
 
             if (Session.Server.EnableLog(EventArgs.LogType.Info))
             {
-                Session.Server.Log(EventArgs.LogType.Info, Session, "{4} {0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg, Request.ClientIPAddress);
+                Session.Server.Log(EventArgs.LogType.Info, Session, "{4} {0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg, Request.RemoteIPAddress);
             }
         }
 

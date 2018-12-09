@@ -18,13 +18,16 @@ namespace BeetleX.FastHttpApi
             TimeOut = 10000;
             Async = true;
             MaxConnections = 50;
+            Clients = new List<HttpClient>();
         }
 
         public string Host { get; set; }
 
         public int Port { get; set; }
 
-        private System.Collections.Concurrent.ConcurrentQueue<IClient> mPools = new System.Collections.Concurrent.ConcurrentQueue<IClient>();
+        private System.Collections.Concurrent.ConcurrentQueue<HttpClient> mPools = new System.Collections.Concurrent.ConcurrentQueue<HttpClient>();
+
+        public List<HttpClient> Clients { get; private set; }
 
         private int mConnections = 0;
 
@@ -36,16 +39,42 @@ namespace BeetleX.FastHttpApi
 
         public bool Async { get; set; }
 
-        public IClient Pop()
+        public HttpClient Pop(bool recursion = false)
         {
-            IClient result;
+            HttpClient result;
             if (!mPools.TryDequeue(out result))
             {
                 int value = System.Threading.Interlocked.Increment(ref mConnections);
                 if (value > MaxConnections)
                 {
                     System.Threading.Interlocked.Decrement(ref mConnections);
-                    throw new Exception("Unable to reach HTTP request, exceeding maximum number of connections");
+                    if (recursion)
+                    {
+                        throw new Exception($"Unable to reach {Host}:{Port} HTTP request, exceeding maximum number of connections");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < Clients.Count; i++)
+                        {
+                            HttpClient client = Clients[i];
+                            if (client.IsTimeout && client.Using)
+                            {
+                                Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        client.RequestCommpletionSource.Error(new TimeoutException($"{Host}:{Port} request timeout!"));
+                                    }
+                                    finally
+                                    {
+                                        client.Client.DisConnect();
+                                    }
+                                });
+                            }
+                        }
+                        System.Threading.Thread.Sleep(50);
+                        return Pop(true);
+                    }
                 }
                 var packet = new HttpClientPacket();
                 if (Async)
@@ -58,7 +87,11 @@ namespace BeetleX.FastHttpApi
                         c.Socket.ReceiveTimeout = TimeOut;
                         c.Socket.SendTimeout = TimeOut;
                     };
-                    return client;
+                    result = new HttpClient();
+                    result.Client = client;
+                    result.Node = new LinkedListNode<HttpClient>(result);
+                    Clients.Add(result);
+
                 }
                 else
                 {
@@ -70,16 +103,46 @@ namespace BeetleX.FastHttpApi
                         c.Socket.ReceiveTimeout = TimeOut;
                         c.Socket.SendTimeout = TimeOut;
                     };
-                    return client;
+                    result = new HttpClient();
+                    result.Client = client;
+                    result.Node = new LinkedListNode<HttpClient>(result);
+                    Clients.Add(result);
                 }
             }
+            result.Using = true;
+            result.TimeOut = BeetleX.TimeWatch.GetElapsedMilliseconds() + TimeOut * 1000;
             return result;
         }
 
-        public void Push(IClient client)
+        public void Push(HttpClient client)
         {
+            client.Using = false;
             mPools.Enqueue(client);
         }
+    }
+
+    public class HttpClient
+    {
+        public IClient Client { get; set; }
+
+        public LinkedListNode<HttpClient> Node { get; set; }
+
+        public HttpClientPool Pool { get; set; }
+
+        internal long TimeOut { get; set; }
+
+        public bool Using { get; set; }
+
+        public bool IsTimeout
+        {
+            get
+            {
+                return BeetleX.TimeWatch.GetElapsedMilliseconds() > TimeOut;
+            }
+        }
+
+        internal IAnyCompletionSource RequestCommpletionSource { get; set; }
+
     }
 
     public class HttpClientPoolFactory
@@ -88,7 +151,6 @@ namespace BeetleX.FastHttpApi
         private static System.Collections.Concurrent.ConcurrentDictionary<string, HttpClientPool> mPools = new System.Collections.Concurrent.ConcurrentDictionary<string, HttpClientPool>();
 
         public static System.Collections.Concurrent.ConcurrentDictionary<string, HttpClientPool> Pools => mPools;
-
 
         public static void SetPoolInfo(Uri host, int maxConn, int timeout, bool async = true)
         {

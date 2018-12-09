@@ -215,7 +215,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 if (!string.IsNullOrEmpty(IfNoneMatch) && IfNoneMatch == fr.FileMD5)
                 {
                     if (Server.EnableLog(EventArgs.LogType.Info))
-                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "{0} get {1} source no modify ", response.Request.ClientIPAddress, response.Request.Url);
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "{0} get {1} source no modify ", response.Request.RemoteIPAddress, response.Request.Url);
                     NoModifyResult result = new NoModifyResult();
                     response.Result(result);
                     return;
@@ -240,7 +240,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             if (Server.EnableLog(EventArgs.LogType.Info))
             {
                 Server.BaseServer.Log(EventArgs.LogType.Info, response.Request.Session, "{0} get {1} response gzip {2}",
-                    response.Request.ClientIPAddress, response.Request.BaseUrl, fr.GZIP);
+                    response.Request.RemoteIPAddress, response.Request.BaseUrl, fr.GZIP);
             }
             HttpToken token = (HttpToken)response.Session.Tag;
             token.File = fr.CreateFileBlock();
@@ -273,7 +273,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
                 if (Server.EnableLog(EventArgs.LogType.Warring))
-                    Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.ClientIPAddress, request.BaseUrl);
+                    Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.RemoteIPAddress, request.BaseUrl);
                 if (!Server.OnHttpRequesNotfound(request, response).Cancel)
                 {
                     NotFoundResult notFound = new NotFoundResult("{0} file not found", request.Url);
@@ -308,7 +308,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     else
                     {
                         if (Server.EnableLog(EventArgs.LogType.Warring))
-                            Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.ClientIPAddress, request.BaseUrl);
+                            Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file not found", request.RemoteIPAddress, request.BaseUrl);
                         if (!Server.OnHttpRequesNotfound(request, response).Cancel)
                         {
                             NotFoundResult notFound = new NotFoundResult("{0} file not found", request.Url);
@@ -322,7 +322,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
 
                 if (Server.EnableLog(EventArgs.LogType.Warring))
-                    Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file ext not support", request.ClientIPAddress, request.BaseUrl);
+                    Server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} get {1} file ext not support", request.RemoteIPAddress, request.BaseUrl);
                 NotSupportResult notSupport = new NotSupportResult("get {0} file {1} ext not support", request.Url, request.Ext);
                 response.Result(notSupport);
             }

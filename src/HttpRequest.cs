@@ -119,7 +119,22 @@ namespace BeetleX.FastHttpApi
 
         public int Length => mLength;
 
-        public string ClientIPAddress => Header[HeaderTypeFactory.CLIENT_IPADDRESS];
+        public string RemoteIPAddress
+        {
+            get
+            {
+                string value = Header[HeaderTypeFactory.CLIENT_IPADDRESS];
+                if (value == null)
+                {
+                    if (Session.RemoteEndPoint is IPEndPoint IP)
+                    {
+                        value = IP.Address.ToString() + ":" + IP.Port.ToString();
+                        Header[HeaderTypeFactory.CLIENT_IPADDRESS] = value;
+                    }
+                }
+                return value;
+            }
+        }
 
         public string Method { get; set; }
 

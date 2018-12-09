@@ -36,7 +36,7 @@ namespace BeetleX.FastHttpApi
         public void Error(Exception e_)
         {
             if (Server.EnableLog(EventArgs.LogType.Error))
-                Server.Log(EventArgs.LogType.Error, "{0} ws execute {1} inner error {2}@{3}", Request.ClientIPAddress, Request.Url, e_.Message, e_.StackTrace);
+                Server.Log(EventArgs.LogType.Error, "{0} ws execute {1} inner error {2}@{3}", Request.RemoteIPAddress, Request.Url, e_.Message, e_.StackTrace);
             Result.Code = 500;
             Result.Error = e_.Message;
             if (Server.ServerConfig.OutputStackTrace)
@@ -64,7 +64,7 @@ namespace BeetleX.FastHttpApi
             }
             DataFrame.Send(Request.Session);
             if (Server.EnableLog(EventArgs.LogType.Info))
-                Server.Log(EventArgs.LogType.Info, "{0} ws execute {1} action use time:{2}ms", Request.ClientIPAddress,
+                Server.Log(EventArgs.LogType.Info, "{0} ws execute {1} action use time:{2}ms", Request.RemoteIPAddress,
                     DataContext.ActionUrl, Server.BaseServer.GetRunTime() - StartTime);
         }
     }
@@ -92,7 +92,7 @@ namespace BeetleX.FastHttpApi
         {
             if (Server.EnableLog(EventArgs.LogType.Error))
                 Server.Log(EventArgs.LogType.Error,
-                    $"{Request.ClientIPAddress} http {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
+                    $"{Request.RemoteIPAddress} http {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
             InnerErrorResult result = new InnerErrorResult($"http execute {Request.BaseUrl} error ", e_, Server.ServerConfig.OutputStackTrace);
             Response.Result(result);
         }
@@ -101,7 +101,7 @@ namespace BeetleX.FastHttpApi
         {
             if (Server.EnableLog(EventArgs.LogType.Info))
                 Server.BaseServer.Log(EventArgs.LogType.Info, Request.Session,
-                    $"{Request.ClientIPAddress} http {Request.Method} {Request.BaseUrl} use time:{Server.BaseServer.GetRunTime() - StartTime}ms");
+                    $"{Request.RemoteIPAddress} http {Request.Method} {Request.BaseUrl} use time:{Server.BaseServer.GetRunTime() - StartTime}ms");
             Response.Result(result);
         }
     }

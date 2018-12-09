@@ -307,7 +307,7 @@ namespace BeetleX.FastHttpApi
             if (url == null)
             {
                 if (server.EnableLog(EventArgs.LogType.Warring))
-                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} ws not support, url info notfound!", request.ClientIPAddress);
+                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} ws not support, url info notfound!", request.RemoteIPAddress);
                 result.Code = 403;
                 result.Error = "not support, url info notfound!";
                 request.Session.Send(dataFrame);
@@ -330,7 +330,7 @@ namespace BeetleX.FastHttpApi
             if (handler == null)
             {
                 if (server.EnableLog(EventArgs.LogType.Warring))
-                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} ws execute {1} notfound", request.ClientIPAddress, result.Url);
+                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, "{0} ws execute {1} notfound", request.RemoteIPAddress, result.Url);
                 result.Code = 404;
                 result.Error = "url " + baseurl + " notfound!";
                 request.Session.Send(dataFrame);
@@ -353,7 +353,7 @@ namespace BeetleX.FastHttpApi
                 catch (Exception e_)
                 {
                     if (server.EnableLog(EventArgs.LogType.Error))
-                        server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "{0} ws execute {1} inner error {2}@{3}", request.ClientIPAddress, request.Url, e_.Message, e_.StackTrace);
+                        server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "{0} ws execute {1} inner error {2}@{3}", request.RemoteIPAddress, request.Url, e_.Message, e_.StackTrace);
                     result.Code = 500;
                     result.Error = e_.Message;
                     if (server.ServerConfig.OutputStackTrace)
@@ -372,7 +372,7 @@ namespace BeetleX.FastHttpApi
             if (handler == null)
             {
                 if (server.EnableLog(EventArgs.LogType.Warring))
-                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, $"{request.ClientIPAddress} {request.Method} {request.Url}  not found");
+                    server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.Url}  not found");
                 if (!server.OnHttpRequesNotfound(request, response).Cancel)
                 {
                     NotFoundResult notFoundResult = new NotFoundResult($"{request.Method} {request.Url} not found");
@@ -388,13 +388,13 @@ namespace BeetleX.FastHttpApi
                         if (request.Method == HttpParse.OPTIONS_TAG && handler.OptionsAttribute != null)
                         {
                             if (server.EnableLog(EventArgs.LogType.Info))
-                                server.BaseServer.Log(EventArgs.LogType.Info, request.Session, $"{request.ClientIPAddress}{request.Method}{request.Url} request");
+                                server.BaseServer.Log(EventArgs.LogType.Info, request.Session, $"{request.RemoteIPAddress}{request.Method}{request.Url} request");
                             response.Result(handler.OptionsAttribute);
                         }
                         else
                         {
                             if (server.EnableLog(EventArgs.LogType.Warring))
-                                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, $"{request.ClientIPAddress}{request.Method} {request.Url} not support");
+                                server.BaseServer.Log(EventArgs.LogType.Warring, request.Session, $"{request.RemoteIPAddress}{request.Method} {request.Url} not support");
                             NotSupportResult notSupportResult = new NotSupportResult($"{request.Method}{request.Url} not support");
                             response.Result(notSupportResult);
                         }
@@ -419,7 +419,7 @@ namespace BeetleX.FastHttpApi
                 catch (Exception e_)
                 {
                     if (server.EnableLog(EventArgs.LogType.Error))
-                        server.Log(EventArgs.LogType.Error, $"{request.ClientIPAddress} http {request.Method} { request.Url} inner error {e_.Message}@{e_.StackTrace}");
+                        server.Log(EventArgs.LogType.Error, $"{request.RemoteIPAddress} http {request.Method} { request.Url} inner error {e_.Message}@{e_.StackTrace}");
                     InnerErrorResult result = new InnerErrorResult($"http execute {request.BaseUrl} error ", e_, server.ServerConfig.OutputStackTrace);
                     response.Result(result);
 

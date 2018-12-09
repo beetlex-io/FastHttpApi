@@ -67,12 +67,12 @@ namespace BeetleX.FastHttpApi.Clients
     {
         public void Success(object data)
         {
-            SetResult((T)data);
+            TrySetResult((T)data);
         }
 
         public void Error(Exception error)
         {
-            SetException(error);
+            TrySetException(error);
         }
 
         public async void WaitResponse(Task<Response> task)

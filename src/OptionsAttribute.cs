@@ -59,7 +59,7 @@ namespace BeetleX.FastHttpApi
         {
             HttpApiServer server = request.Server;
             if (server.EnableLog(EventArgs.LogType.Debug))
-                server.Log(EventArgs.LogType.Info, $"{request.ClientIPAddress} {request.Method} {request.Url} set options");
+                server.Log(EventArgs.LogType.Debug, $"{request.RemoteIPAddress} {request.Method} {request.Url} set options");
             response.Header["Access-Control-Allow-Origin"] = AllowOrigin;
         }
     }

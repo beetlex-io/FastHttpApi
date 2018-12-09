@@ -46,38 +46,26 @@ namespace BeetleX.FastHttpApi
         START:
             if (mRequest == null)
             {
-                mRequest = mServer.CreateRequest(session); //new HttpRequest(session, mServer);
+                mRequest = mServer.CreateRequest(session); 
             }
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {
-                int length = mRequest.Length;
-                if (mRequest.Method == HttpParse.POST_TAG || mRequest.Method == HttpParse.GET_TAG
-                    || mRequest.Method == HttpParse.PUT_TAG || mRequest.Method == HttpParse.DELETE_TAG
-                    || mRequest.Method == HttpParse.OPTIONS_TAG
-                    )
+                try
                 {
                     Completed?.Invoke(this, mCompletedArgs.SetInfo(session, mRequest));
                 }
-                else
+                finally
                 {
-                    if (session.Server.EnableLog(LogType.Warring))
-                    {
-                        session.Server.Log(LogType.Warring, session, "{0} {1} {2} not support", session.RemoteEndPoint, mRequest.Method, mRequest.Url);
-                    }
-                    HttpToken token = (HttpToken)session.Tag;
-                    token.KeepAlive = false;
-                    NotSupportResult notSupport = new NotSupportResult("Method:" + mRequest.Method + " not supper");
-                    mRequest.CreateResponse().Result(notSupport);
+                    mRequest = null;
                 }
-                mRequest = null;
                 if (pstream.Length == 0)
                     return;
                 goto START;
             }
             else
             {
-                if (session.Server.EnableLog(LogType.Warring))
-                    session.Server.Log(LogType.Warring, session, $"{session.RemoteEndPoint} Multi receive to http request");
+                if (session.Server.EnableLog(LogType.Info))
+                    session.Server.Log(LogType.Info, session, $"{session.RemoteEndPoint} Multi receive to http request");
                 if ((int)mRequest.State < (int)LoadedState.Header && pstream.Length > 1024 * 4)
                 {
                     if (session.Server.EnableLog(LogType.Warring))

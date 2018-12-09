@@ -48,6 +48,5 @@ namespace HttpApiServer.JWT
                 return false;
             }
         }
-
     }
 }

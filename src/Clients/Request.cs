@@ -116,28 +116,29 @@ namespace BeetleX.FastHttpApi.Clients
 
         public HttpHost HttpHost { get; set; }
 
-        public async Task<Response> Execute()
+        public Task<Response> Execute()
         {
-            IClient client = HttpHost.Pool.Pop();
+            AnyCompletionSource<Response> taskCompletionSource = new AnyCompletionSource<Response>();
+            OnExecute(taskCompletionSource);
+            return taskCompletionSource.Task;
+        }
+
+        private async void OnExecute(AnyCompletionSource<Response> taskCompletionSource)
+        {
+            HttpClient client = null;
             try
             {
-                Client = client;
-                if (client.Stream != null)
+                client = HttpHost.Pool.Pop();
+                client.RequestCommpletionSource = taskCompletionSource;
+                Client = client.Client;
+                if (client.Client is AsyncTcpClient)
                 {
-                    if (client.Stream.ToPipeStream().Length > 0)
-                    {
-                        client.Stream.ToPipeStream().ReadFree((int)client.Stream.ToPipeStream().Length);
-                    }
-                }
-                if (client is AsyncTcpClient)
-                {
-                    AsyncTcpClient asyncClient = (AsyncTcpClient)client;
+                    AsyncTcpClient asyncClient = (AsyncTcpClient)client.Client;
                     var a = asyncClient.ReceiveMessage<Response>();
                     if (!a.IsCompleted)
                     {
                         asyncClient.Send(this);
                         Status = RequestStatus.SendCompleted;
-                        asyncClient.BeginReceive();
                     }
                     Response = await a;
                     if (Response.Exception != null)
@@ -150,7 +151,7 @@ namespace BeetleX.FastHttpApi.Clients
                 }
                 else
                 {
-                    TcpClient syncClient = (TcpClient)client;
+                    TcpClient syncClient = (TcpClient)client.Client;
                     syncClient.SendMessage(this);
                     Status = RequestStatus.SendCompleted;
                     Response = syncClient.ReceiveMessage<Response>();
@@ -181,14 +182,13 @@ namespace BeetleX.FastHttpApi.Clients
                     }
                 }
                 if (!Response.KeepAlive)
-                    client.DisConnect();
+                    client.Client.DisConnect();
                 if (code >= 400)
                     throw new System.Net.WebException($"{this.Method} {this.Url} {Response.Code} {Response.CodeMsg} {Response.Body}");
                 Status = RequestStatus.Completed;
             }
             catch (Exception e_)
             {
-
                 HttpClientException clientException = new HttpClientException(this, HttpHost.Uri, e_.Message, e_);
                 if (e_ is System.Net.Sockets.SocketException || e_ is ObjectDisposedException)
                 {
@@ -197,16 +197,14 @@ namespace BeetleX.FastHttpApi.Clients
                 Response = new Response { Exception = clientException };
                 Status = RequestStatus.Error;
             }
-            finally
-            {
-                HttpHost.Pool.Push(client);
-            }
             if (Response.Exception != null)
                 HttpHost.AddError(Response.Exception.SocketError);
             else
                 HttpHost.AddSuccess();
             Response.Current = Response;
-            return Response;
+            if (client != null)
+                HttpHost.Pool.Push(client);
+            await Task.Run(() => taskCompletionSource.TrySetResult(Response));
         }
     }
 

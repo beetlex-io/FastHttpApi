@@ -69,3 +69,6 @@ samples/HttpApiServer.TaskActions/bin/
 samples/HttpApiServer.TaskActions/obj/
 samples/HttpApiServer.DataPost/Properties/
 samples/HttpApiServer.DataPost/HttpApiServer.DataPost.csproj.user
+samples/HttpApiClient/FastApiClient/FastApiClusterClient/Properties/
+samples/HttpApiClient/FastApiClient/FastApiClusterClient/bin/
+samples/HttpApiClient/FastApiClient/FastApiClusterClient/obj/

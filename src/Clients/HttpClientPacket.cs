@@ -37,37 +37,13 @@ namespace BeetleX.FastHttpApi.Clients
 
         private int chunkeLength;
 
+        private bool end = false;
+
         private void loadChunkedData(PipeStream stream)
         {
+
         Next:
             string line;
-            if (chunkeLength == 0)
-            {
-                if (!stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out line))
-                    return;
-                chunkeLength = int.Parse(line, System.Globalization.NumberStyles.HexNumber);
-                if (chunkeLength == 0)
-                {
-                    stream.ReadFree(2);
-                    var item = response;
-                    pipeStream.Flush();
-                    item.Stream = pipeStream;
-                    response = null;
-                    pipeStream = null;
-                    Completed?.Invoke(Client, item);
-                    return;
-                }
-                response.Length += chunkeLength;
-            }
-            else if (chunkeLength == -1)
-            {
-                if (stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out line))
-                {
-                    chunkeLength = 0;
-                }
-                else
-                    return;
-            }
             if (chunkeLength > 0)
             {
                 if (pipeStream == null)
@@ -85,8 +61,48 @@ namespace BeetleX.FastHttpApi.Clients
                     chunkeLength -= read;
                     if (chunkeLength == 0)
                     {
-                        chunkeLength = -1;
+                        chunkeLength = 0;
                         break;
+                    }
+                }
+            }
+            else
+            {
+                if (!stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out line))
+                    return;
+                if (string.IsNullOrEmpty(line))
+                {
+                    if (end)
+                    {
+                        var item = response;
+                        pipeStream.Flush();
+                        item.Stream = pipeStream;
+                        response = null;
+                        pipeStream = null;
+                        end = false;
+                        Completed?.Invoke(Client, item);
+                        return;
+                    }
+                    else
+                    {
+                        goto Next;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        chunkeLength = int.Parse(line, System.Globalization.NumberStyles.HexNumber);
+                        if (chunkeLength == 0)
+                        {
+                            end = true;
+                        }
+                        else
+                            response.Length += chunkeLength;
+                    }
+                    catch (Exception e_)
+                    {
+                        throw e_;
                     }
                 }
             }

@@ -13,7 +13,7 @@ namespace FastApiClient
         {
             HttpApiClient client = new HttpApiClient(Host);
 
-            IDataService service = client.CreateWebapi<IDataService>();
+            IDataService service = client.Create<IDataService>();
 
             DateTime dt = service.GetTime();
 
@@ -23,29 +23,33 @@ namespace FastApiClient
 
             Console.WriteLine($"hello :{hello}");
 
-            var orders = service.ListOrders(3, null);
-            if (orders != null)
-                Console.WriteLine($"list orders: {orders.Count}");
-
-            orders = service.ListOrders();
-            if (orders != null)
-                Console.WriteLine($"list orders: {orders.Count}");
-
-            var emp = service.GetEmployee(7);
-            Console.WriteLine($"get employee id 7:{emp?.FirstName} {emp?.LastName}");
-
-            emp = service.EditEmployee(5, new Employee { FirstName = "fan", LastName = "henry" });
-            Console.WriteLine($"edit employee :{emp.EmployeeID} {emp?.FirstName} {emp?.LastName}");
-
-            var count = service.AddEmployee(null);
-            Console.WriteLine($"add employee :{count}");
-
-            count = service.AddEmployee(new Employee { EmployeeID = 3 }, new Employee { EmployeeID = 5 });
-            Console.WriteLine($"add employee :{count}");
-
             var login = service.Login("admin", "123456");
             Console.WriteLine($"login status:{login}");
 
+            var orders = service.Orders(3, null, 1, 20);
+            if (orders != null)
+                Console.WriteLine($"list orders: {orders.Count}");
+
+            var emp = service.EmployeeGet(7);
+            Console.WriteLine($"get employee id 7:{emp?.FirstName} {emp?.LastName}");
+
+            var empnames = service.EmployeesGetName();
+            Console.WriteLine($"employee names:{empnames.Count}");
+
+            emp = service.EmployeeEdit(5, new Employee { FirstName = "fan", LastName = "henry" });
+            Console.WriteLine($"edit employee :{emp?.EmployeeID} {emp?.FirstName} {emp?.LastName}");
+
+            var count = service.EmployeeAdd(null);
+            Console.WriteLine($"add employee :{count}");
+
+            count = service.EmployeeAdd(new Employee { EmployeeID = 3 }, new Employee { EmployeeID = 5 });
+            Console.WriteLine($"add employee :{count}");
+
+            var cust = service.Customers(10);
+            Console.WriteLine($"list customers :{cust.Count}");
+
+            var custNames = service.CustomersGetName();
+            Console.WriteLine($"list customers name :{custNames.Count}");
             Console.Read();
         }
     }
@@ -59,17 +63,24 @@ namespace FastApiClient
         [Get]
         string Hello(string name);
         [Get]
-        IList<Order> ListOrders();
-        [Get]
-        IList<Order> ListOrders(int employee, string customer);
-        [Get]
-        Employee GetEmployee(int id);
-        [Post]
-        Employee EditEmployee([CQuery]int id, Employee employee);
-        [Get]
         bool Login(string name, string pwd);
+        [Get]
+        List<Employee> Employees();
+        [Get]
+        Employee EmployeeGet(int id);
         [Post]
-        int AddEmployee(params Employee[] items);
+        int EmployeeAdd(params Employee[] items);
+        [Post]
+        Employee EmployeeEdit([CQuery]int id, Employee emp);
+        [Get]
+        List<EmployeeName> EmployeesGetName();
+        [Get]
+        List<Customer> Customers(int count);
+        [Get]
+        List<CustomerName> CustomersGetName();
+        [Get]
+        List<Order> Orders(int? employeeid, string customerid, int index, int size);
+
     }
 
     public class Customer
@@ -94,6 +105,37 @@ namespace FastApiClient
         public string Phone { get; set; }
 
         public string Fax { get; set; }
+    }
+
+    public class CustomerName
+    {
+        public string ID
+        {
+            get;
+            set;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+    }
+
+    public class EmployeeName
+    {
+        public int ID
+        {
+            get;
+            set;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+
     }
 
     public class Employee
