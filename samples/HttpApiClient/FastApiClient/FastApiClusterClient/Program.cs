@@ -19,6 +19,12 @@ namespace FastApiClusterClient
 
         private const string Host29 = "http://192.168.2.29:8080";
 
+        private const string Host30 = "http://192.168.2.30:8080";
+
+        private const string Host31 = "http://192.168.2.31:8080";
+
+        private const string Host32 = "http://192.168.2.32:8080";
+
         private static HttpClusterApi HttpClusterApi = new HttpClusterApi();
 
         private static IDataService DataService;
@@ -26,7 +32,7 @@ namespace FastApiClusterClient
         static void Main(string[] args)
         {
             HttpClusterApi.AddHost("*", Host25, Host29);
-            HttpClusterApi.AddHost("employee.*", Host26, Host27);
+            HttpClusterApi.GetUrlNode("employee.*").Add(Host26).Add(Host27).Add(Host30, 0);
             HttpClusterApi.AddHost("customer.*", Host28, Host29);
             HttpClusterApi.AddHost("orders.*", Host25, Host29);
             DataService = HttpClusterApi.Create<IDataService>();
@@ -128,7 +134,6 @@ namespace FastApiClusterClient
         Task<List<CustomerName>> CustomersGetName();
         [Get]
         Task<List<Order>> Orders(int? employeeid, string customerid, int index, int size);
-
     }
 
     //[JsonFormater]
