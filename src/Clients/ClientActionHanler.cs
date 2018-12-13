@@ -309,7 +309,7 @@ namespace BeetleX.FastHttpApi.Clients
             }
         }
 
-        public IHttpNode Node { get; set; }
+        public ApiNodeAgent NodeAgent { get; set; }
 
     }
 

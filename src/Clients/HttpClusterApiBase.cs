@@ -12,22 +12,109 @@ namespace BeetleX.FastHttpApi.Clients
     {
         public HttpClusterApi()
         {
-            DefaultNode = new HttpNode();
-            DetectionTime = 5000;
+            DefaultNode = new ApiNode("*");
+            DetectionTime = 2000;
             mDetectionTimer = new System.Threading.Timer(OnVerifyClients, null, DetectionTime, DetectionTime);
         }
 
+        private System.Threading.Timer mUploadNodeTimer;
+
+        private ApiClusterInfo mLastClusterInfo = new ApiClusterInfo();
+
         public int DetectionTime { get; set; }
+
+        public INodeSourceHandler NodeSourceHandler { get; set; }
+
+        public bool UpdateSuccess { get; set; }
+
+        public Exception UpdateExption { get; set; }
+
+        private void UpdateNodeInfo(ApiClusterInfo info)
+        {
+            List<string> removeUrls = new List<string>();
+            removeUrls.Add("*");
+            foreach (string key in mNodes.Keys)
+            {
+                removeUrls.Add(key);
+            }
+            foreach (var item in info.Urls)
+            {
+                string url = item.Name.ToLower();
+                removeUrls.Remove(url);
+                SetNode(url, item.GetNode());
+            }
+            foreach (string item in removeUrls)
+            {
+                RemoveNode(item);
+            }
+        }
+
+        private async void OnUploadNode_Callback(object sate)
+        {
+            mUploadNodeTimer.Change(-1, -1);
+            try
+            {
+                var info = await NodeSourceHandler.Load();
+                if (info.Version != mLastClusterInfo.Version)
+                {
+                    mLastClusterInfo = info;
+                    UpdateNodeInfo(info);
+                }
+                UpdateSuccess = true;
+                UpdateExption = null;
+            }
+            catch (Exception e_)
+            {
+                UpdateSuccess = false;
+                UpdateExption = e_;
+            }
+            finally
+            {
+                mUploadNodeTimer.Change(NodeSourceHandler.UpdateTime * 1000, NodeSourceHandler.UpdateTime * 1000);
+            }
+        }
+
+        public async Task<HttpClusterApi> LoadNodeSource()
+        {
+            if (NodeSourceHandler != null)
+            {
+                var info = await NodeSourceHandler.Load();
+                UpdateNodeInfo(info);
+                mLastClusterInfo = info;
+                mUploadNodeTimer = new System.Threading.Timer(OnUploadNode_Callback, null, NodeSourceHandler.UpdateTime * 1000, NodeSourceHandler.UpdateTime * 1000);
+            }
+            return this;
+        }
 
         private System.Threading.Timer mDetectionTimer;
 
-        private ConcurrentDictionary<string, IHttpNode> mNodes = new ConcurrentDictionary<string, IHttpNode>();
 
-        public ConcurrentDictionary<string, IHttpNode> Nodes => mNodes;
+        private ConcurrentDictionary<string, ApiNodeAgent> mAgents = new ConcurrentDictionary<string, ApiNodeAgent>();
 
-        public IHttpNode DefaultNode { get; set; }
+        private ConcurrentDictionary<string, IApiNode> mNodes = new ConcurrentDictionary<string, IApiNode>();
 
-        private IHttpNode SearchNode(string url)
+        public ConcurrentDictionary<string, IApiNode> Nodes => mNodes;
+
+        internal IApiNode DefaultNode { get; set; }
+
+        private IApiNode OnGetNode(string url)
+        {
+            url = url.ToLower();
+            if (mNodes.TryGetValue(url, out IApiNode node))
+                return node;
+            return null;
+        }
+
+        private void RemoveNode(string url)
+        {
+            SetNode(url, new ApiNode(url));
+            if (mAgents.TryGetValue(url, out ApiNodeAgent agent))
+            {
+                agent.Node = new ApiNode(url);
+            }
+        }
+
+        private IApiNode MatchNode(string url)
         {
             foreach (string key in mNodes.Keys)
             {
@@ -39,32 +126,74 @@ namespace BeetleX.FastHttpApi.Clients
             return null;
         }
 
-        private IHttpNode GetNode(string url)
+        public ApiNodeAgent GetAgent(string url)
         {
-            url = url.ToLower();
-            if (mNodes.TryGetValue(url, out IHttpNode node))
-                return node;
-            return null;
-        }
-
-        public IHttpNode this[string url]
-        {
-            get
+            IApiNode node = MatchNode(url);
+            if (node == null)
+                node = DefaultNode;
+            if (!mAgents.TryGetValue(node.Url, out ApiNodeAgent agent))
             {
-                IHttpNode node = SearchNode(url);
-                if (node == null)
-                    node = DefaultNode;
-                return node;
+                agent = new ApiNodeAgent();
+                agent.Url = node.Url;
+                agent.Node = node;
+                mAgents[node.Url] = agent;
             }
-
+            return agent;
         }
 
-        public HttpClusterApi AddHost(string url, IHttpNode node)
+        public HttpClusterApi SetNode(string url, IApiNode node)
         {
             if (url == "*")
                 DefaultNode = node;
             else
                 mNodes[url.ToLower()] = node;
+            if (mAgents.TryGetValue(url, out ApiNodeAgent agent))
+            {
+                agent.Node = node;
+            }
+            else
+            {
+                agent = new ApiNodeAgent();
+                agent.Url = url;
+                agent.Node = node;
+                mAgents[url] = agent;
+            }
+            return this;
+        }
+
+        private IApiNode CreateUrlNode(string url)
+        {
+            IApiNode node = new ApiNode(url);
+            mNodes[node.Url] = node;
+            ApiNodeAgent nodeAgent = new ApiNodeAgent();
+            nodeAgent.Node = node;
+            nodeAgent.Url = url;
+            mAgents[node.Url] = nodeAgent;
+            return node;
+        }
+
+        public IApiNode GetUrlNode(string url)
+        {
+            url = url.ToLower();
+            if (url == "*")
+                return DefaultNode;
+            IApiNode node = OnGetNode(url);
+            if (node == null)
+            {
+                node = CreateUrlNode(url);
+            }
+            return node;
+        }
+
+        public HttpClusterApi AddHost(string url, string host, int weight = 10)
+        {
+            url = url.ToLower();
+            IApiNode node = OnGetNode(url);
+            if (node == null)
+            {
+                node = CreateUrlNode(url);
+            }
+            node.Add(host, weight);
             return this;
         }
 
@@ -84,16 +213,9 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 if (host != null)
                 {
-                    url = url.ToLower();
-                    IHttpNode node = GetNode(url);
-                    if (node == null)
-                    {
-                        node = new HttpNode();
-                        mNodes[url] = node;
-                    }
                     foreach (string item in host)
                     {
-                        node.Add(item);
+                        AddHost(url, item);
                     }
                 }
             }
@@ -120,7 +242,7 @@ namespace BeetleX.FastHttpApi.Clients
             mDetectionTimer.Change(-1, -1);
             try
             {
-                foreach (IHttpNode node in mNodes.Values)
+                foreach (IApiNode node in mNodes.Values)
                 {
                     node.Verify();
                 }
@@ -139,12 +261,9 @@ namespace BeetleX.FastHttpApi.Clients
         public ClusterStats Stats()
         {
             ClusterStats result = new ClusterStats();
-            foreach (string key in mNodes.Keys)
+            foreach (var node in mNodes.Values)
             {
-                if (mNodes.TryGetValue(key, out IHttpNode node))
-                {
-                    result.Items.Add(new ClusterStats.UrlStats() { Url = key, Node = node });
-                }
+                result.Items.Add(new ClusterStats.UrlStats() { Url = node.Url, Node = node });
             }
             result.Items.Add(new ClusterStats.UrlStats() { Url = "*", Node = DefaultNode });
             result.Items.Sort();
@@ -166,7 +285,7 @@ namespace BeetleX.FastHttpApi.Clients
 
             public string Url { get; set; }
 
-            public IHttpNode Node { get; set; }
+            public IApiNode Node { get; set; }
 
             public int CompareTo(object obj)
             {
@@ -182,12 +301,11 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 var item = Items[i];
                 stringBuilder.AppendLine($"  |-Url:{item.Url}");
-                if (item.Node.Clients != null)
-                    foreach (var client in item.Node.Clients)
-                    {
-                        string available = client.Available ? "Y" : "N";
-                        stringBuilder.AppendLine($"  |--{client.Host}[{available}] [{client}]");
-                    }
+                foreach (var client in item.Node.Hosts.ToArray())
+                {
+                    string available = client.Available ? "Y" : "N";
+                    stringBuilder.AppendLine($"  |--{client.Host}[{available}][W:{client.Weight}] [{client}]");
+                }
             }
             return stringBuilder.ToString();
         }
@@ -206,9 +324,9 @@ namespace BeetleX.FastHttpApi.Clients
         {
             ClientActionHanler handler = ClientActionFactory.GetHandler((MethodInfo)targetMethod);
             var rinfo = handler.GetRequestInfo(args);
-            if (handler.Node == null)
-                handler.Node = Cluster[rinfo.Url];
-            HttpHost host = handler.Node.GetClient();
+            if (handler.NodeAgent == null)
+                handler.NodeAgent = Cluster.GetAgent(rinfo.Url);
+            HttpHost host = handler.NodeAgent.Node.GetClient();
             if (host == null)
                 throw new HttpClientException(null, null, "no http nodes are available");
             if (!handler.Async)
@@ -247,71 +365,203 @@ namespace BeetleX.FastHttpApi.Clients
         }
     }
 
-    public interface IHttpNode
+    public class ApiNodeAgent
     {
-        void Add(string host);
+        public string Url { get; set; }
+
+        public IApiNode Node { get; set; }
+    }
+
+    public interface IApiNode
+    {
+        string Url { get; set; }
+
+        IApiNode Add(string host, int weight);
+
+        IApiNode Add(string host);
+
+        IApiNode Add(IEnumerable<string> hosts);
 
         HttpHost GetClient();
 
-        IList<HttpHost> Clients { get; }
+        List<HttpHost> Hosts { get; }
 
         void Verify();
     }
 
-    public class HttpNode : IHttpNode
+    public class ApiNode : IApiNode
     {
-        public IList<HttpHost> Clients => mClients;
+        public ApiNode(string url)
+        {
+            Url = url.ToLower();
+        }
+        public string Url { get; set; }
+
+        public List<HttpHost> Hosts => mClients;
 
         private List<HttpHost> mClients = new List<HttpHost>();
 
-        public void Add(string host)
+        private long mID = 1;
+
+        private int TABLE_SIZE = 50;
+
+        private HttpHost[] mHttpHostTable;
+
+        public bool Available { get; private set; }
+
+        public long Status
+        {
+            get
+            {
+                long result = 0;
+                foreach (var item in mClients.ToArray())
+                {
+                    if (item.Available)
+                        result |= item.ID;
+                    else
+                        result |= 0;
+                }
+                if (result > 0)
+                    Available = true;
+                return result;
+            }
+        }
+
+        private long mLastStatus = 0;
+
+        internal void RefreshWeightTable()
+        {
+            var status = Status;
+            if (mLastStatus == status)
+                return;
+            else
+                mLastStatus = status;
+            HttpHost[] table = new HttpHost[TABLE_SIZE];
+            int sum = 0;
+            mClients.Sort((x, y) => y.Weight.CompareTo(x.Weight));
+            List<HttpHost> aclients = new List<HttpHost>();
+            for (int i = 0; i < mClients.Count; i++)
+            {
+                if (mClients[i].Available)
+                {
+                    sum += mClients[i].Weight;
+                    aclients.Add(mClients[i]);
+                }
+            }
+            int count = 0;
+            for (int i = 0; i < aclients.Count; i++)
+            {
+                int size = (int)((double)aclients[i].Weight / (double)sum * (double)TABLE_SIZE);
+                for (int k = 0; k < size; k++)
+                {
+                    table[count] = aclients[i];
+                    count++;
+                    if (count >= TABLE_SIZE)
+                        goto END;
+                }
+            }
+            while (count < TABLE_SIZE)
+            {
+                table[count] = aclients[0];
+                count++;
+            }
+        END:
+            Shuffle(table);
+            mHttpHostTable = table;
+        }
+
+        private void Shuffle(HttpHost[] list)
+        {
+            Random rng = new Random();
+            int n = list.Length;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                HttpHost value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        public IApiNode Add(IEnumerable<string> hosts)
+        {
+            if (hosts != null)
+            {
+                foreach (var item in hosts)
+                {
+                    Add(item, 10);
+                }
+            }
+            return this;
+        }
+
+        public IApiNode Add(string host, int weight)
         {
             Uri url = new Uri(host);
             if (mClients.Find(c => c.Host == url.Host && c.Port == url.Port) == null)
             {
-                mClients.Add(new HttpHost(host));
+                var item = new HttpHost(host);
+                item.ID = mID << mClients.Count;
+                item.Weight = weight;
+                mClients.Add(item);
+                RefreshWeightTable();
             }
+            return this;
         }
 
-        [ThreadStatic]
-        private static int mIndex;
+        public IApiNode Add(string host)
+        {
+            Add(host, 10);
+            return this;
+        }
 
-
+        private long mIndex;
 
         public HttpHost GetClient()
         {
-            int count = 0;
-            while (count < mClients.Count)
+            if (Available)
             {
-                mIndex++;
-                HttpHost client = mClients[mIndex % mClients.Count];
-                if (client.Available)
-                    return client;
-                count++;
+                HttpHost[] table = mHttpHostTable;
+                if (table == null || table.Length == 0)
+                    return null;
+                int count = 0;
+                long index = System.Threading.Interlocked.Increment(ref mIndex);
+                while (count < TABLE_SIZE)
+                {
+
+                    HttpHost client = table[index % TABLE_SIZE];
+                    if (client.Available)
+                        return client;
+                    index++;
+                    count++;
+                }
             }
             return null;
         }
 
         public void Verify()
         {
+            int count = 0;
             for (int i = 0; i < mClients.Count; i++)
             {
                 HttpHost client = mClients[i];
                 if (!client.Available && !client.InVerify)
                 {
                     client.InVerify = true;
+                    count++;
                     Task.Run(() => OnVerify(client));
                 }
             }
+            RefreshWeightTable();
         }
 
-        private void OnVerify(HttpHost host)
+        private async void OnVerify(HttpHost host)
         {
             try
             {
                 var request = host.Get("/", null, null, null, null);
-                var result = request.Execute();
-                result.Wait(20000);
+                var result = await request.Execute();
             }
             catch
             {

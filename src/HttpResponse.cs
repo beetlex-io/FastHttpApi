@@ -99,11 +99,20 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public void Result()
+        internal void Result()
         {
             Completed(null);
         }
 
+        public void SetDate()
+        {
+            SetDate(DateTime.Now);
+        }
+
+        public void SetDate(DateTime dateTime)
+        {
+            Header[HeaderTypeFactory.DATE] = dateTime.ToUniversalTime().ToString("r");
+        }
 
 
         private void Completed(object data)
@@ -127,6 +136,8 @@ namespace BeetleX.FastHttpApi
             Code = code;
             CodeMsg = msg;
         }
+
+
 
         private void OnWrite(PipeStream stream)
         {

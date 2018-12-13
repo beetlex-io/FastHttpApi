@@ -14,20 +14,24 @@ namespace WebServer.Controllers
         {
             return DateTime.Now;
         }
+
         public IActionResult Hello(string name)
         {
             return new JsonResult($"hello {name}");
         }
+
         public bool Login(string name, string pwd)
         {
             if (name == "admin" && pwd == "123456")
                 return true;
             return false;
         }
+
         public object Employees()
         {
             return DataHelper.Employees;
         }
+
         public Employee EmployeeGet(int id)
         {
             Employee result = DataHelper.Employees.Find(e => e.EmployeeID == id);
@@ -35,11 +39,13 @@ namespace WebServer.Controllers
                 result = new Employee();
             return result;
         }
+
         [HttpPost]
         public int EmployeeAdd([FromBody]List<Employee> items)
         {
             return items == null ? 0 : items.Count;
         }
+
         [HttpPost]
         public Employee EmployeeEdit(int id, [FromBody]Employee emp)
         {
@@ -54,10 +60,12 @@ namespace WebServer.Controllers
             }
             return null;
         }
+
         public object EmployeesGetName()
         {
             return from e in DataHelper.Employees select new { ID = e.EmployeeID, Name = e.FirstName + " " + e.LastName };
         }
+
         public object Customers(int count)
         {
             List<Customer> result = new List<Customer>();
@@ -69,10 +77,12 @@ namespace WebServer.Controllers
             }
             return result;
         }
+
         public object CustomersGetName()
         {
             return from c in DataHelper.Customers select new { ID = c.CustomerID, Name = c.CompanyName };
         }
+
         public object Orders(int employeeid, string customerid, int index, int size)
         {
             Func<Order, bool> exp = o => (employeeid == 0 || o.EmployeeID == employeeid)

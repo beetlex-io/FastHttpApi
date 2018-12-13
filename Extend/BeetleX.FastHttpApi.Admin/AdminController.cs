@@ -93,7 +93,7 @@ namespace BeetleX.FastHttpApi.Admin
             Server.SaveConfig();
             if (Server.EnableLog(EventArgs.LogType.Warring))
             {
-                Server.BaseServer.Log(EventArgs.LogType.Warring, context.Session, "{0} setting {1}", context.Request.ClientIPAddress,
+                Server.BaseServer.Log(EventArgs.LogType.Warring, context.Session, "{0} setting {1}", context.Request.RemoteIPAddress,
                     Newtonsoft.Json.JsonConvert.SerializeObject(setting));
             }
         }
@@ -182,7 +182,7 @@ namespace BeetleX.FastHttpApi.Admin
             string vname = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager);
             if (name == vname && pwd == vpwd)
             {
-                string ip = context.Request.ClientIPAddress.Split(':')[0];
+                string ip = context.Request.RemoteIPAddress.Split(':')[0];
                 string tokey = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager + DateTime.Now.Day + ip);
                 context.Response.SetCookie(LOGIN_TOKEN, tokey, cookieTimeOut);
                 context.Response.SetCookie(LOGIN_KEY, "");
@@ -213,7 +213,7 @@ namespace BeetleX.FastHttpApi.Admin
         public override bool Executing(ActionContext context)
         {
             string tokey = context.HttpContext.Request.Cookies[_Admin.LOGIN_TOKEN];
-            string ip = context.HttpContext.Request.ClientIPAddress.Split(':')[0];
+            string ip = context.HttpContext.Request.RemoteIPAddress.Split(':')[0];
             string stokey = HttpParse.MD5Encrypt(context.HttpContext.Server.ServerConfig.Manager
                 + DateTime.Now.Day
                 + ip);

@@ -47,13 +47,11 @@ namespace BeetleX.FastHttpApi
 
         internal HttpResponse CreateResponse()
         {
-
             if (Response == null)
                 Response = new HttpResponse();
             else
                 Response.Reset();
             HttpResponse response = Response;
-            //HttpResponse response =  new HttpResponse();
             response.HttpVersion = this.HttpVersion;
             response.Session = this.Session;
             response.HttpVersion = this.HttpVersion;
@@ -73,7 +71,6 @@ namespace BeetleX.FastHttpApi
                 mDataContxt.Clear();
                 mCookies.Clear();
                 Reset();
-                // this.Server.Recovery(this);
             }
         }
 

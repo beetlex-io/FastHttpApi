@@ -25,8 +25,7 @@ namespace BeetleX.FastHttpApi
 
         public HttpApiServer(HttpConfig serverConfig)
         {
-            mFileLog = new FileLog();
-
+            mFileLog = new FileLogWriter("BEETLEX_HTTP_SERVER");
             FrameSerializer = this;
             if (serverConfig != null)
             {
@@ -59,7 +58,7 @@ namespace BeetleX.FastHttpApi
         public ServerCounter ServerCounter => mServerCounter;
 
 
-        private FileLog mFileLog;
+        private FileLogWriter mFileLog;
 
         private long mCurrentHttpRequests;
 
@@ -95,11 +94,6 @@ namespace BeetleX.FastHttpApi
 
         internal HttpRequest CreateRequest(ISession session)
         {
-            //HttpRequest request;
-            //if (!mRequestPool.TryPop(out request))
-            //    request = new HttpRequest();
-            //request.Init(session, this);
-            //return request;
             HttpToken token = (HttpToken)session.Tag;
             return token.Request;
         }
@@ -545,7 +539,7 @@ namespace BeetleX.FastHttpApi
                 if (ServerConfig.LogToConsole)
                     base.Log(server, e);
                 if (ServerConfig.WriteLog)
-                    mFileLog.Add(e);
+                    mFileLog.Add(e.Type, e.Message);
             }
             else
                 ServerLog(server, e);

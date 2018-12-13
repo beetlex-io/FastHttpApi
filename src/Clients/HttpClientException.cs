@@ -11,6 +11,10 @@ namespace BeetleX.FastHttpApi.Clients
             Request = request;
             Host = host;
             SocketError = false;
+            if (innerError != null && (innerError is System.Net.Sockets.SocketException || innerError is ObjectDisposedException))
+            {
+                SocketError = true;
+            }
         }
         public Uri Host { get; set; }
 

@@ -25,10 +25,10 @@ namespace FastApiClusterClient
 
         static void Main(string[] args)
         {
-            HttpClusterApi.AddHost("*", Host25, Host26);
+            HttpClusterApi.AddHost("*", Host25, Host29);
             HttpClusterApi.AddHost("employee.*", Host26, Host27);
             HttpClusterApi.AddHost("customer.*", Host28, Host29);
-            HttpClusterApi.AddHost("orders.*", Host25, Host26, Host27, Host28, Host29);
+            HttpClusterApi.AddHost("orders.*", Host25, Host29);
             DataService = HttpClusterApi.Create<IDataService>();
             for (int i = 0; i < 10; i++)
             {
@@ -84,7 +84,13 @@ namespace FastApiClusterClient
                 }
             });
 
-
+            System.Threading.ThreadPool.QueueUserWorkItem(async (o) =>
+            {
+                while (true)
+                {
+                    await DataService.Orders(3, null, 1, 5);
+                }
+            });
 
             System.Threading.ThreadPool.QueueUserWorkItem(async (o) =>
             {
@@ -95,7 +101,6 @@ namespace FastApiClusterClient
             });
         }
     }
-
 
     [JsonFormater]
     [Controller(BaseUrl = "Home")]

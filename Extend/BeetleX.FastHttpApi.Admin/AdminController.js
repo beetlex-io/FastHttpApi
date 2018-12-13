@@ -6,7 +6,7 @@ https://github.com/IKende/FastHttpApi
 
 
 
-var _AdminListApiUrl='/_admin/listapi';
+var _AdminListApiUrl='/_admin/ListApi';
 /**
 * 'var result= await _AdminListApi(params);'
 **/
@@ -21,7 +21,7 @@ function _AdminListApiAsync(useHttp)
 {
     return api(_AdminListApiUrl,{},useHttp);
 }
-var _AdminGetKeyUrl='/_admin/getkey';
+var _AdminGetKeyUrl='/_admin/GetKey';
 /**
 * 'var result= await _AdminGetKey(params);'
 **/
@@ -36,7 +36,7 @@ function _AdminGetKeyAsync(useHttp)
 {
     return api(_AdminGetKeyUrl,{},useHttp);
 }
-var _AdminGetSettingInfoUrl='/_admin/getsettinginfo';
+var _AdminGetSettingInfoUrl='/_admin/GetSettingInfo';
 /**
 * 'var result= await _AdminGetSettingInfo(params);'
 **/
@@ -51,7 +51,7 @@ function _AdminGetSettingInfoAsync(useHttp)
 {
     return api(_AdminGetSettingInfoUrl,{},useHttp);
 }
-var _AdminSettingUrl='/_admin/setting';
+var _AdminSettingUrl='/_admin/Setting';
 /**
 * 'var result= await _AdminSetting(params);'
 **/
@@ -66,7 +66,7 @@ function _AdminSettingAsync(setting,useHttp)
 {
     return api(_AdminSettingUrl,{setting:setting},useHttp,true);
 }
-var _AdminLogConnectUrl='/_admin/logconnect';
+var _AdminLogConnectUrl='/_admin/LogConnect';
 /**
 * 'var result= await _AdminLogConnect(params);'
 **/
@@ -81,7 +81,7 @@ function _AdminLogConnectAsync(useHttp)
 {
     return api(_AdminLogConnectUrl,{},useHttp);
 }
-var _AdminLogDisConnectUrl='/_admin/logdisconnect';
+var _AdminLogDisConnectUrl='/_admin/LogDisConnect';
 /**
 * 'var result= await _AdminLogDisConnect(params);'
 **/
@@ -96,7 +96,7 @@ function _AdminLogDisConnectAsync(useHttp)
 {
     return api(_AdminLogDisConnectUrl,{},useHttp);
 }
-var _AdminCloseSessionUrl='/_admin/closesession';
+var _AdminCloseSessionUrl='/_admin/CloseSession';
 /**
 * 'var result= await _AdminCloseSession(params);'
 **/
@@ -111,7 +111,7 @@ function _AdminCloseSessionAsync(items,useHttp)
 {
     return api(_AdminCloseSessionUrl,{items:items},useHttp,true);
 }
-var _AdminGetServerInfoUrl='/_admin/getserverinfo';
+var _AdminGetServerInfoUrl='/_admin/GetServerInfo';
 /**
 * 'var result= await _AdminGetServerInfo(params);'
 **/
@@ -126,7 +126,7 @@ function _AdminGetServerInfoAsync(useHttp)
 {
     return api(_AdminGetServerInfoUrl,{},useHttp);
 }
-var _AdminListConnectionUrl='/_admin/listconnection';
+var _AdminListConnectionUrl='/_admin/ListConnection';
 /**
 * 'var result= await _AdminListConnection(params);'
 **/
@@ -141,7 +141,7 @@ function _AdminListConnectionAsync(index,useHttp)
 {
     return api(_AdminListConnectionUrl,{index:index},useHttp);
 }
-var _AdminLoginUrl='/_admin/login';
+var _AdminLoginUrl='/_admin/Login';
 /**
 * 'var result= await _AdminLogin(params);'
 **/

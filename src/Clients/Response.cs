@@ -84,6 +84,7 @@ namespace BeetleX.FastHttpApi.Clients
             return mState;
         }
 
+
         [ThreadStatic]
         private static Response mCurrent;
         public static Response Current

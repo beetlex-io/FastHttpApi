@@ -47,7 +47,6 @@ namespace BeetleX.FastHttpApi
             {
                 if (FilterExecuting())
                 {
-
                     try
                     {
                         Result = Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
@@ -60,11 +59,11 @@ namespace BeetleX.FastHttpApi
                     {
                         FilterExecuted();
                     }
-                    if (Exception != null)
-                        resultHandler.Error(Exception);
-                    else
-                        resultHandler.Success(Result);
                 }
+                if (Exception != null)
+                    resultHandler.Error(Exception);
+                else
+                    resultHandler.Success(Result);
             }
             catch (Exception e_)
             {
@@ -95,11 +94,11 @@ namespace BeetleX.FastHttpApi
                     {
                         FilterExecuted();
                     }
-                    if (Exception != null)
-                        resultHandler.Error(Exception);
-                    else
-                        resultHandler.Success(Result);
                 }
+                if (Exception != null)
+                    resultHandler.Error(Exception);
+                else
+                    resultHandler.Success(Result);
             }
             catch (Exception e_)
             {

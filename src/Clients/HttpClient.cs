@@ -17,7 +17,7 @@ namespace BeetleX.FastHttpApi
             Port = port;
             TimeOut = 10000;
             Async = true;
-            MaxConnections = 50;
+            MaxConnections = 100;
             Clients = new List<HttpClient>();
         }
 
@@ -91,7 +91,6 @@ namespace BeetleX.FastHttpApi
                     result.Client = client;
                     result.Node = new LinkedListNode<HttpClient>(result);
                     Clients.Add(result);
-
                 }
                 else
                 {
@@ -199,17 +198,19 @@ namespace BeetleX.FastHttpApi
 
         public HttpHost(Uri host)
         {
-            Uri = host;
+            this.Uri = host;
             Formater = new FormUrlFormater();
-            Host = Uri.Host;
-            Port = Uri.Port;
-            mPoolKey = $"{Uri.Host}:{Uri.Port}";
+            Host = this.Uri.Host;
+            Port = this.Uri.Port;
+            mPoolKey = $"{this.Uri.Host}:{this.Uri.Port}";
             mPool = HttpClientPoolFactory.GetPool(mPoolKey, this.Uri);
             Available = true;
             InVerify = false;
         }
 
         private HttpClientPool mPool;
+
+        public long ID { get; set; }
 
         private long mSuccess;
 
@@ -218,6 +219,8 @@ namespace BeetleX.FastHttpApi
         private long mError;
 
         private int mSocketErrors;
+
+        public int Weight { get; set; }
 
         public HttpClientPool Pool => mPool;
 
