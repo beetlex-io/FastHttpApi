@@ -41,8 +41,7 @@ namespace BeetleX.FastHttpApi.Data
             value = false;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Boolean)
                     {
@@ -64,8 +63,7 @@ namespace BeetleX.FastHttpApi.Data
             value = DateTime.Now;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Date)
                     {
@@ -87,8 +85,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Float)
                     {
@@ -110,8 +107,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Float)
                     {
@@ -133,8 +129,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Float)
                     {
@@ -156,8 +151,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -179,8 +173,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -202,8 +195,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -219,16 +211,13 @@ namespace BeetleX.FastHttpApi.Data
             return false;
         }
 
-
-
         public bool TryGetUInt(string name, out uint value)
         {
             object data;
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -250,8 +239,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -273,8 +261,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -296,8 +283,7 @@ namespace BeetleX.FastHttpApi.Data
             value = 0;
             if (GetProperty(name, out data))
             {
-                JProperty token = data as JProperty;
-                if (token != null)
+                if (data is JProperty token)
                 {
                     if (token.Type != JTokenType.Integer)
                     {
@@ -319,8 +305,7 @@ namespace BeetleX.FastHttpApi.Data
             value = (char)0;
             if (GetProperty(name, out data))
             {
-                JToken token = data as JToken;
-                if (token != null)
+                if (data is JToken token)
                     value = token.ToObject<char>();
                 else
                     return char.TryParse((string)data, out value);
@@ -328,15 +313,13 @@ namespace BeetleX.FastHttpApi.Data
             return false;
         }
 
-
         public bool TryGetString(string name, out string value)
         {
             object data;
             value = null;
             if (GetProperty(name, out data))
             {
-                JToken token = data as JToken;
-                if (token != null)
+                if (data is JToken token)
                     value = token.ToObject<string>();
                 else
                     value = (string)data;
@@ -350,8 +333,7 @@ namespace BeetleX.FastHttpApi.Data
             object value;
             if (GetProperty(name, out value))
             {
-                JToken token = value as JToken;
-                if (token != null)
+                if (value is JToken token)
                 {
                     JProperty jProperty = token as JProperty;
                     if (jProperty != null)

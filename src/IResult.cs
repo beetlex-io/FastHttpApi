@@ -210,11 +210,12 @@ namespace BeetleX.FastHttpApi
         {
             using (stream.LockFree())
             {
-                using (StreamWriter writer = new StreamWriter(stream))
-                {
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(writer, Data);
-                }
+                //using (StreamWriter writer = new StreamWriter(stream))
+                //{
+                //    //JsonSerializer serializer = new JsonSerializer();
+                //}
+                response.JsonSerializer.Serialize(response.StreamWriter, Data);
+                response.StreamWriter.Flush();
             }
         }
     }

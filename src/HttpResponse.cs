@@ -1,6 +1,7 @@
 ﻿using BeetleX.Buffers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,7 +14,12 @@ namespace BeetleX.FastHttpApi
         {
             Header = new Header();
             AsyncResult = false;
+
         }
+
+        internal Newtonsoft.Json.JsonSerializer JsonSerializer { get; set; }
+
+        internal StreamWriter StreamWriter { get; set; }
 
         private int mCompletedStatus = 0;
 
@@ -200,7 +206,6 @@ namespace BeetleX.FastHttpApi
                             int len = stream.CacheLength;
                             result.Write(stream, this);
                             int count = stream.CacheLength - len;
-                            //contentLength.Full("Content-Length: " + count.ToString().PadRight(10) + "\r\n\r\n", stream.Encoding);
                             contentLength.Full(count.ToString().PadRight(10), stream.Encoding);
                         }
 
@@ -232,6 +237,15 @@ namespace BeetleX.FastHttpApi
             try
             {
                 OnWrite(stream);
+            }
+            catch (Exception e_)
+            {
+                HttpApiServer server = Request.Server;
+                if (server.EnableLog(EventArgs.LogType.Error))
+                {
+                    server.Log(EventArgs.LogType.Error, $"{Request.RemoteIPAddress} {Request.Method} {Request.Url} response write data error {e_.Message}@{e_.StackTrace}");
+                    Request.Session.Dispose();
+                }
             }
             finally
             {

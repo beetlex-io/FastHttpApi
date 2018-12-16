@@ -1,6 +1,7 @@
 ﻿using BeetleX.Buffers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 
@@ -33,6 +34,8 @@ namespace BeetleX.FastHttpApi
             this.Server = httpApiServer;
         }
 
+
+
         internal void Reset()
         {
             mState = LoadedState.None;
@@ -48,7 +51,11 @@ namespace BeetleX.FastHttpApi
         internal HttpResponse CreateResponse()
         {
             if (Response == null)
+            {
                 Response = new HttpResponse();
+                Response.JsonSerializer = new Newtonsoft.Json.JsonSerializer();
+                Response.StreamWriter = new StreamWriter(Session.Stream.ToPipeStream());
+            }
             else
                 Response.Reset();
             HttpResponse response = Response;

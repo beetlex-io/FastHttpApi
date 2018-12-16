@@ -13,6 +13,7 @@ namespace BeetleX.FastHttpApi.Clients
         public HttpClusterApi()
         {
             DefaultNode = new ApiNode("*");
+
             DetectionTime = 2000;
             mDetectionTimer = new System.Threading.Timer(OnVerifyClients, null, DetectionTime, DetectionTime);
         }
@@ -187,13 +188,20 @@ namespace BeetleX.FastHttpApi.Clients
 
         public HttpClusterApi AddHost(string url, string host, int weight = 10)
         {
-            url = url.ToLower();
-            IApiNode node = OnGetNode(url);
-            if (node == null)
+            if (url == "*")
             {
-                node = CreateUrlNode(url);
+                DefaultNode.Add(host, weight);
             }
-            node.Add(host, weight);
+            else
+            {
+                url = url.ToLower();
+                IApiNode node = OnGetNode(url);
+                if (node == null)
+                {
+                    node = CreateUrlNode(url);
+                }
+                node.Add(host, weight);
+            }
             return this;
         }
 
@@ -403,7 +411,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         private long mID = 1;
 
-        private int TABLE_SIZE = 50;
+        public const int TABLE_SIZE = 50;
 
         private HttpHost[] mHttpHostTable;
 
@@ -460,9 +468,11 @@ namespace BeetleX.FastHttpApi.Clients
                         goto END;
                 }
             }
+            int index = 0;
             while (count < TABLE_SIZE)
             {
-                table[count] = aclients[0];
+                table[count] = aclients[index % aclients.Count];
+                index++;
                 count++;
             }
         END:
