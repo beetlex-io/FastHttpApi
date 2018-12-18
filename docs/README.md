@@ -7,6 +7,7 @@
 6. [集成JWT验证](http://www.ikende.com/Doc/b69b518e4ae64a2695fd9c59fd33b5fc.html)
 7. [自定义返回内容](http://www.ikende.com/Doc/7e448afb6f0749dc981d2e55bc0d1ceb.html)
 8. [异步处理](http://www.ikende.com/Doc/9c502fd684c54dd8ad1c168bb497e2e5.html)
-9. [基准性能测试](http://www.ikende.com/Doc/9832421ae5b34992a9686e20fc8d795d.html)
+9. [配置HTTPS访问](http://www.ikende.com/Doc/a20526fc39624478848d913e1ab276f4.html)
+10. [BeetleX和Asp.net Core之webapi基础性能对比](http://www.ikende.com/Doc/1485923f6db44091b7f56aa03136444a.html)
 
 ## ClientApi
