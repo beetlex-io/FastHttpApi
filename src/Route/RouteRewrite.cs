@@ -11,7 +11,7 @@ namespace BeetleX.FastHttpApi
         public RouteRewrite(HttpApiServer server)
         {
             mServer = server;
-            this.UrlIgnoreCase = mServer.ServerConfig.UrlIgnoreCase;
+            this.UrlIgnoreCase = mServer.Options.UrlIgnoreCase;
         }
 
         public bool UrlIgnoreCase { get; set; }

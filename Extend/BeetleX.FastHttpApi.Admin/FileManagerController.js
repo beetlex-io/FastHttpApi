@@ -6,7 +6,7 @@ https://github.com/IKende/FastHttpApi
 
 
 
-var _FileManagerCreateFolderUrl='/_admin/files/createfolder';
+var _FileManagerCreateFolderUrl='/_admin/files/CreateFolder';
 /**
 * 'var result= await _FileManagerCreateFolder(params);'
 **/
@@ -21,7 +21,7 @@ function _FileManagerCreateFolderAsync(folder,name,useHttp)
 {
     return api(_FileManagerCreateFolderUrl,{folder:folder,name:name},useHttp);
 }
-var _FileManagerUploadFileUrl='/_admin/files/uploadfile';
+var _FileManagerUploadFileUrl='/_admin/files/UploadFile';
 /**
 * 'var result= await _FileManagerUploadFile(params);'
 **/
@@ -36,7 +36,7 @@ function _FileManagerUploadFileAsync(folder,info,useHttp)
 {
     return api(_FileManagerUploadFileUrl,{folder:folder,info:info},useHttp,true);
 }
-var _FileManagerDeleteResourceUrl='/_admin/files/deleteresource';
+var _FileManagerDeleteResourceUrl='/_admin/files/DeleteResource';
 /**
 * 'var result= await _FileManagerDeleteResource(params);'
 **/
@@ -51,7 +51,7 @@ function _FileManagerDeleteResourceAsync(folder,name,file,useHttp)
 {
     return api(_FileManagerDeleteResourceUrl,{folder:folder,name:name,file:file},useHttp);
 }
-var _FileManagerListUrl='/_admin/files/list';
+var _FileManagerListUrl='/_admin/files/List';
 /**
 * 'var result= await _FileManagerList(params);'
 **/

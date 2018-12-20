@@ -37,11 +37,11 @@ namespace BeetleX.FastHttpApi
                             OnControllerInstance(e);
                             if (e.Controller == null)
                             {
-                                Register(Server.ServerConfig, type, Activator.CreateInstance(type), ca.BaseUrl, Server, ca);
+                                Register(Server.Options, type, Activator.CreateInstance(type), ca.BaseUrl, Server, ca);
                             }
                             else
                             {
-                                Register(Server.ServerConfig, type, e.Controller, ca.BaseUrl, Server, ca);
+                                Register(Server.Options, type, e.Controller, ca.BaseUrl, Server, ca);
                             }
                         }
                         catch (Exception e_)
@@ -137,7 +137,7 @@ namespace BeetleX.FastHttpApi
             ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
             if (ca != null)
             {
-                Register(this.Server.ServerConfig, type, controller, ca.BaseUrl, this.Server, ca);
+                Register(this.Server.Options, type, controller, ca.BaseUrl, this.Server, ca);
             }
         }
 
@@ -159,7 +159,7 @@ namespace BeetleX.FastHttpApi
                 filters.Remove(item);
         }
 
-        private void Register(HttpConfig config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca)
+        private void Register(HttpOptions config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca)
         {
             DataConvertAttribute controllerDataConvert = controllerType.GetCustomAttribute<DataConvertAttribute>(false);
             OptionsAttribute controllerOptionsAttribute = controllerType.GetCustomAttribute<OptionsAttribute>(false);
@@ -238,7 +238,7 @@ namespace BeetleX.FastHttpApi
                     route = put.Route;
                 }
 
-                if (server.ServerConfig.UrlIgnoreCase)
+                if (server.Options.UrlIgnoreCase)
                 {
                     url = sourceUrl.ToLower();
                 }
@@ -315,7 +315,7 @@ namespace BeetleX.FastHttpApi
             }
             result.Url = url.Value<string>();
             string baseurl = result.Url;
-            if (server.ServerConfig.UrlIgnoreCase)
+            if (server.Options.UrlIgnoreCase)
                 baseurl = HttpParse.CharToLower(result.Url);
             if (baseurl[0] != '/')
                 baseurl = "/" + baseurl;
@@ -355,7 +355,7 @@ namespace BeetleX.FastHttpApi
                         server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "{0} ws execute {1} inner error {2}@{3}", request.RemoteIPAddress, request.Url, e_.Message, e_.StackTrace);
                     result.Code = 500;
                     result.Error = e_.Message;
-                    if (server.ServerConfig.OutputStackTrace)
+                    if (server.Options.OutputStackTrace)
                     {
                         result.StackTrace = e_.StackTrace;
                     }
@@ -418,7 +418,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (server.EnableLog(EventArgs.LogType.Error))
                         server.Log(EventArgs.LogType.Error, $"{request.RemoteIPAddress} http {request.Method} { request.Url} inner error {e_.Message}@{e_.StackTrace}");
-                    InnerErrorResult result = new InnerErrorResult($"http execute {request.BaseUrl} error ", e_, server.ServerConfig.OutputStackTrace);
+                    InnerErrorResult result = new InnerErrorResult($"http execute {request.BaseUrl} error ", e_, server.Options.OutputStackTrace);
                     response.Result(result);
 
                 }

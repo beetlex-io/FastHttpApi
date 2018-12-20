@@ -196,7 +196,7 @@ namespace BeetleX.FastHttpApi.Clients
                 if (result.QueryString == null)
                     result.QueryString = new Dictionary<string, string>();
                 foreach (var kv in mQueryString)
-                    result.QueryString[kv.Key] = kv.Value;
+                    result.QueryString[kv.Key] =  kv.Value;
             }
             result.Method = this.Method;
             StringBuilder sb = new StringBuilder();

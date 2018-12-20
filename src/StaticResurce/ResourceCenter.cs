@@ -11,18 +11,18 @@ namespace BeetleX.FastHttpApi.StaticResurce
         public ResourceCenter(HttpApiServer server)
         {
             Server = server;
-            Path = Server.ServerConfig.StaticResourcePath;
+            Path = Server.Options.StaticResourcePath;
             if (Path[Path.Length - 1] != System.IO.Path.DirectorySeparatorChar)
             {
                 Path += System.IO.Path.DirectorySeparatorChar;
             }
 
-            foreach (string item in server.ServerConfig.StaticResurceType.ToLower().Split(';'))
+            foreach (string item in server.Options.StaticResurceType.ToLower().Split(';'))
             {
                 FileContentType fct = new FileContentType(item);
                 mExts[fct.Ext] = fct;
             }
-            mDefaultPages.AddRange(Server.ServerConfig.DefaultPage.Split(";"));
+            mDefaultPages.AddRange(Server.Options.DefaultPage.Split(";"));
 
         }
 
@@ -36,7 +36,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
         {
             if (files != null)
             {
-                Server.ServerConfig.DefaultPage = files;
+                Server.Options.DefaultPage = files;
                 mDefaultPages.Clear();
                 mDefaultPages.AddRange(files.Split(";"));
             }
@@ -46,7 +46,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
         {
             if (exts != null)
             {
-                Server.ServerConfig.StaticResurceType = exts;
+                Server.Options.StaticResurceType = exts;
                 foreach (string item in exts.ToLower().Split(';'))
                 {
                     FileContentType fct = new FileContentType(item);
@@ -152,8 +152,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         string filename = tmpFolder + System.IO.Path.DirectorySeparatorChar + item;
                         SaveTempFile(assembly, item, filename);
                         FileResource fr;
-                        bool nogzip = !(Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0);
-                        bool cachefile = Server.ServerConfig.CacheFiles.IndexOf(ext) >= 0;
+                        bool nogzip = !(Server.Options.NoGzipFiles.IndexOf(ext) >= 0);
+                        bool cachefile = Server.Options.CacheFiles.IndexOf(ext) >= 0;
                         if (Debug)
                         {
                             fr = new NoCacheResource(filename, urlname);
@@ -252,7 +252,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
         public void ProcessFile(HttpRequest request, HttpResponse response)
         {
             string url = request.BaseUrl;
-            if (Server.ServerConfig.UrlIgnoreCase)
+            if (Server.Options.UrlIgnoreCase)
                 url = HttpParse.CharToLower(request.BaseUrl);
             if (url == "/")
             {
@@ -399,7 +399,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 }
                 else
                 {
-                    if (Server.ServerConfig.UrlIgnoreCase)
+                    if (Server.Options.UrlIgnoreCase)
                         charbuffer[i + offset] = Char.ToLower(filebuffer[i]);
                     else
                         charbuffer[i + offset] = filebuffer[i];
@@ -430,8 +430,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                             }
                         }
                     }
-                    bool nogzip = !(Server.ServerConfig.NoGzipFiles.IndexOf(ext) >= 0);
-                    bool cachefile = Server.ServerConfig.CacheFiles.IndexOf(ext) >= 0;
+                    bool nogzip = !(Server.Options.NoGzipFiles.IndexOf(ext) >= 0);
+                    bool cachefile = Server.Options.CacheFiles.IndexOf(ext) >= 0;
                     if (Debug)
                     {
                         fr = new NoCacheResource(file, urlname);
@@ -441,7 +441,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     else
                     {
                         FileInfo info = new FileInfo(file);
-                        if (cachefile && info.Length < 1024 * Server.ServerConfig.CacheFileSize)
+                        if (cachefile && info.Length < 1024 * Server.Options.CacheFileSize)
                         {
                             fr = new FileResource(file, urlname);
                         }
@@ -460,13 +460,13 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         mResources[urlname] = fr;
                     }
 
-                    Server.BaseServer.Log(EventArgs.LogType.Info, null, "upload {0} static resource success", urlname);
+                    Server.BaseServer.Log(EventArgs.LogType.Info, null, "update {0} static resource success", urlname);
                     return fr;
                 }
             }
             catch (Exception e_)
             {
-                Server.BaseServer.Error(e_, null, "upload {0} resource error {1}", file, e_.Message);
+                Server.BaseServer.Error(e_, null, "update {0} resource error {1}", file, e_.Message);
             }
             return null;
         }
@@ -483,9 +483,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             foreach (string folder in System.IO.Directory.GetDirectories(path))
             {
-                string vfolder = folder.Replace(Server.ServerConfig.StaticResourcePath, "")
+                string vfolder = folder.Replace(Server.Options.StaticResourcePath, "")
                     .Replace(System.IO.Path.DirectorySeparatorChar.ToString(), @"\");
-                if (Server.ServerConfig.NotLoadFolder.IndexOf(vfolder, 0, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                if (Server.Options.NotLoadFolder.IndexOf(vfolder, 0, StringComparison.CurrentCultureIgnoreCase) >= 0)
                     continue;
                 LoadFolder(folder);
             }

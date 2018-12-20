@@ -13,8 +13,8 @@ namespace HttpApiServer.UploadFile
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.LogToConsole = true;
-            mApiServer.ServerConfig.LogLevel = BeetleX.EventArgs.LogType.Info;
+            mApiServer.Options.LogToConsole = true;
+            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Info;
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

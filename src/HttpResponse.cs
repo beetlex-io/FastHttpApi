@@ -14,12 +14,13 @@ namespace BeetleX.FastHttpApi
         {
             Header = new Header();
             AsyncResult = false;
-
         }
 
         internal Newtonsoft.Json.JsonSerializer JsonSerializer { get; set; }
 
         internal StreamWriter StreamWriter { get; set; }
+
+        internal Newtonsoft.Json.JsonTextWriter JsonWriter { get; set; }
 
         private int mCompletedStatus = 0;
 

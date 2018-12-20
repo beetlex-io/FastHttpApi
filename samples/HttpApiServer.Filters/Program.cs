@@ -8,9 +8,9 @@ namespace HttpApiServer.Filters
 
         static void Main(string[] args)
         {
-            mApiServer = new BeetleX.FastHttpApi.HttpApiServer();   
-     
-            mApiServer.ServerConfig.AddFilter<GlobalFilter>();
+            mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+
+            mApiServer.Options.AddFilter<GlobalFilter>();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Read();

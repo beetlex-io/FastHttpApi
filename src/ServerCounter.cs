@@ -55,8 +55,8 @@ namespace BeetleX.FastHttpApi
                     mLastNextTime = mServer.BaseServer.GetRunTime();
                     Info result = new Info();
                     result.ServerName = mServer.Name;
-                    result.Host = mServer.ServerConfig.Host;
-                    result.Port = mServer.ServerConfig.Port;
+                    result.Host = mServer.Options.Host;
+                    result.Port = mServer.Options.Port;
                     TimeSpan ts = (DateTime.Now - mServer.StartTime);
                     result.RunTime = $"{(long)ts.TotalDays}:{(long)ts.TotalHours}:{(long)ts.TotalMinutes}:{(long)ts.TotalSeconds}";
 

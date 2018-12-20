@@ -3,7 +3,12 @@ var __receive;
 var __connect;
 var __disconnect;
 function FastHttpApiWebSocket() {
-    this.wsUri = "ws://" + window.location.host;
+    if (window.location.protocol == "https:") {
+        this.wsUri = "wss://" + window.location.host;
+    }
+    else {
+        this.wsUri = "ws://" + window.location.host;
+    }
     this.websocket;
     this.status = false;
     this.messagHandlers = new Object();
@@ -100,6 +105,7 @@ FastHttpApi.prototype.execute = function (callback, http) {
     var keys;
     var index;
     this.params['_requestid'] = id;
+    // this.http = true
     if (this.http || __websocket.status == false) {
         if (this.post) {
             httpurl = this.url;

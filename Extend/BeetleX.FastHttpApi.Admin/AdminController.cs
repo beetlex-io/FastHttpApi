@@ -51,15 +51,15 @@ namespace BeetleX.FastHttpApi.Admin
         {
             return new SettingInfo
             {
-                MaxConn = Server.ServerConfig.MaxConnections,
-                WSMaxRPS = Server.ServerConfig.WebSocketMaxRPS,
-                LogLevel = Server.ServerConfig.LogLevel,
-                LogToConsole = Server.ServerConfig.LogToConsole,
-                WriteLog = Server.ServerConfig.WriteLog,
+                MaxConn = Server.Options.MaxConnections,
+                WSMaxRPS = Server.Options.WebSocketMaxRPS,
+                LogLevel = Server.Options.LogLevel,
+                LogToConsole = Server.Options.LogToConsole,
+                WriteLog = Server.Options.WriteLog,
                 Exts = string.Join(';', Server.ResourceCenter.Exts.Keys.ToArray()),
-                FileManage = Server.ServerConfig.FileManager,
+                FileManage = Server.Options.FileManager,
                 DefaultPages = string.Join(';', Server.ResourceCenter.DefaultPages.ToArray()),
-                MaxLength = Server.ServerConfig.MaxBodyLength
+                MaxLength = Server.Options.MaxBodyLength
             };
         }
 
@@ -79,18 +79,18 @@ namespace BeetleX.FastHttpApi.Admin
         [Post]
         public void Setting(SettingInfo setting, IHttpContext context)
         {
-            Server.ServerConfig.MaxBodyLength = setting.MaxLength;
-            Server.ServerConfig.MaxConnections = setting.MaxConn;
-            Server.ServerConfig.WebSocketMaxRPS = setting.WSMaxRPS;
-            Server.ServerConfig.LogLevel = setting.LogLevel;
-            Server.BaseServer.Config.LogLevel = setting.LogLevel;
-            Server.ServerConfig.LogToConsole = setting.LogToConsole;
-            Server.ServerConfig.WriteLog = setting.WriteLog;
-            Server.ServerConfig.FileManager = setting.FileManage;
+            Server.Options.MaxBodyLength = setting.MaxLength;
+            Server.Options.MaxConnections = setting.MaxConn;
+            Server.Options.WebSocketMaxRPS = setting.WSMaxRPS;
+            Server.Options.LogLevel = setting.LogLevel;
+            Server.BaseServer.Options.LogLevel = setting.LogLevel;
+            Server.Options.LogToConsole = setting.LogToConsole;
+            Server.Options.WriteLog = setting.WriteLog;
+            Server.Options.FileManager = setting.FileManage;
 
             Server.ResourceCenter.SetDefaultPages(setting.DefaultPages);
             Server.ResourceCenter.SetFileExts(setting.Exts);
-            Server.SaveConfig();
+            Server.SaveOptions();
             if (Server.EnableLog(EventArgs.LogType.Warring))
             {
                 Server.BaseServer.Log(EventArgs.LogType.Warring, context.Session, "{0} setting {1}", context.Request.RemoteIPAddress,
@@ -177,13 +177,13 @@ namespace BeetleX.FastHttpApi.Admin
         [NotAction]
         public static bool LoginProcess(string name, string pwd, IHttpContext context, DateTime? cookieTimeOut)
         {
-            string vpwd = string.Format("{0}{1}", context.Server.ServerConfig.ManagerPWD, context.Request.Cookies[LOGIN_KEY]);
+            string vpwd = string.Format("{0}{1}", context.Server.Options.ManagerPWD, context.Request.Cookies[LOGIN_KEY]);
             vpwd = HttpParse.MD5Encrypt(vpwd);
-            string vname = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager);
+            string vname = HttpParse.MD5Encrypt(context.Server.Options.Manager);
             if (name == vname && pwd == vpwd)
             {
                 string ip = context.Request.RemoteIPAddress.Split(':')[0];
-                string tokey = HttpParse.MD5Encrypt(context.Server.ServerConfig.Manager + DateTime.Now.Day + ip);
+                string tokey = HttpParse.MD5Encrypt(context.Server.Options.Manager + DateTime.Now.Day + ip);
                 context.Response.SetCookie(LOGIN_TOKEN, tokey, cookieTimeOut);
                 context.Response.SetCookie(LOGIN_KEY, "");
                 return true;
@@ -214,7 +214,7 @@ namespace BeetleX.FastHttpApi.Admin
         {
             string tokey = context.HttpContext.Request.Cookies[_Admin.LOGIN_TOKEN];
             string ip = context.HttpContext.Request.RemoteIPAddress.Split(':')[0];
-            string stokey = HttpParse.MD5Encrypt(context.HttpContext.Server.ServerConfig.Manager
+            string stokey = HttpParse.MD5Encrypt(context.HttpContext.Server.Options.Manager
                 + DateTime.Now.Day
                 + ip);
             if (tokey == stokey)

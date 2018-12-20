@@ -11,7 +11,7 @@ namespace BeetleX.FastHttpApi
 
     public class HttpClientPool
     {
-        public HttpClientPool(string host, int port)
+        public HttpClientPool(string host, int port, bool ssl = false)
         {
             Host = host;
             Port = port;
@@ -19,7 +19,10 @@ namespace BeetleX.FastHttpApi
             Async = true;
             MaxConnections = 100;
             Clients = new List<HttpClient>();
+            SSL = ssl;
         }
+
+        public bool SSL { get; set; }
 
         public string Host { get; set; }
 
@@ -79,7 +82,15 @@ namespace BeetleX.FastHttpApi
                 var packet = new HttpClientPacket();
                 if (Async)
                 {
-                    AsyncTcpClient client = SocketFactory.CreateClient<AsyncTcpClient>(packet, Host, Port);
+                    AsyncTcpClient client;
+                    if (SSL)
+                    {
+                        client = SocketFactory.CreateSslClient<AsyncTcpClient>(packet, Host, Port, Host);
+                    }
+                    else
+                    {
+                        client = SocketFactory.CreateClient<AsyncTcpClient>(packet, Host, Port);
+                    }
                     packet.Client = client;
                     client.Connected = c =>
                     {
@@ -94,7 +105,15 @@ namespace BeetleX.FastHttpApi
                 }
                 else
                 {
-                    TcpClient client = SocketFactory.CreateClient<TcpClient>(packet, Host, Port);
+                    TcpClient client;
+                    if (SSL)
+                    {
+                        client = SocketFactory.CreateSslClient<TcpClient>(packet, Host, Port, Host);
+                    }
+                    else
+                    {
+                        client = SocketFactory.CreateClient<TcpClient>(packet, Host, Port);
+                    }
                     packet.Client = client;
                     client.Connected = c =>
                     {
@@ -181,7 +200,8 @@ namespace BeetleX.FastHttpApi
                 HttpClientPool result;
                 if (!mPools.TryGetValue(key, out result))
                 {
-                    result = new HttpClientPool(uri.Host, uri.Port);
+                    bool ssl = uri.Scheme.ToLower() == "https";
+                    result = new HttpClientPool(uri.Host, uri.Port, ssl);
                     mPools[key] = result;
                 }
                 return result;

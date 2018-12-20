@@ -23,17 +23,17 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        public HttpApiServer(HttpConfig serverConfig)
+        public HttpApiServer(HttpOptions options)
         {
             mFileLog = new FileLogWriter("BEETLEX_HTTP_SERVER");
             FrameSerializer = this;
-            if (serverConfig != null)
+            if (options != null)
             {
-                ServerConfig = serverConfig;
+                Options = options;
             }
             else
             {
-                ServerConfig = LoadConfig();
+                Options = LoadOptions();
             }
             mActionFactory = new ActionHandlerFactory(this);
             mResourceCenter = new StaticResurce.ResourceCenter(this);
@@ -56,7 +56,6 @@ namespace BeetleX.FastHttpApi
         public RouteRewrite UrlRewrite => mUrlRewrite;
 
         public ServerCounter ServerCounter => mServerCounter;
-
 
         private FileLogWriter mFileLog;
 
@@ -86,7 +85,7 @@ namespace BeetleX.FastHttpApi
 
         public ActionHandlerFactory ActionFactory => mActionFactory;
 
-        public HttpConfig ServerConfig { get; set; }
+        public HttpOptions Options { get; set; }
 
         public IDataFrameSerializer FrameSerializer { get; set; }
 
@@ -108,20 +107,20 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public void SaveConfig()
+        public void SaveOptions()
         {
             string file = Directory.GetCurrentDirectory() + System.IO.Path.DirectorySeparatorChar + mConfigFile;
             using (System.IO.StreamWriter writer = new StreamWriter(file))
             {
                 System.Collections.Generic.Dictionary<string, object> config = new Dictionary<string, object>();
-                config["HttpConfig"] = this.ServerConfig;
+                config["HttpConfig"] = this.Options;
                 string strConfig = Newtonsoft.Json.JsonConvert.SerializeObject(config);
                 writer.Write(strConfig);
                 writer.Flush();
             }
         }
 
-        public HttpConfig LoadConfig()
+        public HttpOptions LoadOptions()
         {
             string file = Directory.GetCurrentDirectory() + System.IO.Path.DirectorySeparatorChar + mConfigFile;
             if (System.IO.File.Exists(file))
@@ -130,18 +129,18 @@ namespace BeetleX.FastHttpApi
                 {
                     string json = reader.ReadToEnd();
                     if (string.IsNullOrEmpty(json))
-                        return new HttpConfig();
+                        return new HttpOptions();
                     Newtonsoft.Json.Linq.JToken toke = (Newtonsoft.Json.Linq.JToken)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
                     if (toke["HttpConfig"] != null && toke["HttpConfig"].Type == JTokenType.Object)
                     {
-                        return toke["HttpConfig"].ToObject<HttpConfig>();
+                        return toke["HttpConfig"].ToObject<HttpOptions>();
                     }
-                    return new HttpConfig();
+                    return new HttpOptions();
                 }
             }
             else
             {
-                return new HttpConfig();
+                return new HttpOptions();
             }
         }
 
@@ -183,7 +182,7 @@ namespace BeetleX.FastHttpApi
 
         public void Register(params System.Reflection.Assembly[] assemblies)
         {
-            mUrlRewrite.UrlIgnoreCase = ServerConfig.UrlIgnoreCase;
+            mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
             mAssemblies.AddRange(assemblies);
             try
             {
@@ -198,38 +197,43 @@ namespace BeetleX.FastHttpApi
         [Conditional("DEBUG")]
         public void Debug(string viewpath = null)
         {
-            ServerConfig.Debug = true;
+            Options.Debug = true;
             if (string.IsNullOrEmpty(viewpath))
             {
                 string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
                 path += @"views";
-                ServerConfig.StaticResourcePath = path;
+                Options.StaticResourcePath = path;
             }
             else
             {
-                ServerConfig.StaticResourcePath = viewpath;
+                Options.StaticResourcePath = viewpath;
             }
         }
 
         public void Open()
         {
-            NetConfig config = new NetConfig();
-            config.Host = ServerConfig.Host;
-            config.Port = ServerConfig.Port;
-            config.CertificateFile = ServerConfig.CertificateFile;
-            config.CertificatePassword = ServerConfig.CertificatePassword;
-            config.BufferSize = ServerConfig.BufferSize;
-            config.LogLevel = ServerConfig.LogLevel;
-            config.Combined = ServerConfig.PacketCombined;
-            config.SessionTimeOut = ServerConfig.SessionTimeOut;
-            config.UseIPv6 = ServerConfig.UseIPv6;
-            config.BufferPoolMaxMemory = ServerConfig.BufferPoolMaxMemory;
-            if (!string.IsNullOrEmpty(config.CertificateFile))
-                config.SSL = true;
-            config.LittleEndian = false;
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this);
-            mServer = SocketFactory.CreateTcpServer(config, this, hp);
+            mServer = SocketFactory.CreateTcpServer(this, hp)
+                .Setting(o =>
+                {
+                    o.DefaultListen.Host = Options.Host;
+                    o.DefaultListen.Port = Options.Port;
+                    o.BufferSize = Options.BufferSize;
+                    o.LogLevel = Options.LogLevel;
+                    o.Combined = Options.PacketCombined;
+                    o.SessionTimeOut = Options.SessionTimeOut;
+                    o.UseIPv6 = Options.UseIPv6;
+                    o.BufferPoolMaxMemory = Options.BufferPoolMaxMemory;
+                    o.LittleEndian = false;
+                });
+            if (Options.SSL)
+            {
+                mServer.Setting(o =>
+                {
+                    o.AddListenSSL(Options.CertificateFile, Options.CertificatePassword, o.DefaultListen.Host, Options.SSLPort);
+                });
+            }
             Name = "BeetleX Http Server";
             if (mAssemblies != null)
             {
@@ -239,15 +243,15 @@ namespace BeetleX.FastHttpApi
                 }
             }
             mResourceCenter.LoadManifestResource(typeof(HttpApiServer).Assembly);
-            mResourceCenter.Path = ServerConfig.StaticResourcePath;
-            mResourceCenter.Debug = ServerConfig.Debug;
+            mResourceCenter.Path = Options.StaticResourcePath;
+            mResourceCenter.Debug = Options.Debug;
             mResourceCenter.Load();
             ModuleManage.Load();
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
-            mUrlRewrite.UrlIgnoreCase = ServerConfig.UrlIgnoreCase;
-            mUrlRewrite.AddRegion(this.ServerConfig.Routes);
+            mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
+            mUrlRewrite.AddRegion(this.Options.Routes);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
@@ -391,7 +395,7 @@ namespace BeetleX.FastHttpApi
 
         public override void Connecting(IServer server, ConnectingEventArgs e)
         {
-            if (server.Count > ServerConfig.MaxConnections)
+            if (server.Count > Options.MaxConnections)
             {
                 e.Cancel = true;
             }
@@ -417,14 +421,14 @@ namespace BeetleX.FastHttpApi
             byte[] result;
             if (!mBuffers.TryDequeue(out result))
             {
-                result = new byte[this.ServerConfig.MaxBodyLength];
+                result = new byte[this.Options.MaxBodyLength];
             }
             string value;
             if (body is string)
                 value = (string)body;
             else
                 value = Newtonsoft.Json.JsonConvert.SerializeObject(body);
-            int length = ServerConfig.Encoding.GetBytes(value, 0, value.Length, result, 0);
+            int length = Options.Encoding.GetBytes(value, 0, value.Length, result, 0);
             return new ArraySegment<byte>(result, 0, length);
         }
 
@@ -536,9 +540,9 @@ namespace BeetleX.FastHttpApi
         {
             if (ServerLog == null)
             {
-                if (ServerConfig.LogToConsole)
+                if (Options.LogToConsole)
                     base.Log(server, e);
-                if (ServerConfig.WriteLog)
+                if (Options.WriteLog)
                     mFileLog.Add(e.Type, e.Message);
             }
             else
@@ -565,7 +569,7 @@ namespace BeetleX.FastHttpApi
                     if (EnableLog(LogType.Error))
                     {
                         BaseServer.Error(e_, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
-                        InnerErrorResult result = new InnerErrorResult($"response file error ", e_, ServerConfig.OutputStackTrace);
+                        InnerErrorResult result = new InnerErrorResult($"response file error ", e_, Options.OutputStackTrace);
                         response.Result(result);
                     }
                 }
@@ -625,7 +629,7 @@ namespace BeetleX.FastHttpApi
 
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
-            if (ServerConfig.SessionTimeOut > 0)
+            if (Options.SessionTimeOut > 0)
             {
                 BaseServer.UpdateSession(e.Session);
             }
@@ -741,7 +745,7 @@ namespace BeetleX.FastHttpApi
 
         public bool EnableLog(LogType logType)
         {
-            return (int)(this.ServerConfig.LogLevel) <= (int)logType;
+            return (int)(this.Options.LogLevel) <= (int)logType;
         }
 
         public void Dispose()

@@ -7,9 +7,9 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    public class HttpConfig : ICloneable
+    public class HttpOptions : ICloneable
     {
-        public HttpConfig()
+        public HttpOptions()
         {
             Port = 9090;
             SSL = false;
@@ -40,7 +40,10 @@ namespace BeetleX.FastHttpApi
             UseIPv6 = true;
             SessionTimeOut = 60 * 60;
             BufferPoolMaxMemory = 500;
+            SSLPort = 443;
         }
+
+
 
         public int BufferPoolMaxMemory { get; set; }
 
@@ -91,6 +94,8 @@ namespace BeetleX.FastHttpApi
 
         public bool SSL { get; set; }
 
+        public int SSLPort { get; set; }
+
         public string CertificateFile { get; set; }
 
         public string CertificatePassword { get; set; }
@@ -121,8 +126,7 @@ namespace BeetleX.FastHttpApi
 
         public object Clone()
         {
-            HttpConfig config = new HttpConfig();
-
+            HttpOptions config = new HttpOptions();
             config.CertificateFile = this.CertificateFile;
             config.CertificatePassword = this.CertificatePassword;
             config.Debug = this.Debug;
@@ -134,9 +138,9 @@ namespace BeetleX.FastHttpApi
             config.OutputStackTrace = this.OutputStackTrace;
             config.Port = this.Port;
             config.SSL = this.SSL;
+            config.SSLPort = this.SSLPort;
             config.StaticResourcePath = this.StaticResourcePath;
             config.StaticResurceType = this.StaticResurceType;
-
             return config;
         }
 

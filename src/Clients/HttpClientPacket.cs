@@ -133,7 +133,7 @@ namespace BeetleX.FastHttpApi.Clients
                     }
                     else
                     {
-                        if (response.Length == stream.Length)
+                        if (pipeStream.Length >= response.Length)
                         {
                             var item = response;
                             item.Stream = pipeStream;

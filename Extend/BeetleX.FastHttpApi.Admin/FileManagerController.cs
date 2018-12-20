@@ -91,7 +91,7 @@ namespace BeetleX.FastHttpApi.Admin
         [NotAction]
         public void Init(BeetleX.FastHttpApi.HttpApiServer server)
         {
-            mPath = server.ServerConfig.FileManagerPath;
+            mPath = server.Options.FileManagerPath;
             if (string.IsNullOrEmpty(mPath))
                 mPath = System.IO.Directory.GetCurrentDirectory();
             if (!System.IO.Directory.Exists(mPath))
@@ -220,7 +220,7 @@ namespace BeetleX.FastHttpApi.Admin
 
         public override bool Executing(ActionContext context)
         {
-            if (context.HttpContext.Server.ServerConfig.FileManager)
+            if (context.HttpContext.Server.Options.FileManager)
             {
                 return true;
             }

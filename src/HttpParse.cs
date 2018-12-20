@@ -439,7 +439,7 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
-        public static void ReadUrlPathAndExt(ReadOnlySpan<char> url, QueryString queryString, HttpRequest request, HttpConfig config)
+        public static void ReadUrlPathAndExt(ReadOnlySpan<char> url, QueryString queryString, HttpRequest request, HttpOptions config)
         {
             bool urlIgnoreCase = config.UrlIgnoreCase;
 

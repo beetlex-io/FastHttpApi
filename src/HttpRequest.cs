@@ -34,8 +34,6 @@ namespace BeetleX.FastHttpApi
             this.Server = httpApiServer;
         }
 
-
-
         internal void Reset()
         {
             mState = LoadedState.None;
@@ -55,6 +53,7 @@ namespace BeetleX.FastHttpApi
                 Response = new HttpResponse();
                 Response.JsonSerializer = new Newtonsoft.Json.JsonSerializer();
                 Response.StreamWriter = new StreamWriter(Session.Stream.ToPipeStream());
+                Response.JsonWriter = new Newtonsoft.Json.JsonTextWriter(Response.StreamWriter);
             }
             else
                 Response.Reset();
@@ -206,9 +205,9 @@ namespace BeetleX.FastHttpApi
                 HttpParse.ReadHttpVersionNumber(HttpVersion, mQueryString, this);
                 int len = HttpParse.ReadUrlQueryString(Url, mQueryString, this);
                 if (len > 0)
-                    HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.ServerConfig);
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
                 else
-                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.ServerConfig);
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
                 RouteMatchResult routeMatchResult = new RouteMatchResult();
                 if (Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
                 {
@@ -219,7 +218,7 @@ namespace BeetleX.FastHttpApi
                         Server.BaseServer.Log(EventArgs.LogType.Info, Session, "request rewrite {0}  to {1}", Url, routeMatchResult.RewriteUrl);
                     }
                     Url = routeMatchResult.RewriteUrl;
-                    if (Server.ServerConfig.UrlIgnoreCase)
+                    if (Server.Options.UrlIgnoreCase)
                         BaseUrl = routeMatchResult.RewriteUrlLower;
                     else
                         BaseUrl = routeMatchResult.RewriteUrl;

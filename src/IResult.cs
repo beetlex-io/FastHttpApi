@@ -214,8 +214,9 @@ namespace BeetleX.FastHttpApi
                 //{
                 //    //JsonSerializer serializer = new JsonSerializer();
                 //}
-                response.JsonSerializer.Serialize(response.StreamWriter, Data);
-                response.StreamWriter.Flush();
+                response.JsonSerializer.Serialize(response.JsonWriter, Data);
+                response.JsonWriter.Flush();
+                //response.StreamWriter.Flush();
             }
         }
     }

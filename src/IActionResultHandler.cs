@@ -39,7 +39,7 @@ namespace BeetleX.FastHttpApi
                 Server.Log(EventArgs.LogType.Error, "{0} ws execute {1} inner error {2}@{3}", Request.RemoteIPAddress, Request.Url, e_.Message, e_.StackTrace);
             Result.Code = 500;
             Result.Error = e_.Message;
-            if (Server.ServerConfig.OutputStackTrace)
+            if (Server.Options.OutputStackTrace)
             {
                 Result.StackTrace = e_.StackTrace;
             }
@@ -93,7 +93,7 @@ namespace BeetleX.FastHttpApi
             if (Server.EnableLog(EventArgs.LogType.Error))
                 Server.Log(EventArgs.LogType.Error,
                     $"{Request.RemoteIPAddress} http {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
-            InnerErrorResult result = new InnerErrorResult($"http execute {Request.BaseUrl} error ", e_, Server.ServerConfig.OutputStackTrace);
+            InnerErrorResult result = new InnerErrorResult($"http execute {Request.BaseUrl} error ", e_, Server.Options.OutputStackTrace);
             Response.Result(result);
         }
 

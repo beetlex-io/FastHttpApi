@@ -12,7 +12,7 @@ namespace HttpApiServer.TaskActions
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.ServerConfig.LogToConsole = true;
+            mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
