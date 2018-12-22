@@ -20,6 +20,8 @@ namespace BeetleX.FastHttpApi
 
         private HttpApiServer mServer;
 
+        public int Count => mRoutes.Count;
+
         public void AddRegion(UrlRoute[] routes)
         {
             if (routes != null)
@@ -34,7 +36,6 @@ namespace BeetleX.FastHttpApi
             mServer.Log(EventArgs.LogType.Info, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
             item.UrlIgnoreCase = this.UrlIgnoreCase;
             item.Init();
-
             RouteGroup rg = null;
             mRoutes.TryGetValue(item.ID, out rg);
             if (rg == null)
@@ -43,7 +44,7 @@ namespace BeetleX.FastHttpApi
                 rg.Ext = item.Ext;
                 mRoutes[item.ID] = rg;
             }
-            rg.Routes.Add(item);
+            rg.Add(item);
         }
 
 

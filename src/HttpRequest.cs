@@ -209,7 +209,7 @@ namespace BeetleX.FastHttpApi
                 else
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
                 RouteMatchResult routeMatchResult = new RouteMatchResult();
-                if (Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
+                if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
                 {
                     this.IsRewrite = true;
                     this.SourceUrl = this.Url;

@@ -254,7 +254,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             string url = request.BaseUrl;
             if (Server.Options.UrlIgnoreCase)
                 url = HttpParse.CharToLower(request.BaseUrl);
-            if (url == "/")
+            if (url[url.Length - 1] == '/')
             {
                 for (int i = 0; i < mDefaultPages.Count; i++)
                 {

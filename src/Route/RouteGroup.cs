@@ -16,6 +16,18 @@ namespace BeetleX.FastHttpApi
 
         public List<UrlRoute> Routes { get; private set; }
 
+        public void Add(UrlRoute route)
+        {
+            for (int i = 0; i < Routes.Count; i++)
+            {
+                if (Routes[i].Url == route.Url)
+                {
+                    Routes[i] = route;
+                    return;
+                }
+            }
+            Routes.Add(route);
+        }
 
         public bool Match(string url, ref RouteMatchResult result, QueryString queryString)
         {

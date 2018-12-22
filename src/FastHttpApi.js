@@ -105,13 +105,25 @@ FastHttpApi.prototype.execute = function (callback, http) {
     var keys;
     var index;
     this.params['_requestid'] = id;
+    var _this = this;
     // this.http = true
     if (this.http || __websocket.status == false) {
         if (this.post) {
             httpurl = this.url;
-            $.post(httpurl, JSON.stringify(this.params), function (result) {
-                if (callback)
-                    callback(result);
+            //$.post(httpurl, JSON.stringify(this.params), function (result) {
+            //    if (callback)
+            //        callback(result);
+            //});
+            $.ajax({
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                url: httpurl,
+                data: JSON.stringify(_this.params),
+                dataType: "json",
+                success: function (result) {
+                    if (callback)
+                        callback(result);
+                }
             });
         }
         else {

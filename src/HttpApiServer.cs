@@ -665,7 +665,8 @@ namespace BeetleX.FastHttpApi
             {
                 if (!OnHttpRequesting(request, response).Cancel)
                 {
-                    if (string.IsNullOrEmpty(request.Ext) && request.BaseUrl != "/")
+                    string baseUrl = request.BaseUrl;
+                    if (string.IsNullOrEmpty(request.Ext) && baseUrl[baseUrl.Length - 1] != '/')
                     {
                         mActionFactory.Execute(request, response, this);
                     }
