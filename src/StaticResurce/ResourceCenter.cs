@@ -216,6 +216,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 {
                     if (Server.EnableLog(EventArgs.LogType.Info))
                         Server.BaseServer.Log(EventArgs.LogType.Info, null, "{0} get {1} source no modify ", response.Request.RemoteIPAddress, response.Request.Url);
+                    if (Server.Options.StaticResurceCacheTime > 0)
+                    {
+                        response.Header.Add(HeaderTypeFactory.CACHE_CONTROL, "public, max-age=" + Server.Options.StaticResurceCacheTime);
+                    }
                     NoModifyResult result = new NoModifyResult();
                     response.Result(result);
                     return;
@@ -228,7 +232,13 @@ namespace BeetleX.FastHttpApi.StaticResurce
             if (!Debug)
             {
                 if (!string.IsNullOrEmpty(fr.FileMD5))
+                {
                     response.Header.Add(HeaderTypeFactory.ETAG, fr.FileMD5);
+                    if (Server.Options.StaticResurceCacheTime > 0)
+                    {
+                        response.Header.Add(HeaderTypeFactory.CACHE_CONTROL, "public, max-age=" + Server.Options.StaticResurceCacheTime);
+                    }
+                }
 
             }
             SetChunked(response);
@@ -418,9 +428,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 {
                     FileResource fr;
                     string urlname = "";
+                    urlname = GetUrl(file);
                     if (cache)
                     {
-                        urlname = GetUrl(file);
+
                         if (!Debug)
                         {
                             if (mResources.TryGetValue(urlname, out fr))
@@ -459,8 +470,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     {
                         mResources[urlname] = fr;
                     }
-
-                    Server.BaseServer.Log(EventArgs.LogType.Info, null, "update {0} static resource success", urlname);
+                    if (Server.EnableLog(EventArgs.LogType.Info))
+                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "update {0} static resource success", urlname);
                     return fr;
                 }
             }

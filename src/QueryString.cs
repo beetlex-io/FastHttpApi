@@ -34,7 +34,7 @@ namespace BeetleX.FastHttpApi
 
         internal void Add(string name, string value)
         {
-            mDataContext.Add(name, System.Web.HttpUtility.UrlDecode(value));
+            mDataContext.SetValue(name, System.Web.HttpUtility.UrlDecode(value));
            
         }
     }

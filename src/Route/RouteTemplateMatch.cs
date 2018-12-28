@@ -93,7 +93,7 @@ namespace BeetleX.FastHttpApi
             {
                 int count = 0;
                 value = "";
-                int valueoffset = -1;
+                //int valueoffset = -1;
                 int length = url.Length;
                 if (Start != null)
                 {
@@ -110,29 +110,48 @@ namespace BeetleX.FastHttpApi
                     offset = offset + Start.Length;
                     count += Start.Length;
                 }
-                for (int i = offset; i < length; i++)
+                if (Eof != null)
                 {
-                    if (Eof != null && url[i] == Eof[0])
+                    for (int i = offset; i < length; i++)
                     {
-                        value = url.Substring(valueoffset, i - valueoffset);
-                        valueoffset = -1;
-                        for (int k = 1; k < Eof.Length; k++)
+                        if (Eof != null && url[i] == Eof[0])
                         {
-                            if (url[i + k] != Eof[k])
-                                return -1;
+                            bool submatch = true;
+                            for (int k = 1; k < Eof.Length; k++)
+                            {
+                                if (url[i + k] != Eof[k])
+                                {
+                                    submatch = false;
+                                    break;
+                                }
+                            }
+                            if (submatch)
+                            {
+                                //value = url.Substring(valueoffset, i - valueoffset);
+                                value = url.Substring(offset, i - offset);
+                                // valueoffset = -1;
+                                count += Eof.Length;
+                                break;
+                            }
                         }
-                        count += Eof.Length;
-                        break;
-                    }
-                    else
-                    {
-                        if (valueoffset == -1)
-                            valueoffset = i;
-                        count++;
+
+                        else
+                        {
+                            //if (value == "")
+                            //    valueoffset = i;
+                            count++;
+                        }
                     }
                 }
-                if (valueoffset != -1)
-                    value = url.Substring(valueoffset, length - valueoffset);
+                else
+                {
+                    count = url.Length - offset;
+                    value = url.Substring(offset, count);
+                }
+                //if (valueoffset != -1)
+                //    value = url.Substring(valueoffset, length - valueoffset);
+                if (value == "")
+                    return -1;
                 return count;
             }
         }

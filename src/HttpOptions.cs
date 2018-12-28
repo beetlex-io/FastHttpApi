@@ -41,8 +41,10 @@ namespace BeetleX.FastHttpApi
             SessionTimeOut = 60 * 60;
             BufferPoolMaxMemory = 500;
             SSLPort = 443;
+            StaticResurceCacheTime = 0;
         }
 
+        public int StaticResurceCacheTime { get; set; }
 
 
         public int BufferPoolMaxMemory { get; set; }

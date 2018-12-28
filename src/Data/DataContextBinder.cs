@@ -11,14 +11,14 @@ namespace BeetleX.FastHttpApi.Data
         {
             if (data != null)
             {
-                context.Add("body", data);
+                context.SetValue("body", data);
                 if (data is JObject)
                 {
                     foreach (JProperty property in data)
                     {
                         if (property.Value != null)
                         {
-                            context.Add(property.Name, property);
+                            context.SetValue(property.Name, property);
                         }
                     }
                 }
@@ -27,7 +27,7 @@ namespace BeetleX.FastHttpApi.Data
 
         public static void BindFormUrl(IDataContext context, string data)
         {
-            context.Add("body", data);
+            context.SetValue("body", data);
             HttpParse.AsynczeFromUrlEncoded(data, context);
         }
 

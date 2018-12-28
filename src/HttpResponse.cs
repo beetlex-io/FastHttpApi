@@ -72,11 +72,11 @@ namespace BeetleX.FastHttpApi
             value = System.Web.HttpUtility.UrlEncode(value);
             if (expires == null)
             {
-                cookie = string.Format("{0}={1};path={2}", name, value, path);
+                cookie = string.Format("{0}={1};path={2};HttpOnly", name, value, path);
             }
             else
             {
-                cookie = string.Format("{0}={1};path={2};expires={3}", name, value, path, expires.Value.ToString("r"));
+                cookie = string.Format("{0}={1};path={2};expires={3};HttpOnly", name, value, path, expires.Value.ToString("r"));
             }
             mSetCookies.Add(cookie);
         }

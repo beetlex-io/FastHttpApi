@@ -91,7 +91,7 @@ namespace BeetleX.FastHttpApi.Data
             if (string.IsNullOrEmpty(filename))
             {
                 string value = Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Length - 2);
-                context.Add(name, value);
+                context.SetValue(name, value);
             }
             else
             {
@@ -100,7 +100,7 @@ namespace BeetleX.FastHttpApi.Data
                 stream.SetLength(stream.Length - 2);
                 postFile.Data = stream;
                 postFile.FileName = filename;
-                context.Add(name, postFile);
+                context.SetValue(name, postFile);
                 request.Files.Add(postFile);
             }
         }

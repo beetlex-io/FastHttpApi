@@ -25,7 +25,7 @@ namespace BeetleX.FastHttpApi.Data
             mProperties.Clear();
         }
 
-        public void Add(string name, object value)
+        public void SetValue(string name, object value)
         {
             mProperties[name] = value;
         }

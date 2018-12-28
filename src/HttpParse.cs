@@ -190,7 +190,7 @@ namespace BeetleX.FastHttpApi
                     if (i > offset)
                     {
                         value = new string(url.Slice(offset, i - offset));
-                        context.Add(name, System.Net.WebUtility.UrlDecode(value));
+                        context.SetValue(name, System.Net.WebUtility.UrlDecode(value));
                         offset = i + 1;
                     }
                     name = null;
@@ -202,7 +202,7 @@ namespace BeetleX.FastHttpApi
                 if (url.Length > offset)
                 {
                     value = new string(url.Slice(offset, url.Length - offset));
-                    context.Add(name, System.Net.WebUtility.UrlDecode(value));
+                    context.SetValue(name, System.Net.WebUtility.UrlDecode(value));
                 }
             }
         }

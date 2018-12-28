@@ -9,7 +9,7 @@ namespace BeetleX.FastHttpApi.Data
 
         string this[string name] { get; }
 
-        void Add(string name, object value);
+        void SetValue(string name, object value);
 
         bool TryGetBoolean(string name, out bool value);
 
