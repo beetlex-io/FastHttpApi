@@ -23,7 +23,8 @@ namespace BeetleX.FastHttpApi
         public override void Executed(ActionContext context)
         {
             base.Executed(context);
-            context.Result = new JsonResult(context.Result);
+            if (!(context.Result is JsonResult))
+                context.Result = new JsonResult(context.Result);
         }
     }
 }

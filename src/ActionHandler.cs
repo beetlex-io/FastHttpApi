@@ -86,6 +86,7 @@ namespace BeetleX.FastHttpApi
                 this.Remark = da.Description;
             foreach (System.Reflection.ParameterInfo pi in mMethod.GetParameters())
             {
+
                 ParameterBinder pb = new DefaultParameter();
                 ParameterBinder[] customPB = (ParameterBinder[])pi.GetCustomAttributes(typeof(ParameterBinder), false);
                 if (customPB != null && customPB.Length > 0)
@@ -172,6 +173,7 @@ namespace BeetleX.FastHttpApi
                 pb.ParameterInfo = pi;
                 pb.Name = pi.Name;
                 pb.Type = pi.ParameterType;
+                pb.CacheKey = pi.GetCustomAttribute<CacheKeyParameter>(false);
                 Parameters.Add(pb);
             }
         }
@@ -207,6 +209,21 @@ namespace BeetleX.FastHttpApi
         {
             return this.SourceUrl.CompareTo(((ActionHandler)obj).SourceUrl);
         }
+
+        public string GetCackeKey(object[] parameters)
+        {
+            StringBuilder key = new StringBuilder();
+            key.Append(Url);
+            for (int i = 0; i < Parameters.Count; i++)
+            {
+                var dp = Parameters[i];
+                if (dp.DataParameter && dp.CacheKey != null)
+                {
+                    key.Append("_").Append(dp.CacheKey.GetValue(parameters[i]));
+                }
+            }
+            return key.ToString();
+        }
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
@@ -221,6 +238,8 @@ namespace BeetleX.FastHttpApi
         public virtual bool DataParameter => true;
 
         public abstract object GetValue(IHttpContext context);
+
+        public CacheKeyParameter CacheKey { get; set; }
 
         public virtual object DefaultValue()
         {
@@ -517,6 +536,14 @@ namespace BeetleX.FastHttpApi
 
     }
 
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public class CacheKeyParameter : Attribute
+    {
+        public virtual string GetValue(object data)
+        {
+            return $"{data}";
+        }
+    }
 
     #region emithandler
     class FieldHandler

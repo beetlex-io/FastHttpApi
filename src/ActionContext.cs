@@ -26,7 +26,7 @@ namespace BeetleX.FastHttpApi
 
         private List<FilterAttribute> mFilters;
 
-        public object[] Parameters { get; set; }
+        public object[] Parameters { get; private set; }
 
         public IHttpContext HttpContext { get; internal set; }
 
@@ -40,6 +40,10 @@ namespace BeetleX.FastHttpApi
 
         public object Controller { get; set; }
 
+        public string GetCacheKey()
+        {
+            return Handler.GetCackeKey(Parameters);
+        }
 
         private void OnExecute(IActionResultHandler resultHandler)
         {
