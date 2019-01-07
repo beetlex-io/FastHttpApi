@@ -7,8 +7,8 @@ Fasthttpapi is a lightweight and high-performance HTTP service component in the 
 [https://www.ikende.com](https://www.ikende.com)
 
 ## PerformanceTest
-**[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest)**
-![](https://i.imgur.com/lyvQIhu.png)
+**[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest/Beetlex_VS_AspCore_webapi)**
+![](https://i.imgur.com/BMj7b4a.png)
 
 ### Install Packet
 
