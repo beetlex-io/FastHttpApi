@@ -16,7 +16,7 @@ Fasthttpapi is a lightweight and high-performance HTTP service component in the 
 
 ![](https://camo.githubusercontent.com/a3950a757bd24f331e83dd251d19e1c350ebc7fe/68747470733a2f2f692e696d6775722e636f6d2f7866746a6478352e706e67)
 
-## FastHttpApi using
+## using
 ### Install Packet
 
 ```
@@ -83,7 +83,7 @@ Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
         }
     }
 ```
-
+[samples](https://github.com/IKende/FastHttpApi/tree/master/samples)
 
 ## monitoring and management Services
 #### Install Packet
