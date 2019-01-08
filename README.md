@@ -12,7 +12,7 @@ Fasthttpapi is a lightweight and high-performance HTTP service component in the 
 ![](https://i.imgur.com/BMj7b4a.png)
 
 ## Cluster configuration
-### [project](https://github.com/IKende/ClusterConfiguration)
+### [Cluster configuration project](https://github.com/IKende/ClusterConfiguration)
 
 ![](https://camo.githubusercontent.com/a3950a757bd24f331e83dd251d19e1c350ebc7fe/68747470733a2f2f692e696d6775722e636f6d2f7866746a6478352e706e67)
 
