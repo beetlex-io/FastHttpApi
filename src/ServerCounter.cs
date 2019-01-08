@@ -16,6 +16,7 @@ namespace BeetleX.FastHttpApi
             mProcess = System.Diagnostics.Process.GetCurrentProcess();
             mLastTotalProcessorTime = mProcess.TotalProcessorTime.Milliseconds;
 
+
         }
 
         private System.Diagnostics.Process mProcess;
@@ -40,20 +41,20 @@ namespace BeetleX.FastHttpApi
 
         private double mLastTotalProcessorTime;
 
-        private Info mInfo = new Info();
+        private ServerStatus mInfo = new ServerStatus();
 
         private long mLastNextTime;
 
         private int mNextStatu = 0;
 
-        public Info Next()
+        public ServerStatus Next()
         {
             if (mServer.BaseServer.GetRunTime() - mLastNextTime > 1000)
             {
                 if (System.Threading.Interlocked.CompareExchange(ref mNextStatu, 1, 0) == 0)
                 {
                     mLastNextTime = mServer.BaseServer.GetRunTime();
-                    Info result = new Info();
+                    ServerStatus result = new ServerStatus();
                     result.ServerName = mServer.Name;
                     result.Host = mServer.Options.Host;
                     result.Port = mServer.Options.Port;
@@ -74,8 +75,8 @@ namespace BeetleX.FastHttpApi
 
                     result.CurrentConnectinos = mServer.BaseServer.Count;
                     result.CurrentHttpRequest = (long)mServer.CurrentHttpRequests;
-                    result.CurrentRequest = result.CurrentHttpRequest + result.CurrentWSRequest;
-                    result.CurrentWSRequest = (long)mServer.CurrentWebSocketRequests;
+                    result.CurrentRequest = result.CurrentHttpRequest;// + result.CurrentWSRequest;
+                                                                      // result.CurrentWSRequest = (long)mServer.CurrentWebSocketRequests;
 
                     result.TotalRequest = mServer.TotalRequest;
                     result.RequestPer = (long)((result.TotalRequest - mLastTotalRequest) / second);
@@ -97,6 +98,16 @@ namespace BeetleX.FastHttpApi
                     result.TotalSendBytes = GetByteMB(result.TotalSendBytes);
                     result.SendBytesPer = GetByteMB(result.SendBytesPer);
                     mInfo = result;
+                    foreach (var item in mServer.ActionFactory.Handlers)
+                    {
+                        ActionStatus actionStatus = new ActionStatus();
+                        actionStatus.Url = item.SourceUrl;
+                        actionStatus.Requests = item.Requests;
+                        actionStatus.RequestsPer = (long)((item.Requests - item.LastRequests) / second);
+                        item.LastRequests = item.Requests;
+                        mInfo.Actions.Add(actionStatus);
+                    }
+                    mInfo.Actions.Sort((o, e) => o.Url.CompareTo(e.Url));
                     System.Threading.Interlocked.Exchange(ref mNextStatu, 0);
                 }
             }
@@ -108,8 +119,12 @@ namespace BeetleX.FastHttpApi
             return (long)((value / (double)(1024 * 1024)) * 10000) / 10000d;
         }
 
-        public class Info
+        public class ServerStatus
         {
+            public ServerStatus()
+            {
+                Actions = new List<ActionStatus>();
+            }
 
             public string Host { get; set; }
 
@@ -133,7 +148,7 @@ namespace BeetleX.FastHttpApi
 
             public long CurrentRequest { get; set; }
 
-            public long CurrentWSRequest { get; set; }
+            //  public long CurrentWSRequest { get; set; }
 
             public long CurrentHttpRequest { get; set; }
 
@@ -149,6 +164,16 @@ namespace BeetleX.FastHttpApi
 
             public double Cpu { get; set; }
 
+            public List<ActionStatus> Actions { get; set; }
+
+        }
+
+        public class ActionStatus
+        {
+            public string Url { get; set; }
+
+            public long Requests { get; set; }
+            public long RequestsPer { get; set; }
         }
     }
 }

@@ -59,6 +59,7 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
+            response.Request.Server.RequestError();
             response.Code = "404";
             response.CodeMsg = "not found";
             response.Request.ClearStream();
@@ -110,6 +111,7 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
+            response.Request.Server.RequestError();
             response.Code = "500";
             response.CodeMsg = "server inner error!";
             response.Request.ClearStream();
@@ -138,6 +140,7 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
+            response.Request.Server.RequestError();
             response.Code = "403";
             response.CodeMsg = "not support";
             response.Request.ClearStream();
@@ -210,13 +213,8 @@ namespace BeetleX.FastHttpApi
         {
             using (stream.LockFree())
             {
-                //using (StreamWriter writer = new StreamWriter(stream))
-                //{
-                //    //JsonSerializer serializer = new JsonSerializer();
-                //}
                 response.JsonSerializer.Serialize(response.JsonWriter, Data);
                 response.JsonWriter.Flush();
-                //response.StreamWriter.Flush();
             }
         }
     }

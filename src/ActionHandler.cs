@@ -71,6 +71,57 @@ namespace BeetleX.FastHttpApi
 
         private MethodHandler mMethodHandler;
 
+        private long mErrors;
+
+        public long Errors => mErrors;
+
+        public long LastErrors { get; set; }
+
+        private long mRequests;
+
+        public long LastRequests { get; set; }
+
+        public long Requests => mRequests;
+
+        public int MaxRPS { get; set; }
+
+        private int mRPS;
+
+        private long mLastTime;
+
+        public bool ValidateRPS()
+        {
+            if (MaxRPS == 0)
+                return true;
+            long now = TimeWatch.GetElapsedMilliseconds();
+            if (now - mLastTime >= 1000)
+                return true;
+            return mRPS < MaxRPS;
+        }
+
+        public void IncrementError()
+        {
+            System.Threading.Interlocked.Increment(ref mErrors);
+        }
+
+        public void IncrementRequest()
+        {
+            System.Threading.Interlocked.Increment(ref mRequests);
+            if (MaxRPS > 0)
+            {
+                long now = TimeWatch.GetElapsedMilliseconds();
+                if (now - mLastTime >= 1000)
+                {
+                    mLastTime = now;
+                    System.Threading.Interlocked.Exchange(ref mRPS, 1);
+                }
+                else
+                {
+                    System.Threading.Interlocked.Increment(ref mRPS);
+                }
+            }
+        }
+
         private MethodInfo mMethod;
 
         public MethodInfo MethodInfo => mMethod;

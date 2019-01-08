@@ -172,6 +172,7 @@ namespace BeetleX.FastHttpApi
                 if (rooturl[rooturl.Length - 1] != '/')
                     rooturl += "/";
             }
+            RequestMaxRPS control_maxRPS = controllerType.GetCustomAttribute<RequestMaxRPS>();
             List<FilterAttribute> filters = new List<FilterAttribute>();
             filters.AddRange(config.Filters);
             IEnumerable<FilterAttribute> fas = controllerType.GetCustomAttributes<FilterAttribute>(false);
@@ -197,6 +198,9 @@ namespace BeetleX.FastHttpApi
                 if (mi.GetCustomAttribute<NotActionAttribute>(false) != null)
                     continue;
                 bool noconvert = false;
+                RequestMaxRPS maxRPS = mi.GetCustomAttribute<RequestMaxRPS>();
+                if (maxRPS == null)
+                    maxRPS = control_maxRPS;
                 DataConvertAttribute actionConvert = mi.GetCustomAttribute<DataConvertAttribute>();
                 OptionsAttribute methodOptionsAttribute = mi.GetCustomAttribute<OptionsAttribute>();
                 if (mi.GetCustomAttribute<NoDataConvertAttribute>(false) != null)
@@ -281,6 +285,8 @@ namespace BeetleX.FastHttpApi
                 fas = mi.GetCustomAttributes<FilterAttribute>(false);
                 handler.Filters.AddRange(fas);
                 handler.Url = url;
+                if (maxRPS != null)
+                    handler.MaxRPS = maxRPS.Value;
                 skipfilters = mi.GetCustomAttributes<SkipFilterAttribute>(false);
                 foreach (SkipFilterAttribute item in skipfilters)
                 {
@@ -326,6 +332,7 @@ namespace BeetleX.FastHttpApi
             JToken requestid = data["_requestid"];
             if (requestid != null)
                 result.ID = requestid.Value<string>();
+           
             ActionHandler handler = GetAction(baseurl);
             if (handler == null)
             {

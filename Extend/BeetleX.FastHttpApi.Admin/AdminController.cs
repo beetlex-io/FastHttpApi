@@ -139,7 +139,7 @@ namespace BeetleX.FastHttpApi.Admin
             {
                 return context.Server.ServerCounter.Next();
             }
-            return new ServerCounter.Info();
+            return new ServerCounter.ServerStatus();
         }
 
         public object ListConnection(int index, IHttpContext context)

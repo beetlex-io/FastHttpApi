@@ -61,7 +61,9 @@ namespace BeetleX.FastHttpApi
 
         private long mCurrentHttpRequests;
 
-        private long mCurrentWebSocketRequests;
+        //private long mCurrentWebSocketRequests;
+
+        private long mRequestErrors;
 
         private long mTotalRequests;
 
@@ -73,9 +75,11 @@ namespace BeetleX.FastHttpApi
 
         public long CurrentHttpRequests => mCurrentHttpRequests;
 
+        public long RequestErrors => mRequestErrors;
+
         public ModuleManage ModuleManage => mModuleManage;
 
-        public long CurrentWebSocketRequests => mCurrentWebSocketRequests;
+        //public long CurrentWebSocketRequests => mCurrentWebSocketRequests;
 
         public StaticResurce.ResourceCenter ResourceCenter => mResourceCenter;
 
@@ -247,6 +251,8 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Debug = Options.Debug;
             mResourceCenter.Load();
             ModuleManage.Load();
+            ServerStatusController serverStatusController = new ServerStatusController();
+            mActionFactory.Register(serverStatusController);
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
@@ -488,35 +494,36 @@ namespace BeetleX.FastHttpApi
 
         protected virtual void OnWebSocketRequest(ISession session, DataFrame data)
         {
-            System.Threading.Interlocked.Increment(ref mCurrentWebSocketRequests);
-            try
+
+            if (EnableLog(LogType.Info))
             {
-                if (EnableLog(LogType.Info))
+                mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());
+            }
+            HttpToken token = (HttpToken)session.Tag;
+            if (data.Type == DataPacketType.ping)
+            {
+                DataFrame pong = CreateDataFrame();
+                pong.Type = DataPacketType.pong;
+                pong.FIN = true;
+                session.Send(pong);
+            }
+            else if (data.Type == DataPacketType.connectionClose)
+            {
+                session.Dispose();
+            }
+            else
+            {
+                if (WebSocketReceive == null)
                 {
-                    mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());
-                }
-                HttpToken token = (HttpToken)session.Tag;
-                if (data.Type == DataPacketType.ping)
-                {
-                    DataFrame pong = CreateDataFrame();
-                    pong.Type = DataPacketType.pong;
-                    pong.FIN = true;
-                    session.Send(pong);
-                }
-                else if (data.Type == DataPacketType.connectionClose)
-                {
-                    session.Dispose();
+                    if (data.Type == DataPacketType.text)
+                    {
+                        ActionResult result = ExecuteWS(token.Request, data);
+                    }
                 }
                 else
                 {
-                    if (WebSocketReceive == null)
-                    {
-                        if (data.Type == DataPacketType.text)
-                        {
-                            ActionResult result = ExecuteWS(token.Request, data);
-                        }
-                    }
-                    else
+                    RequestExecting();
+                    try
                     {
                         var args = new WebSocketReceiveArgs();
                         args.Frame = data;
@@ -525,13 +532,14 @@ namespace BeetleX.FastHttpApi
                         args.Request = token.Request;
                         WebSocketReceive?.Invoke(this, args);
                     }
-
+                    finally
+                    {
+                        RequestExecuted();
+                    }
                 }
+
             }
-            finally
-            {
-                System.Threading.Interlocked.Decrement(ref mCurrentWebSocketRequests);
-            }
+
         }
 
         #endregion
@@ -558,29 +566,37 @@ namespace BeetleX.FastHttpApi
 
         protected virtual void OnProcessResource(HttpRequest request, HttpResponse response)
         {
-            if (request.Method == HttpParse.GET_TAG)
+            RequestExecting();
+            try
             {
-                try
+                if (request.Method == HttpParse.GET_TAG)
                 {
-                    mResourceCenter.ProcessFile(request, response);
-                }
-                catch (Exception e_)
-                {
-                    if (EnableLog(LogType.Error))
+                    try
                     {
-                        BaseServer.Error(e_, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
-                        InnerErrorResult result = new InnerErrorResult($"response file error ", e_, Options.OutputStackTrace);
-                        response.Result(result);
+                        mResourceCenter.ProcessFile(request, response);
+                    }
+                    catch (Exception e_)
+                    {
+                        if (EnableLog(LogType.Error))
+                        {
+                            BaseServer.Error(e_, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
+                            InnerErrorResult result = new InnerErrorResult($"response file error ", e_, Options.OutputStackTrace);
+                            response.Result(result);
+                        }
                     }
                 }
-            }
-            else
-            {
-                if (EnableLog(LogType.Info))
-                    Log(LogType.Info, $"{request.RemoteIPAddress}{request.Method} {request.Url} not support");
-                NotSupportResult notSupport = new NotSupportResult($"{request.Method} {request.Url} not support");
-                response.Result(notSupport);
+                else
+                {
+                    if (EnableLog(LogType.Info))
+                        Log(LogType.Info, $"{request.RemoteIPAddress}{request.Method} {request.Url} not support");
+                    NotSupportResult notSupport = new NotSupportResult($"{request.Method} {request.Url} not support");
+                    response.Result(notSupport);
 
+                }
+            }
+            finally
+            {
+                RequestExecuted();
             }
         }
 
@@ -589,7 +605,7 @@ namespace BeetleX.FastHttpApi
             PacketDecodeCompletedEventArgs e = (PacketDecodeCompletedEventArgs)state;
             try
             {
-                System.Threading.Interlocked.Increment(ref mTotalRequests);
+
                 HttpToken token = (HttpToken)e.Session.Tag;
                 if (token.WebSocket)
                 {
@@ -658,27 +674,44 @@ namespace BeetleX.FastHttpApi
             return token.RequestArgs;
         }
 
-        protected virtual void OnHttpRequest(HttpRequest request, HttpResponse response)
+        public ServerCounter.ServerStatus GetServerInfo()
+        {
+            if (ServerCounter != null)
+            {
+                return ServerCounter.Next();
+            }
+            return new ServerCounter.ServerStatus();
+        }
+
+        public void RequestError()
+        {
+            System.Threading.Interlocked.Increment(ref mRequestErrors);
+        }
+
+        public void RequestExecting()
         {
             System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
-            try
+        }
+
+        public void RequestExecuted()
+        {
+            System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
+            System.Threading.Interlocked.Increment(ref mTotalRequests);
+        }
+
+        protected virtual void OnHttpRequest(HttpRequest request, HttpResponse response)
+        {
+            if (!OnHttpRequesting(request, response).Cancel)
             {
-                if (!OnHttpRequesting(request, response).Cancel)
+                string baseUrl = request.BaseUrl;
+                if (string.IsNullOrEmpty(request.Ext) && baseUrl[baseUrl.Length - 1] != '/')
                 {
-                    string baseUrl = request.BaseUrl;
-                    if (string.IsNullOrEmpty(request.Ext) && baseUrl[baseUrl.Length - 1] != '/')
-                    {
-                        mActionFactory.Execute(request, response, this);
-                    }
-                    else
-                    {
-                        OnProcessResource(request, response);
-                    }
+                    mActionFactory.Execute(request, response, this);
                 }
-            }
-            finally
-            {
-                System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
+                else
+                {
+                    OnProcessResource(request, response);
+                }
             }
         }
 

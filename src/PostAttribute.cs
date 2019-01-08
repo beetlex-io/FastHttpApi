@@ -69,4 +69,15 @@ namespace BeetleX.FastHttpApi
 
         public string Value { get; set; }
     }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+    public class RequestMaxRPS : Attribute
+    {
+        public RequestMaxRPS(int value)
+        {
+            Value = value;
+        }
+
+        public int Value { get; set; }
+    }
 }

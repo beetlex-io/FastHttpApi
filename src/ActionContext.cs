@@ -47,6 +47,7 @@ namespace BeetleX.FastHttpApi
 
         private void OnExecute(IActionResultHandler resultHandler)
         {
+            HttpContext.Server.RequestExecting();
             try
             {
                 if (FilterExecuting())
@@ -65,18 +66,27 @@ namespace BeetleX.FastHttpApi
                     }
                 }
                 if (Exception != null)
+                {
+                    Handler.IncrementError();
                     resultHandler.Error(Exception);
+                }
                 else
                     resultHandler.Success(Result);
             }
             catch (Exception e_)
             {
+                Handler.IncrementError();
                 resultHandler.Error(e_);
+            }
+            finally
+            {
+                HttpContext.Server.RequestExecuted();
             }
         }
 
         private async void OnAsyncExecute(IActionResultHandler resultHandler)
         {
+            HttpContext.Server.RequestExecting();
             try
             {
                 if (FilterExecuting())
@@ -100,26 +110,43 @@ namespace BeetleX.FastHttpApi
                     }
                 }
                 if (Exception != null)
+                {
+                    Handler.IncrementError();
                     resultHandler.Error(Exception);
+                }
                 else
                     resultHandler.Success(Result);
             }
             catch (Exception e_)
             {
+                Handler.IncrementError();
                 resultHandler.Error(e_);
+            }
+            finally
+            {
+                HttpContext.Server.RequestExecuted();
             }
         }
 
         internal void Execute(IActionResultHandler resultHandler)
         {
-            if (Handler.Async)
+            if (Handler.ValidateRPS())
             {
-                OnAsyncExecute(resultHandler);
+                if (Handler.Async)
+                {
+                    OnAsyncExecute(resultHandler);
+                }
+                else
+                {
+                    OnExecute(resultHandler);
+                }
             }
             else
             {
-                OnExecute(resultHandler);
+                Handler.IncrementError();
+                resultHandler.Error(new Exception($"{Handler.SourceUrl} process error,out of max rps!"), EventArgs.LogType.Warring);
             }
+            Handler.IncrementRequest();
         }
         private bool FilterExecuting()
         {

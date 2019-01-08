@@ -266,26 +266,57 @@ namespace BeetleX.FastHttpApi
 
         internal bool InVerify { get; set; }
 
+        //private int mRps;
+
+        //private long mLastTime;
+
+        //public int RPS => mRps;
+
+        public int MaxRPS { get; set; }
+
+        //public bool ValidateRps()
+        //{
+        //    if (MaxRPS == 0)
+        //        return true;
+        //    long now = TimeWatch.GetElapsedMilliseconds();
+        //    if (now - mLastTime >= 1000)
+        //        return true;
+        //    return mRps < MaxRPS;
+        //}
+
         internal void AddSuccess()
         {
-            System.Threading.Interlocked.Increment(ref mSuccess);
+            mSuccess++;
+            Available = true;
+            //long now = TimeWatch.GetElapsedMilliseconds();
+            //if (now - mLastTime >= 1000)
+            //{
+            //    mRps = 1;
+            //    mLastTime = now;
+            //}
+            //else
+            //{
+            //    mRps++;
+            //}
         }
 
         internal void AddError(bool socketError)
         {
             if (socketError)
             {
-                System.Threading.Interlocked.Increment(ref mSocketErrors);
+                mSocketErrors++;
+
             }
             else
             {
-                System.Threading.Interlocked.Exchange(ref mSocketErrors, 0);
+                mSocketErrors = 0;
+
             }
             if (mSocketErrors >= DisconnectErrors)
                 Available = false;
             else
                 Available = true;
-            System.Threading.Interlocked.Increment(ref mError);
+            mError++;
         }
 
         public override string ToString()

@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace BeetleX.FastHttpApi.Clients
 {
-    public class HttpClusterApi
+    public class HttpClusterApi : IDisposable
     {
         public HttpClusterApi()
         {
@@ -16,6 +16,32 @@ namespace BeetleX.FastHttpApi.Clients
 
             DetectionTime = 2000;
             mDetectionTimer = new System.Threading.Timer(OnVerifyClients, null, DetectionTime, DetectionTime);
+
+
+        }
+
+        private long mVersion;
+
+
+
+        private System.Collections.Concurrent.ConcurrentDictionary<MethodInfo, ClientActionHanler> mHandlers = new System.Collections.Concurrent.ConcurrentDictionary<MethodInfo, ClientActionHanler>();
+
+        private void ChangeVersion()
+        {
+            System.Threading.Interlocked.Increment(ref mVersion);
+        }
+
+        public long Version => mVersion;
+
+        internal ClientActionHanler GetHandler(MethodInfo method)
+        {
+            ClientActionHanler result;
+            if (!mHandlers.TryGetValue(method, out result))
+            {
+                result = new ClientActionHanler(method);
+                mHandlers[method] = result;
+            }
+            return result;
         }
 
         private System.Threading.Timer mUploadNodeTimer;
@@ -32,6 +58,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         private void UpdateNodeInfo(ApiClusterInfo info)
         {
+
             List<string> removeUrls = new List<string>();
             removeUrls.Add("*");
             foreach (string key in mNodes.Keys)
@@ -41,13 +68,17 @@ namespace BeetleX.FastHttpApi.Clients
             foreach (var item in info.Urls)
             {
                 string url = item.Name.ToLower();
-                removeUrls.Remove(url);
-                SetNode(url, item.GetNode());
+                if (item.Hosts.Count > 0)
+                {
+                    removeUrls.Remove(url);
+                    SetNode(url, item.GetNode());
+                }
             }
             foreach (string item in removeUrls)
             {
                 RemoveNode(item);
             }
+            ChangeVersion();
         }
 
         private async void OnUploadNode_Callback(object sate)
@@ -75,15 +106,20 @@ namespace BeetleX.FastHttpApi.Clients
             }
         }
 
-        public async Task<HttpClusterApi> LoadNodeSource()
+        public async Task<HttpClusterApi> LoadNodeSource(string cluster, params string[] hosts)
         {
-            if (NodeSourceHandler != null)
-            {
-                var info = await NodeSourceHandler.Load();
-                UpdateNodeInfo(info);
-                mLastClusterInfo = info;
-                mUploadNodeTimer = new System.Threading.Timer(OnUploadNode_Callback, null, NodeSourceHandler.UpdateTime * 1000, NodeSourceHandler.UpdateTime * 1000);
-            }
+            HTTPRemoteSourceHandler hTTPRemoteSourceHandler = new HTTPRemoteSourceHandler(cluster, hosts);
+            var result = await LoadNodeSource(hTTPRemoteSourceHandler);
+            return result;
+
+        }
+        public async Task<HttpClusterApi> LoadNodeSource(INodeSourceHandler nodeSourceHandler)
+        {
+            NodeSourceHandler = nodeSourceHandler;
+            var info = await NodeSourceHandler.Load();
+            UpdateNodeInfo(info);
+            mLastClusterInfo = info;
+            mUploadNodeTimer = new System.Threading.Timer(OnUploadNode_Callback, null, NodeSourceHandler.UpdateTime * 1000, NodeSourceHandler.UpdateTime * 1000);
             return this;
         }
 
@@ -108,10 +144,15 @@ namespace BeetleX.FastHttpApi.Clients
 
         private void RemoveNode(string url)
         {
-            SetNode(url, new ApiNode(url));
+            ChangeVersion();
+            if (url == "*")
+                DefaultNode = new ApiNode("*");
+            else
+                mNodes.TryRemove(url, out IApiNode apiNode);
+            //SetNode(url, new ApiNode(url));
             if (mAgents.TryGetValue(url, out ApiNodeAgent agent))
             {
-                agent.Node = new ApiNode(url);
+                agent.Node = DefaultNode;//new ApiNode(url);
             }
         }
 
@@ -139,6 +180,7 @@ namespace BeetleX.FastHttpApi.Clients
                 agent.Node = node;
                 mAgents[node.Url] = agent;
             }
+            agent.Version = this.Version;
             return agent;
         }
 
@@ -159,6 +201,7 @@ namespace BeetleX.FastHttpApi.Clients
                 agent.Node = node;
                 mAgents[url] = agent;
             }
+            ChangeVersion();
             return this;
         }
 
@@ -170,6 +213,7 @@ namespace BeetleX.FastHttpApi.Clients
             nodeAgent.Node = node;
             nodeAgent.Url = url;
             mAgents[node.Url] = nodeAgent;
+            ChangeVersion();
             return node;
         }
 
@@ -185,9 +229,9 @@ namespace BeetleX.FastHttpApi.Clients
             }
             return node;
         }
-
         public HttpClusterApi AddHost(string url, string host, int weight = 10)
         {
+            ChangeVersion();
             if (url == "*")
             {
                 DefaultNode.Add(host, weight);
@@ -207,6 +251,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         public HttpClusterApi AddHost(string url, params string[] host)
         {
+            ChangeVersion();
             if (url == "*")
             {
                 if (host != null)
@@ -277,6 +322,16 @@ namespace BeetleX.FastHttpApi.Clients
             result.Items.Sort();
             return result;
         }
+
+        public void Dispose()
+        {
+            if (mUploadNodeTimer != null)
+                mUploadNodeTimer.Dispose();
+            if (mDetectionTimer != null)
+                mDetectionTimer.Dispose();
+            mHandlers.Clear();
+
+        }
     }
 
     public class ClusterStats
@@ -330,13 +385,32 @@ namespace BeetleX.FastHttpApi.Clients
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
-            ClientActionHanler handler = ClientActionFactory.GetHandler((MethodInfo)targetMethod);
+            ClientActionHanler handler = Cluster.GetHandler((MethodInfo)targetMethod);
             var rinfo = handler.GetRequestInfo(args);
-            if (handler.NodeAgent == null)
+            if (handler.NodeAgent == null || handler.NodeAgent.Version != Cluster.Version)
                 handler.NodeAgent = Cluster.GetAgent(rinfo.Url);
             HttpHost host = handler.NodeAgent.Node.GetClient();
             if (host == null)
-                throw new HttpClientException(null, null, "no http nodes are available");
+            {
+                Exception error = new HttpClientException(null, null, $"request {rinfo.Url} no http nodes are available");
+                if (handler.Async)
+                {
+                    if (handler.MethodType == typeof(ValueTask))
+                        return new ValueTask(Task.FromException(error));
+                    else
+                    {
+                        Type gtype = typeof(AnyCompletionSource<>);
+                        Type type = gtype.MakeGenericType(handler.ReturnType);
+                        IAnyCompletionSource source = (IAnyCompletionSource)Activator.CreateInstance(type);
+                        source.Error(error);
+                        return source.GetTask();
+                    }
+                }
+                else
+                {
+                    throw error;
+                }
+            }
             if (!handler.Async)
             {
                 var request = rinfo.GetRequest(host);
@@ -375,6 +449,8 @@ namespace BeetleX.FastHttpApi.Clients
 
     public class ApiNodeAgent
     {
+        public long Version { get; set; }
+
         public string Url { get; set; }
 
         public IApiNode Node { get; set; }
@@ -514,6 +590,7 @@ namespace BeetleX.FastHttpApi.Clients
                 var item = new HttpHost(host);
                 item.ID = mID << mClients.Count;
                 item.Weight = weight;
+                item.MaxRPS = 0;
                 mClients.Add(item);
                 RefreshWeightTable();
             }
