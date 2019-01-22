@@ -1,7 +1,9 @@
-﻿var __id = 0;
+﻿/*FastHttpApi*/
+var __id = 0;
 var __receive;
 var __connect;
 var __disconnect;
+var api_errors = new Object();
 function FastHttpApiWebSocket() {
     if (window.location.protocol == "https:") {
         this.wsUri = "wss://" + window.location.host;
@@ -12,6 +14,7 @@ function FastHttpApiWebSocket() {
     this.websocket;
     this.status = false;
     this.messagHandlers = new Object();
+    this.timeout = 2000;
 }
 
 FastHttpApiWebSocket.prototype.send = function (url, params, callback) {
@@ -39,7 +42,8 @@ FastHttpApiWebSocket.prototype.onClose = function (evt) {
     if (evt.code == 1006) {
         setTimeout(function () {
             _this.Connect();
-        }, 2000);
+        }, _this.timeout);
+        _this.timeout += 1000;
     }
 
 }
@@ -84,20 +88,20 @@ function FastHttpApi(url, params, http, post) {
 
 FastHttpApi.prototype.sync = function () {
     var _this = this;
-    return new Promise(resolve => {
-        _this.execute(function (result) {
-            resolve(result);
-        });
-    });
+    //return new Promise(resolve => {
+    //    _this.execute(function (result) {
+    //        resolve(result);
+    //    });
+    //});
+    return this;
 }
 FastHttpApi.prototype.httpRequest = function () {
     this.http = true;
-    return this.sync();
+    //return this.sync();
+    return this;
 }
 
-FastHttpApi.prototype.execute = function (callback, http) {
-    if (http == true)
-        this.http = true;
+FastHttpApi.prototype.execute = function (callback, all) {
     var id = ++__id;
     if (__id > 1024)
         __id = 0;
@@ -106,28 +110,37 @@ FastHttpApi.prototype.execute = function (callback, http) {
     var index;
     this.params['_requestid'] = id;
     var _this = this;
-    // this.http = true
+    var backevent = function (result) {
+        if (all) {
+            if (callback) {
+                callback(result);
+            }
+        }
+        else {
+            if (result.Code == 200) {
+                if (callback) {
+                    callback(result);
+                }
+            }
+            else {
+                var item = api_errors[result.Code.toString()];
+                item(result);
+            }
+        }
+    }
     if (this.http || __websocket.status == false) {
         if (this.post) {
             httpurl = this.url;
-            //$.post(httpurl, JSON.stringify(this.params), function (result) {
-            //    if (callback)
-            //        callback(result);
-            //});
             $.ajax({
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
                 url: httpurl,
                 data: JSON.stringify(_this.params),
                 dataType: "json",
-                success: function (result) {
-                    if (callback)
-                        callback(result);
-                }
+                success: backevent
             });
         }
         else {
-            //get
             httpurl = this.url;
             keys = Object.keys(this.params);
             index = 0;
@@ -143,14 +156,11 @@ FastHttpApi.prototype.execute = function (callback, http) {
                     index++;
                 }
             }
-            $.get(httpurl, function (result) {
-                if (callback)
-                    callback(result);
-            });
+            $.get(httpurl, backevent);
         }
     }
     else {
-        __websocket.send(this.url, this.params, callback);
+        __websocket.send(this.url, this.params, backevent);
     }
 
 }
@@ -172,6 +182,36 @@ function api_receive(callback) {
     __receive = callback;
 }
 
+api_errors['401'] = function (result) {
+    window.location.href = result.Data;
+}
+api_errors['500'] = function (result) {
+    alert(result.Error);
+}
+
 var __websocket = new FastHttpApiWebSocket();
 __websocket.Connect();
+//url helper
+function UrlHelper() {
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hashes.length; i++) {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0].toLowerCase()] = hash[1];
+    }
+    this.queryString = vars;
+    this.ssl = window.location.protocol == "https:"
+    var url = document.location.pathname;
+    this.folder = url.substring(url.indexOf('/'), url.lastIndexOf('/'));
+    url = url.substring(0, (url.indexOf("#") == -1) ? url.length : url.indexOf("#"));
+    url = url.substring(0, (url.indexOf("?") == -1) ? url.length : url.indexOf("?"));
+    url = url.substring(url.lastIndexOf("/") + 1, url.length);
+    if (url) {
+        this.fileName = decodeURIComponent(url);
+        this.ext = this.fileName.substring(this.fileName.lastIndexOf(".") + 1, this.fileName.length)
+        this.fileNameWithOutExt = this.fileName.substring(0, this.fileName.lastIndexOf(".") == -1 ? this.fileName.length : this.fileName.lastIndexOf("."));
+    }
+}
+var _url = new UrlHelper();
 

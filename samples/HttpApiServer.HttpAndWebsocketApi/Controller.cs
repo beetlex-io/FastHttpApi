@@ -99,7 +99,7 @@ namespace HttpApiServer.HttpAndWebsocketApi
 
         }
         [NotAction]
-        public void Init(BeetleX.FastHttpApi.HttpApiServer server)
+        public void Init(BeetleX.FastHttpApi.HttpApiServer server,string path)
         {
             mServer = server;
         }

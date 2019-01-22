@@ -89,7 +89,7 @@ namespace BeetleX.FastHttpApi.Admin
         }
 
         [NotAction]
-        public void Init(BeetleX.FastHttpApi.HttpApiServer server)
+        public void Init(BeetleX.FastHttpApi.HttpApiServer server,string path)
         {
             mPath = server.Options.FileManagerPath;
             if (string.IsNullOrEmpty(mPath))

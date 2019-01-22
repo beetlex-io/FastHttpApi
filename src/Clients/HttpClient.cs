@@ -387,7 +387,7 @@ namespace BeetleX.FastHttpApi
             Request request = new Request();
             request.Header = new Header();
             request.Formater = formater == null ? this.Formater : formater;
-            request.Header[HeaderTypeFactory.CONTENT_TYPE] = "text/plain";
+            request.Header[HeaderTypeFactory.CONTENT_TYPE] = request.Formater.ContentType;
             request.Header[HeaderTypeFactory.HOST] = Host;
             request.QuestryString = queryString;
             if (header != null)

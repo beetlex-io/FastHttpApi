@@ -45,7 +45,7 @@ namespace HttpApiServer.SimpleChatRoom
             return true;
         }
         [NotAction]
-        public void Init(BeetleX.FastHttpApi.HttpApiServer server)
+        public void Init(BeetleX.FastHttpApi.HttpApiServer server,string path)
         {
             server.HttpDisconnect += (o, e) =>
             {

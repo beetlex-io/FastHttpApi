@@ -185,7 +185,7 @@ namespace BeetleX.FastHttpApi.Clients
                     if (!response.KeepAlive)
                         client.Client.DisConnect();
                     if (code >= 400)
-                        response.Exception = new HttpClientException(this, HttpHost.Uri, $"{this.Method} {this.Url} {response.Code} {response.CodeMsg} {response.Body}");
+                        response.Exception = new HttpClientException(this, HttpHost.Uri, $" [{this.Method} {this.Url} {response.Code} {response.CodeMsg}] Response text:[{response.Body}]");
                     Status = RequestStatus.Completed;
                 }
             }

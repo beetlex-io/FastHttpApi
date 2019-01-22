@@ -125,6 +125,31 @@ namespace BeetleX.FastHttpApi
         }
     }
 
+    public class UnauthorizedResult:ResultBase
+    {
+        public UnauthorizedResult(string message)
+        {
+            Message = message;
+        }
+
+        public override void Setting(HttpResponse response)
+        {
+            response.Request.Server.RequestError();
+            response.Code = "401";
+            response.CodeMsg = "Unauthorized";
+            response.Request.ClearStream();
+        }
+
+        public override bool HasBody => true;
+
+        public string Message { get; set; }
+
+        public override void Write(PipeStream stream, HttpResponse response)
+        {
+            stream.Write(Message);
+        }
+    }
+
     public class NotSupportResult : ResultBase
     {
         public NotSupportResult(string messge)

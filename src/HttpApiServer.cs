@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using BeetleX.Dispatchs;
 using System.Reflection;
+using System.Collections.Concurrent;
 
 namespace BeetleX.FastHttpApi
 {
@@ -38,14 +39,14 @@ namespace BeetleX.FastHttpApi
             mActionFactory = new ActionHandlerFactory(this);
             mResourceCenter = new StaticResurce.ResourceCenter(this);
             mUrlRewrite = new RouteRewrite(this);
-            mModuleManage = new ModuleManage(this);
+            mModuleManager = new ModuleManager(this);
         }
 
         private string mConfigFile = "HttpConfig.json";
 
         private RouteRewrite mUrlRewrite;
 
-        private ModuleManage mModuleManage;
+        private ModuleManager mModuleManager;
 
         private StaticResurce.ResourceCenter mResourceCenter;
 
@@ -71,13 +72,22 @@ namespace BeetleX.FastHttpApi
 
         private ActionHandlerFactory mActionFactory;
 
-        private System.Collections.Concurrent.ConcurrentDictionary<string, object> mProperties = new System.Collections.Concurrent.ConcurrentDictionary<string, object>();
+        private ConcurrentQueue<LogRecord> mCacheLogQueue = new ConcurrentQueue<LogRecord>();
+
+        public LogRecord[] GetCacheLog()
+        {
+            return mCacheLogQueue.ToArray();
+        }
+
+        private int mCacheLogLength = 0;
+
+        private ConcurrentDictionary<string, object> mProperties = new ConcurrentDictionary<string, object>();
 
         public long CurrentHttpRequests => mCurrentHttpRequests;
 
         public long RequestErrors => mRequestErrors;
 
-        public ModuleManage ModuleManage => mModuleManage;
+        public ModuleManager ModuleManager => mModuleManager;
 
         //public long CurrentWebSocketRequests => mCurrentWebSocketRequests;
 
@@ -121,6 +131,7 @@ namespace BeetleX.FastHttpApi
                 string strConfig = Newtonsoft.Json.JsonConvert.SerializeObject(config);
                 writer.Write(strConfig);
                 writer.Flush();
+                OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
             }
         }
 
@@ -177,6 +188,10 @@ namespace BeetleX.FastHttpApi
         public event EventHandler<EventHttpRequestArgs> HttpRequestNotfound;
 
         public event EventHandler<SessionEventArgs> HttpDisconnect;
+
+        public event EventHandler<EventHttpServerStartedArgs> Started;
+
+        public event EventHandler<EventOptionsReloadArgs> OptionLoad;
 
         public EventHandler<WebSocketConnectArgs> WebSocketConnect { get; set; }
 
@@ -250,8 +265,8 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Path = Options.StaticResourcePath;
             mResourceCenter.Debug = Options.Debug;
             mResourceCenter.Load();
-            ModuleManage.Load();
-            ServerStatusController serverStatusController = new ServerStatusController();
+            ModuleManager.Load();
+            ServerController serverStatusController = new ServerController();
             mActionFactory.Register(serverStatusController);
             StartTime = DateTime.Now;
             mServer.Open();
@@ -284,6 +299,8 @@ namespace BeetleX.FastHttpApi
                 }
             };
             mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi start@[v:{typeof(HttpApiServer).Assembly.GetName().Version}]");
+            OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
+            OnStrated(new EventHttpServerStartedArgs { HttpApiServer = this });
 
 
         }
@@ -292,6 +309,7 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
+                Log(LogType.Info, $"{args.RequestingAssembly.FullName} load assembly {args.Name}");
                 string path = System.IO.Path.GetDirectoryName(args.RequestingAssembly.Location) + System.IO.Path.DirectorySeparatorChar;
                 string name = args.Name.Substring(0, args.Name.IndexOf(','));
                 string file = path + name + ".dll";
@@ -301,7 +319,7 @@ namespace BeetleX.FastHttpApi
             catch (Exception e_)
             {
                 if (EnableLog(LogType.Error))
-                    Log(LogType.Error, $"load assembly error {e_.Message}");
+                    Log(LogType.Error, $"{args.RequestingAssembly.FullName} load assembly {args.Name} error {e_.Message}");
             }
             return null;
         }
@@ -544,8 +562,27 @@ namespace BeetleX.FastHttpApi
 
         #endregion
 
+        private void CacheLog(ServerLogEventArgs e)
+        {
+            if (Options.CacheLogLength > 0)
+            {
+                LogRecord record = new LogRecord();
+                record.Type = e.Type.ToString();
+                record.Message = e.Message;
+                record.Time = DateTime.Now.ToString("H:mm:ss");
+                System.Threading.Interlocked.Increment(ref mCacheLogLength);
+                if (mCacheLogLength > Options.CacheLogLength)
+                {
+                    mCacheLogQueue.TryDequeue(out LogRecord log);
+                    System.Threading.Interlocked.Decrement(ref mCacheLogLength);
+                }
+                mCacheLogQueue.Enqueue(record);
+            }
+        }
+
         public override void Log(IServer server, ServerLogEventArgs e)
         {
+            CacheLog(e);
             if (ServerLog == null)
             {
                 if (Options.LogToConsole)
@@ -562,6 +599,20 @@ namespace BeetleX.FastHttpApi
                 log.Data = new { LogType = e.Type.ToString(), Time = DateTime.Now.ToString("H:mm:ss"), Message = e.Message };
                 CreateDataFrame(log).Send(output);
             }
+        }
+
+        protected virtual void OnOptionLoad(EventOptionsReloadArgs e)
+        {
+            if (EnableLog(LogType.Debug))
+                Log(LogType.Debug, "invoke options reload event!");
+            OptionLoad?.Invoke(this, e);
+        }
+
+        protected virtual void OnStrated(EventHttpServerStartedArgs e)
+        {
+            if (EnableLog(LogType.Debug))
+                Log(LogType.Debug, "invoke server started event!");
+            Started?.Invoke(this, e);
         }
 
         protected virtual void OnProcessResource(HttpRequest request, HttpResponse response)

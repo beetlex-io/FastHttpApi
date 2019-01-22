@@ -17,7 +17,7 @@ namespace BeetleX.FastHttpApi.Clients
             DetectionTime = 2000;
             mDetectionTimer = new System.Threading.Timer(OnVerifyClients, null, DetectionTime, DetectionTime);
 
-
+            TimeOut = 30000;
         }
 
         private long mVersion;
@@ -30,6 +30,8 @@ namespace BeetleX.FastHttpApi.Clients
         {
             System.Threading.Interlocked.Increment(ref mVersion);
         }
+
+        public int TimeOut { get; set; }
 
         public long Version => mVersion;
 
@@ -132,7 +134,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         public ConcurrentDictionary<string, IApiNode> Nodes => mNodes;
 
-        internal IApiNode DefaultNode { get; set; }
+        public IApiNode DefaultNode { get; internal set; }
 
         private IApiNode OnGetNode(string url)
         {
@@ -311,7 +313,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         }
 
-        public ClusterStats Stats()
+        public ClusterStats Status()
         {
             ClusterStats result = new ClusterStats();
             foreach (var node in mNodes.Values)
@@ -415,10 +417,10 @@ namespace BeetleX.FastHttpApi.Clients
             {
                 var request = rinfo.GetRequest(host);
                 var task = request.Execute();
-                int timeout = host.Pool.TimeOut;
-                if (!task.Wait(timeout))
+              
+                if (!task.Wait(Cluster.TimeOut))
                 {
-                    throw new HttpClientException(request, host.Uri, $"{rinfo.Method} {rinfo.Url} request time out {timeout}!");
+                    throw new HttpClientException(request, host.Uri, $"{rinfo.Method} {rinfo.Url} request time out {Cluster.TimeOut}!");
                 }
                 if (task.Result.Exception != null)
                     throw task.Result.Exception;

@@ -8,10 +8,10 @@ using System.IO;
 
 namespace BeetleX.FastHttpApi
 {
-    public class ModuleManage
+    public class ModuleManager
     {
 
-        public ModuleManage(HttpApiServer server)
+        public ModuleManager(HttpApiServer server)
         {
             Server = server;
             mPath = System.IO.Directory.GetCurrentDirectory();
@@ -31,6 +31,7 @@ namespace BeetleX.FastHttpApi
             fileSystemWatcher.IncludeSubdirectories = false;
             fileSystemWatcher.Changed += OnFileWatchHandler;
             fileSystemWatcher.Created += OnFileWatchHandler;
+            fileSystemWatcher.Renamed += OnFileWatchHandler;
             fileSystemWatcher.EnableRaisingEvents = true;
             mUpdateTimer = new System.Threading.Timer(OnUpdateHandler, null, 5000, 5000);
         }
@@ -107,6 +108,7 @@ namespace BeetleX.FastHttpApi
                 item.FullName = e.FullPath;
                 item.Time = Server.BaseServer.GetRunTime();
                 mUpdateItems[e.Name] = item;
+                Server.Log(EventArgs.LogType.Info, $"upload {e.Name} module");
             }
         }
 
@@ -124,8 +126,24 @@ namespace BeetleX.FastHttpApi
             return result;
         }
 
+        private void ClearFiles()
+        {
+            try
+            {
+                foreach (var folder in System.IO.Directory.GetDirectories(mRunningPath))
+                {
+                    System.IO.Directory.Delete(folder, true);
+                }
+            }
+            catch (Exception e_)
+            {
+                Server.Log(EventArgs.LogType.Error, $"clear files error {e_.Message}");
+            }
+        }
+
         public void Load()
         {
+            ClearFiles();
             var items = List();
             if (items != null)
                 foreach (var item in items)
@@ -156,6 +174,34 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+
+        public bool SaveFile(string name, string md5, bool eof, byte[] data)
+        {
+            string file = mPath + name + ".tmp";
+            using (System.IO.Stream stream = System.IO.File.Open(file, FileMode.Append))
+            {
+                stream.Write(data, 0, data.Length);
+                stream.Flush();
+            }
+            if (eof)
+            {
+                if (Utils.GetFileMD5(file) != md5)
+                {
+                    System.IO.File.Delete(file);
+                    throw new Exception("Verify file md5 value error!");
+
+                }
+                else
+                {
+                    string targetFile = mPath + name + ".zip";
+                    if (System.IO.File.Exists(targetFile))
+                        System.IO.File.Delete(targetFile);
+                    System.IO.File.Move(file, targetFile);
+                    return true;
+                }
+            }
+            return false;
+        }
 
 
         public void Load(string module)

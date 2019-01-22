@@ -6,48 +6,27 @@ https://github.com/IKende/FastHttpApi
 
 
 
-var ChatLoginUrl='/login';
+var ChatLoginUrl='/Login';
 /**
-* 'var result= await ChatLogin(params);'
+* 'ChatLogin(params).execute(function(result){});'
 **/
 function ChatLogin(nickName,useHttp)
 {
-    return api(ChatLoginUrl,{nickName:nickName},useHttp).sync();
-}
-/**
-* 'ChatLoginAsync(params).execute(function(result){},useHttp);'
-**/
-function ChatLoginAsync(nickName,useHttp)
-{
     return api(ChatLoginUrl,{nickName:nickName},useHttp);
 }
-var ChatListOnlinesUrl='/listonlines';
+var ChatListOnlinesUrl='/ListOnlines';
 /**
-* 'var result= await ChatListOnlines(params);'
+* 'ChatListOnlines(params).execute(function(result){});'
 **/
 function ChatListOnlines(useHttp)
 {
-    return api(ChatListOnlinesUrl,{},useHttp).sync();
-}
-/**
-* 'ChatListOnlinesAsync(params).execute(function(result){},useHttp);'
-**/
-function ChatListOnlinesAsync(useHttp)
-{
     return api(ChatListOnlinesUrl,{},useHttp);
 }
-var ChatTalkUrl='/talk';
+var ChatTalkUrl='/Talk';
 /**
-* 'var result= await ChatTalk(params);'
+* 'ChatTalk(params).execute(function(result){});'
 **/
 function ChatTalk(nickName,message,useHttp)
-{
-    return api(ChatTalkUrl,{nickName:nickName,message:message},useHttp).sync();
-}
-/**
-* 'ChatTalkAsync(params).execute(function(result){},useHttp);'
-**/
-function ChatTalkAsync(nickName,message,useHttp)
 {
     return api(ChatTalkUrl,{nickName:nickName,message:message},useHttp);
 }

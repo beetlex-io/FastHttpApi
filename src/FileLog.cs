@@ -97,4 +97,13 @@ namespace BeetleX.FastHttpApi
 
         }
     }
+
+    public class LogRecord
+    {
+        public string Type { get; set; }
+
+        public string Time { get; set; }
+
+        public string Message { get; set; }
+    }
 }

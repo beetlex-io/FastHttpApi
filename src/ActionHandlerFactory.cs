@@ -185,7 +185,9 @@ namespace BeetleX.FastHttpApi
             object obj = controller;
             if (obj is IController)
             {
-                ((IController)obj).Init(server);
+                string path = System.IO.Path.GetDirectoryName(controllerType.Assembly.Location) + System.IO.Path.DirectorySeparatorChar;
+                ((IController)obj).Init(server, path);
+                server.Log(EventArgs.LogType.Info, $"init {controllerType} controller path {path}");
             }
             foreach (MethodInfo mi in controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
@@ -287,6 +289,9 @@ namespace BeetleX.FastHttpApi
                 handler.Url = url;
                 if (maxRPS != null)
                     handler.MaxRPS = maxRPS.Value;
+                int rpsSetting = server.Options.GetActionMaxrps(handler.SourceUrl);
+                if (rpsSetting > 0)
+                    handler.MaxRPS = rpsSetting;
                 skipfilters = mi.GetCustomAttributes<SkipFilterAttribute>(false);
                 foreach (SkipFilterAttribute item in skipfilters)
                 {
@@ -332,7 +337,7 @@ namespace BeetleX.FastHttpApi
             JToken requestid = data["_requestid"];
             if (requestid != null)
                 result.ID = requestid.Value<string>();
-           
+
             ActionHandler handler = GetAction(baseurl);
             if (handler == null)
             {

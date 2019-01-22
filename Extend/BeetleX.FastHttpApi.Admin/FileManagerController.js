@@ -8,61 +8,33 @@ https://github.com/IKende/FastHttpApi
 
 var _FileManagerCreateFolderUrl='/_admin/files/CreateFolder';
 /**
-* 'var result= await _FileManagerCreateFolder(params);'
+* '_FileManagerCreateFolder(params).execute(function(result){});'
 **/
 function _FileManagerCreateFolder(folder,name,useHttp)
-{
-    return api(_FileManagerCreateFolderUrl,{folder:folder,name:name},useHttp).sync();
-}
-/**
-* '_FileManagerCreateFolderAsync(params).execute(function(result){},useHttp);'
-**/
-function _FileManagerCreateFolderAsync(folder,name,useHttp)
 {
     return api(_FileManagerCreateFolderUrl,{folder:folder,name:name},useHttp);
 }
 var _FileManagerUploadFileUrl='/_admin/files/UploadFile';
 /**
-* 'var result= await _FileManagerUploadFile(params);'
+* '_FileManagerUploadFile(params).execute(function(result){});'
 **/
 function _FileManagerUploadFile(folder,info,useHttp)
-{
-    return api(_FileManagerUploadFileUrl,{folder:folder,info:info},useHttp,true).sync();
-}
-/**
-* '_FileManagerUploadFileAsync(params).execute(function(result){},useHttp);'
-**/
-function _FileManagerUploadFileAsync(folder,info,useHttp)
 {
     return api(_FileManagerUploadFileUrl,{folder:folder,info:info},useHttp,true);
 }
 var _FileManagerDeleteResourceUrl='/_admin/files/DeleteResource';
 /**
-* 'var result= await _FileManagerDeleteResource(params);'
+* '_FileManagerDeleteResource(params).execute(function(result){});'
 **/
 function _FileManagerDeleteResource(folder,name,file,useHttp)
-{
-    return api(_FileManagerDeleteResourceUrl,{folder:folder,name:name,file:file},useHttp).sync();
-}
-/**
-* '_FileManagerDeleteResourceAsync(params).execute(function(result){},useHttp);'
-**/
-function _FileManagerDeleteResourceAsync(folder,name,file,useHttp)
 {
     return api(_FileManagerDeleteResourceUrl,{folder:folder,name:name,file:file},useHttp);
 }
 var _FileManagerListUrl='/_admin/files/List';
 /**
-* 'var result= await _FileManagerList(params);'
+* '_FileManagerList(params).execute(function(result){});'
 **/
 function _FileManagerList(folder,useHttp)
-{
-    return api(_FileManagerListUrl,{folder:folder},useHttp).sync();
-}
-/**
-* '_FileManagerListAsync(params).execute(function(result){},useHttp);'
-**/
-function _FileManagerListAsync(folder,useHttp)
 {
     return api(_FileManagerListUrl,{folder:folder},useHttp);
 }

@@ -40,4 +40,16 @@ namespace BeetleX.FastHttpApi
 
         public bool Cancel { get; set; }
     }
+
+    public class EventHttpServerStartedArgs : System.EventArgs
+    {
+        public HttpApiServer HttpApiServer { get; internal set; }
+    }
+
+    public class EventOptionsReloadArgs : System.EventArgs
+    {
+        public HttpApiServer HttpApiServer { get; internal set; }
+
+        public HttpOptions HttpOptions { get; internal set; }
+    }
 }

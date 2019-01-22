@@ -6,7 +6,7 @@ namespace BeetleX.FastHttpApi.Clients
 {
     public class HttpClientException : Exception
     {
-        public HttpClientException(Request request, Uri host, string message, Exception innerError = null) : base($"{host} error {message}", innerError)
+        public HttpClientException(Request request, Uri host, string message, Exception innerError = null) : base($"request {host} error {message}", innerError)
         {
             Request = request;
             Host = host;

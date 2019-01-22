@@ -191,7 +191,7 @@ namespace BeetleX.FastHttpApi.Admin
             return false;
         }
         [NotAction]
-        public void Init(HttpApiServer server)
+        public void Init(HttpApiServer server,string path)
         {
             this.Server = server;
             this.HandleFactory = Server.ActionFactory;

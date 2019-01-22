@@ -55,11 +55,13 @@ namespace BeetleX.FastHttpApi
                 {
                     mLastNextTime = mServer.BaseServer.GetRunTime();
                     ServerStatus result = new ServerStatus();
+                    result.BeetleXVersion = mServer.BaseServer.GetType().Assembly.GetName().Version.ToString();
+                    result.WebApiVersion = mServer.GetType().Assembly.GetName().Version.ToString();
                     result.ServerName = mServer.Name;
                     result.Host = mServer.Options.Host;
                     result.Port = mServer.Options.Port;
                     TimeSpan ts = (DateTime.Now - mServer.StartTime);
-                    result.RunTime = $"{(long)ts.TotalDays}:{(long)ts.TotalHours}:{(long)ts.TotalMinutes}:{(long)ts.TotalSeconds}";
+                    result.RunTime = $"{(long)ts.Days}:{(long)ts.Hours}:{(long)ts.Minutes}:{(long)ts.Seconds}";
 
                     long time = mServer.BaseServer.GetRunTime();
                     double second = (double)(time - mLastTime) / 1000d;
@@ -101,6 +103,11 @@ namespace BeetleX.FastHttpApi
                     foreach (var item in mServer.ActionFactory.Handlers)
                     {
                         ActionStatus actionStatus = new ActionStatus();
+                        actionStatus.ID = item.ID;
+                        actionStatus.Path = item.Path;
+                        actionStatus.Version = item.Version;
+                        actionStatus.AssmblyName = item.AssmblyName;
+                        actionStatus.MaxRPS = item.MaxRPS;
                         actionStatus.Url = item.SourceUrl;
                         actionStatus.Requests = item.Requests;
                         actionStatus.RequestsPer = (long)((item.Requests - item.LastRequests) / second);
@@ -125,6 +132,10 @@ namespace BeetleX.FastHttpApi
             {
                 Actions = new List<ActionStatus>();
             }
+
+            public string BeetleXVersion { get; set; }
+
+            public string WebApiVersion { get; set; }
 
             public string Host { get; set; }
 
@@ -170,6 +181,17 @@ namespace BeetleX.FastHttpApi
 
         public class ActionStatus
         {
+
+            public int ID { get; set; }
+
+            public string Path { get; set; }
+
+            public string Version { get; set; }
+
+            public string AssmblyName { get; set; }
+
+            public int MaxRPS { get; set; }
+
             public string Url { get; set; }
 
             public long Requests { get; set; }

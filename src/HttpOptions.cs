@@ -22,8 +22,6 @@ namespace BeetleX.FastHttpApi
                 System.IO.Path.DirectorySeparatorChar + "views";
             DefaultPage = "index.html;index.htm";
             Debug = false;
-            Manager = "admin";
-            ManagerPWD = "123456";
             WriteLog = false;
             MaxConnections = 2000;
             NoGzipFiles = "jpg;jpeg;png;gif;png;ico;zip;rar";
@@ -31,7 +29,7 @@ namespace BeetleX.FastHttpApi
             BufferSize = 1024 * 8;
             WebSocketMaxRPS = 30;
             LogLevel = EventArgs.LogType.Warring;
-            this.LogToConsole = false;
+            LogToConsole = false;
             NotLoadFolder = @"\Files;\Images";
             FileManager = false;
             CacheFileSize = 500;
@@ -42,10 +40,20 @@ namespace BeetleX.FastHttpApi
             BufferPoolMaxMemory = 500;
             SSLPort = 443;
             StaticResurceCacheTime = 0;
+            Settings = new List<Setting>();
+            MaxrpsSettings = new List<ActionMaxrps>();
+            CacheLogLength = 0;
         }
 
-        public int StaticResurceCacheTime { get; set; }
+        public int CacheLogLength { get; set; }
 
+        public List<ActionMaxrps> MaxrpsSettings { get; set; }
+
+        public List<Setting> Settings { get; set; }
+
+        public string AccessKey { get; set; }
+
+        public int StaticResurceCacheTime { get; set; }
 
         public int BufferPoolMaxMemory { get; set; }
 
@@ -147,5 +155,37 @@ namespace BeetleX.FastHttpApi
         }
 
         public string StaticResourcePath { get; set; }
+
+        public string GetValue(string name)
+        {
+            foreach (var item in Settings)
+                if (item.Name == name)
+                    return item.Value;
+            return null;
+        }
+
+        public int GetActionMaxrps(string url)
+        {
+            foreach (var item in MaxrpsSettings)
+            {
+                if (item.Url == url)
+                    return item.MaxRps;
+            }
+            return 0;
+        }
+    }
+
+    public class ActionMaxrps
+    {
+        public string Url { get; set; }
+
+        public int MaxRps { get; set; }
+    }
+
+    public class Setting
+    {
+        public string Name { get; set; }
+
+        public string Value { get; set; }
     }
 }

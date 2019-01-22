@@ -21,7 +21,7 @@ namespace BeetleX.FastHttpApi
 
     public interface IController
     {
-        void Init(HttpApiServer server);
+        void Init(HttpApiServer server,string path);
     }
 
     [AttributeUsage(AttributeTargets.Method)]

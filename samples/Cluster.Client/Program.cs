@@ -14,7 +14,7 @@ namespace Cluster.Client
             Test();
             while (true)
             {
-                Console.Write(HttpClusterApi.Stats());
+                Console.Write(HttpClusterApi.Status());
                 System.Threading.Thread.Sleep(1000);
             }
         }

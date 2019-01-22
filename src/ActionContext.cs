@@ -132,6 +132,7 @@ namespace BeetleX.FastHttpApi
         {
             if (Handler.ValidateRPS())
             {
+                Handler.IncrementRequest();
                 if (Handler.Async)
                 {
                     OnAsyncExecute(resultHandler);
@@ -146,7 +147,7 @@ namespace BeetleX.FastHttpApi
                 Handler.IncrementError();
                 resultHandler.Error(new Exception($"{Handler.SourceUrl} process error,out of max rps!"), EventArgs.LogType.Warring);
             }
-            Handler.IncrementRequest();
+            
         }
         private bool FilterExecuting()
         {
