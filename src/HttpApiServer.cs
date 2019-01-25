@@ -513,6 +513,16 @@ namespace BeetleX.FastHttpApi
         protected virtual void OnWebSocketRequest(ISession session, DataFrame data)
         {
 
+            if(session.Count> Options.WebSocketMaxRPS)
+            {
+                if (EnableLog(LogType.Error))
+                {
+                    mServer.Log(LogType.Error, session, $"{session.RemoteEndPoint} Session message queuing exceeds maximum rps!");
+                }
+                session.Dispose();
+                return;
+            }
+
             if (EnableLog(LogType.Info))
             {
                 mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());

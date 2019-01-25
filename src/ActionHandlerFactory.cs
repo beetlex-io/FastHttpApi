@@ -364,7 +364,7 @@ namespace BeetleX.FastHttpApi
                 catch (Exception e_)
                 {
                     if (server.EnableLog(EventArgs.LogType.Error))
-                        server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "{0} ws execute {1} inner error {2}@{3}", request.RemoteIPAddress, request.Url, e_.Message, e_.StackTrace);
+                        server.BaseServer.Log(EventArgs.LogType.Error, request.Session, "{0} ws execute {1} inner error {2}@{3}", request.RemoteIPAddress, result.Url, e_.Message, e_.StackTrace);
                     result.Code = 500;
                     result.Error = e_.Message;
                     if (server.Options.OutputStackTrace)

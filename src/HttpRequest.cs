@@ -68,7 +68,7 @@ namespace BeetleX.FastHttpApi
             return response;
         }
 
-        internal void Recovery()
+        public void Recovery()
         {
             if (!WebSocket)
             {

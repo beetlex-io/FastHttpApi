@@ -46,7 +46,7 @@ namespace BeetleX.FastHttpApi
         START:
             if (mRequest == null)
             {
-                mRequest = mServer.CreateRequest(session); 
+                mRequest = mServer.CreateRequest(session);
             }
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {
@@ -166,25 +166,34 @@ namespace BeetleX.FastHttpApi
         private void OnEncode(ISession session, object data, System.IO.Stream stream)
         {
             PipeStream pstream = stream.ToPipeStream();
-            StaticResurce.FileBlock fb = data as StaticResurce.FileBlock;
-            if (fb != null)
+            IDataResponse dataResponse = data as IDataResponse;
+            if (dataResponse != null)
             {
-                fb.Write(pstream);
+                dataResponse.Write(pstream);
             }
             else
             {
-                DataFrame dataPacket = data as DataFrame;
-                if (dataPacket != null)
-                {
-                    dataPacket.Write(pstream);
-                }
-                else
-                {
-                    HttpResponse response = (HttpResponse)data;
-                    response.Write(pstream);
-                }
+                if (session.Server.EnableLog(LogType.Error))
+                    session.Server.Log(LogType.Error, session, $"{session.RemoteEndPoint} response {data} no impl  IDataResponse");
             }
-
+            //StaticResurce.FileBlock fb = data as StaticResurce.FileBlock;
+            //if (fb != null)
+            //{
+            //    fb.Write(pstream);
+            //}
+            //else
+            //{
+            //    DataFrame dataPacket = data as DataFrame;
+            //    if (dataPacket != null)
+            //    {
+            //        dataPacket.Write(pstream);
+            //    }
+            //    else
+            //    {
+            //        HttpResponse response = (HttpResponse)data;
+            //        response.Write(pstream);
+            //    }
+            //}
         }
 
         public byte[] Encode(object data, IServer server)

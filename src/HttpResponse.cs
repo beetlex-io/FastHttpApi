@@ -7,7 +7,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    public class HttpResponse
+    public class HttpResponse : IDataResponse
     {
 
         public HttpResponse()
@@ -182,11 +182,14 @@ namespace BeetleX.FastHttpApi
             }
             if (mBody != null)
             {
-                StaticResurce.FileBlock fb = mBody as StaticResurce.FileBlock;
-                if (fb != null)
+
+                //StaticResurce.FileBlock fb = mBody as StaticResurce.FileBlock;
+                //if (fb != null)
+                if (mBody is IDataResponse dataResponse)
                 {
                     stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
-                    fb.Write(stream);
+                    //((IDataResponse)fb).Write(stream);
+                    dataResponse.Write(stream);
                 }
                 else
                 {
@@ -233,7 +236,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        internal void Write(PipeStream stream)
+        void IDataResponse.Write(PipeStream stream)
         {
             try
             {

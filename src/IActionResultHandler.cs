@@ -36,7 +36,7 @@ namespace BeetleX.FastHttpApi
         public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error)
         {
             if (Server.EnableLog(logType))
-                Server.Log(logType, "{0} ws execute {1} inner error {2}@{3}", Request.RemoteIPAddress, Request.Url, e_.Message, e_.StackTrace);
+                Server.Log(logType, "{0} ws execute {1} inner error {2}@{3}", Request.RemoteIPAddress, Result.Url, e_.Message, e_.StackTrace);
             Result.Code = 500;
             Result.Error = e_.Message;
             if (Server.Options.OutputStackTrace)

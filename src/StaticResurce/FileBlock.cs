@@ -1,11 +1,12 @@
-﻿using System;
+﻿using BeetleX.Buffers;
+using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Text;
 
 namespace BeetleX.FastHttpApi.StaticResurce
 {
-    public class FileBlock
+    public class FileBlock:IDataResponse
     {
         public FileBlock(FileResource rec)
         {
@@ -55,8 +56,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
             return null;
         }
-
-        public void Write(BeetleX.Buffers.PipeStream stream)
+        void IDataResponse.Write(PipeStream stream)
         {
             if (GZip)
             {
