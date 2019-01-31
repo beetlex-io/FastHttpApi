@@ -315,7 +315,12 @@ namespace BeetleX.FastHttpApi
         }
 
 
-
+        public static Tuple<string, string> AnalyzeHeader(ReadOnlySpan<byte> line)
+        {
+            Span<char> charbuffer = GetCharBuffer();
+            var len = Encoding.UTF8.GetChars(line, charbuffer);
+            return AnalyzeHeader(charbuffer.Slice(0, len));
+        }
         public static Tuple<string, string> AnalyzeHeader(ReadOnlySpan<char> line)
         {
             string name = null, value = null;
@@ -342,6 +347,39 @@ namespace BeetleX.FastHttpApi
             return new Tuple<string, string>(name, value);
         }
 
+        public static Tuple<string, int, string> AnalyzeResponseLine(ReadOnlySpan<byte> line)
+        {
+            Span<char> charbuffer = GetCharBuffer();
+            var len = Encoding.UTF8.GetChars(line, charbuffer);
+            return AnalyzeResponseLine(charbuffer.Slice(0, len));
+        }
+        public static Tuple<string, int, string> AnalyzeResponseLine(ReadOnlySpan<char> line)
+        {
+            string httpversion = null, codemsg = null;
+            int code = 200;
+            int offset = 0;
+            int count = 0;
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i] == ' ')
+                {
+                    if (count == 0)
+                    {
+                        httpversion = new string(line.Slice(offset, i - offset));
+                        offset = i + 1;
+                    }
+                    else
+                    {
+                        code = int.Parse(line.Slice(offset, i - offset));
+                        offset = i + 1;
+                        codemsg = new string(line.Slice(offset, line.Length - offset));
+                        break;
+                    }
+                    count++;
+                }
+            }
+            return new Tuple<string, int, string>(httpversion, code, codemsg);
+        }
 
         public static void AnalyzeResponseLine(ReadOnlySpan<char> line, Clients.Response response)
         {

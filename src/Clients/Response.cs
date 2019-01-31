@@ -43,7 +43,7 @@ namespace BeetleX.FastHttpApi.Clients
 
         private LoadedState mState;
 
-        internal LoadedState Load(PipeStream stream)
+        public LoadedState Load(PipeStream stream)
         {
             string line;
             if (mState == LoadedState.None)

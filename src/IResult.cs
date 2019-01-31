@@ -23,7 +23,7 @@ namespace BeetleX.FastHttpApi
 
     public abstract class ResultBase : IResult
     {
-        public virtual string ContentType => "text/plain";
+        public virtual string ContentType => "text/plain;charset=utf-8";
 
         public virtual int Length { get; set; }
 
@@ -84,48 +84,69 @@ namespace BeetleX.FastHttpApi
         }
     }
 
+
+
     public class InnerErrorResult : ResultBase
     {
         public InnerErrorResult(string code, string messge)
         {
             Code = code;
-            Error = messge;
+            Message = messge;
         }
 
-        public InnerErrorResult(string message, Exception e, bool outputStackTrace)
+
+        public InnerErrorResult(string message, Exception e, bool outputStackTrace) : this("500", message, e, outputStackTrace)
         {
-            Error = message + ":" + e.Message;
-            if (e.InnerException != null)
-                Error += "->" + e.InnerException.Message;
-            if (outputStackTrace)
-                Code = e.StackTrace;
-            else
-                Code = "";
+
         }
+
+        public InnerErrorResult(string code, string message, Exception e, bool outputStackTrace)
+        {
+            Code = code;
+            Message = message;
+            Error = e.Message;
+            if (e.InnerException != null)
+                Error += "@" + e.InnerException.Message;
+            if (outputStackTrace)
+                SourceCode = e.StackTrace;
+            else
+                SourceCode = "";
+        }
+
+        public string Message { get; set; }
 
         public string Error { get; set; }
 
         public string Code { get; set; }
+
+        public string SourceCode { get; set; }
 
         public override bool HasBody => true;
 
         public override void Setting(HttpResponse response)
         {
             response.Request.Server.RequestError();
-            response.Code = "500";
-            response.CodeMsg = "server inner error!";
+            response.Code = Code;
+            response.CodeMsg = Message;
             response.Request.ClearStream();
 
         }
 
         public override void Write(PipeStream stream, HttpResponse response)
         {
-            stream.WriteLine(Error);
-            stream.WriteLine(Code);
+            stream.WriteLine(Message);
+            if (!string.IsNullOrEmpty(Error))
+            {
+                stream.WriteLine(Error);
+            }
+            if (!string.IsNullOrEmpty(SourceCode))
+            {
+                stream.WriteLine(SourceCode);
+            }
         }
     }
 
-    public class UnauthorizedResult:ResultBase
+    public class UnauthorizedResult : ResultBase
     {
         public UnauthorizedResult(string message)
         {

@@ -19,6 +19,8 @@ namespace BeetleX.FastHttpApi
 
         public static byte[] LINE_BYTES;
 
+        public static byte[] HTTP_V11_BYTES;
+
         public static byte[] SPACE_BYTES;
 
         public static byte[] HEADER_SPLIT;
@@ -120,6 +122,7 @@ namespace BeetleX.FastHttpApi
             CONTENT_LENGTH_BYTES = Encoding.UTF8.GetBytes("Content-Length: ");
             TOW_LINE_BYTES = Encoding.UTF8.GetBytes("\r\n\r\n");
             SERVAR_HEADER_BYTES = Encoding.UTF8.GetBytes("Server: BeetleX\r\n");
+            HTTP_V11_BYTES = Encoding.UTF8.GetBytes("HTTP/1.1");
             Add(HeaderTypeFactory.AGE);
             Add(HeaderTypeFactory.AUTHORIZATION);
             Add(HeaderTypeFactory.WWW_AUTHENTICATE);
@@ -156,7 +159,7 @@ namespace BeetleX.FastHttpApi
             Add(HeaderTypeFactory.USER_AGENT);
         }
 
-        private static System.Collections.Generic.Dictionary<int, HeaderType> mHeaderTypes = new Dictionary<int, HeaderType>();
+        private static System.Collections.Generic.Dictionary<long, HeaderType> mHeaderTypes = new Dictionary<long, HeaderType>();
 
         private static int mCount;
 
@@ -172,7 +175,7 @@ namespace BeetleX.FastHttpApi
             {
                 lock (mHeaderTypes)
                 {
-                    int id = name.GetHashCode();
+                    long id = HeaderType.GetNameCode(name);
                     mHeaderTypes[id] = type;
                 }
                 System.Threading.Interlocked.Increment(ref mCount);
@@ -182,7 +185,7 @@ namespace BeetleX.FastHttpApi
         public static HeaderType Find(string name)
         {
             HeaderType type;
-            int id = name.GetHashCode();
+            long id = HeaderType.GetNameCode(name);
             if (mHeaderTypes.TryGetValue(id, out type))
                 return type;
             foreach (var item in mHeaderTypes.Values)
@@ -208,13 +211,21 @@ namespace BeetleX.FastHttpApi
     public class Header
     {
 
-        private Dictionary<int, HeaderValue> mValues = new Dictionary<int, HeaderValue>(8);
+        private Dictionary<long, HeaderValue> mValues = new Dictionary<long, HeaderValue>(8);
 
         public void Add(string name, string value)
         {
             if (value == null)
                 value = string.Empty;
             Find(name).Value = value;
+        }
+
+        public int Count
+        {
+            get
+            {
+                return mValues.Count;
+            }
         }
 
         public void Clear()
@@ -236,9 +247,15 @@ namespace BeetleX.FastHttpApi
         private HeaderValue FindOnly(string name)
         {
             HeaderValue result;
-            int id = name.GetHashCode();
+            long id = HeaderType.GetNameCode(name);
             mValues.TryGetValue(id, out result);
             return result;
+        }
+
+        public void Remove(string name)
+        {
+            long id = HeaderType.GetNameCode(name);
+            mValues.Remove(id);
         }
 
         public string this[string name]
@@ -291,7 +308,7 @@ namespace BeetleX.FastHttpApi
             return false;
         }
 
-        internal void Write(PipeStream stream)
+        public void Write(PipeStream stream)
         {
             foreach (var item in mValues.Values)
             {
@@ -337,23 +354,29 @@ namespace BeetleX.FastHttpApi
 
     public class HeaderType
     {
+
+        public static long GetNameCode(string name)
+        {
+            return (long)name.GetHashCode() << 16 | (ushort)name.Length;
+        }
+
         public HeaderType(string name)
         {
             Name = name;
             Bytes = Encoding.UTF8.GetBytes(name + ": ");
-            ID = name.GetHashCode();
+            ID = GetNameCode(name); //name.GetHashCode();
         }
 
         public string Name { get; set; }
 
         public byte[] Bytes { get; set; }
 
-        public int ID { get; set; }
+        public long ID { get; set; }
 
-        public override int GetHashCode()
-        {
-            return this.ID;
-        }
+        //public override int GetHashCode()
+        //{
+        //    return this.ID;
+        //}
 
         public bool Compare(string value)
         {
