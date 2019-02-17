@@ -164,6 +164,7 @@ namespace BeetleX.FastHttpApi
                     Server.ResourceCenter.LoadManifestResource(assembly);
                     Server.ActionFactory.Register(assembly);
                     Server.Log(EventArgs.LogType.Info, $"loaded {aname} assembly success");
+                    OnAssemblyLoding(new EventAssemblyLoadingArgs(assembly));
                     success.Add(file);
 
                 }
@@ -173,7 +174,6 @@ namespace BeetleX.FastHttpApi
                 }
             }
         }
-
 
         public bool SaveFile(string name, string md5, bool eof, byte[] data)
         {
@@ -202,7 +202,6 @@ namespace BeetleX.FastHttpApi
             }
             return false;
         }
-
 
         public void Load(string module)
         {
@@ -244,6 +243,23 @@ namespace BeetleX.FastHttpApi
             {
                 Server.Log(EventArgs.LogType.Error, $"load {module} error {e_.Message} {e_.StackTrace}");
             }
+        }
+
+
+        public event EventHandler<EventAssemblyLoadingArgs> AssemblyLoding;
+
+        protected virtual void OnAssemblyLoding(EventAssemblyLoadingArgs e)
+        {
+            AssemblyLoding?.Invoke(this, e);
+        }
+
+        public class EventAssemblyLoadingArgs : System.EventArgs
+        {
+            public EventAssemblyLoadingArgs(Assembly assembly)
+            {
+                Assembly = assembly;
+            }
+            public Assembly Assembly { get; private set; }
         }
     }
 }

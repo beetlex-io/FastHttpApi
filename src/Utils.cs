@@ -8,6 +8,7 @@ namespace BeetleX.FastHttpApi
 {
     public class Utils
     {
+
         public static string MD5Encrypt(string value)
         {
             using (MD5 md5Hash = MD5.Create())
