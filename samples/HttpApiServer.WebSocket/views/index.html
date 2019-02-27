@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="bootstrap.css" rel="stylesheet" />
+    <script src="vue.js"></script>
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>WebSockets</h1>
+        <div class="row" style="padding:20px;">
+            <form id="webSocketPanel">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Host</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" v-model:value="Host">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Name</label>
+                    <input type="text" class="form-control" id="exampleInputPassword1" v-model:value="Name">
+                </div>
+                <button type="button" onclick="doSend()" class="btn btn-default">Send</button>
+
+                <ul>
+                    <li v-for="item in log">{{item.Text}}</li>
+                </ul>
+
+            </form>
+        </div>
+    </div>
+    <script>
+        var webSocketPanel = new Vue({ el: "#webSocketPanel", data: { Host: 'ws://localhost:9090', Name: '', log: [] } });
+        var output;
+        function init() {
+            output = document.getElementById("output");
+            testWebSocket();
+        }
+
+
+
+        function testWebSocket() {
+            websocket = new WebSocket(webSocketPanel.Host);
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
+        }
+
+        function onOpen(evt) {
+
+            webSocketPanel.log.push({ Text: "CONNECTED", Type: 4 });
+        }
+
+        function onClose(evt) {
+            webSocketPanel.log.push({ Text: "DISCONNECTED", Type: 3 });
+        }
+
+        function onMessage(evt) {
+            webSocketPanel.log.push({ Text: evt.data, Type: 2 });
+
+        }
+
+        function onError(evt) {
+            webSocketPanel.log.push({ Text: evt.data, Type: 1 });
+        }
+
+        function doSend() {
+
+            var message = {
+                url: '/Hello', params: { name: webSocketPanel.Name }
+            };
+            webSocketPanel.log.push({ Text: JSON.stringify(message), Type: 0 });
+            websocket.send(JSON.stringify(message));
+        }
+        init();
+    </script>
+</body>
+</html>

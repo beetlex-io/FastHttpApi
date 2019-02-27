@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="views\bootstrap.css" />
+    <None Remove="views\index.html" />
+    <None Remove="views\vue.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="views\bootstrap.css" />
+    <EmbeddedResource Include="views\index.html" />
+    <EmbeddedResource Include="views\vue.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="HttpConfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
