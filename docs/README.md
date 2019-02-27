@@ -12,6 +12,7 @@
 11. [BeetleX和Asp.net Core之webapi基础性能对比](https://www.ikende.com/blog/84.html)
 12. [高可用的集群服务构建](https://www.ikende.com/blog/109.html)
 13. [BeetleX之Webapi集群一体化管理](http://www.ikende.com/blog/115.html)
+14. [WebSocket应用详解](http://www.ikende.com/blog/121.html)
 
 ## ClientApi
 1. [HttpClusterApi应用详解](https://www.ikende.com/blog/86.html)
