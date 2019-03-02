@@ -1,6 +1,7 @@
 ﻿using BeetleX.Buffers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using static BeetleX.FastHttpApi.HttpParse;
 
@@ -165,8 +166,11 @@ namespace BeetleX.FastHttpApi
 
         private static void Add(String name)
         {
-            HeaderType type = new HeaderType(name);
-            mHeaderTypes[type.ID] = type;
+            lock (mHeaderTypes)
+            {
+                HeaderType type = new HeaderType(name);
+                mHeaderTypes[type.ID] = type;
+            }
         }
 
         private static void Add(string name, HeaderType type)
@@ -188,7 +192,12 @@ namespace BeetleX.FastHttpApi
             long id = HeaderType.GetNameCode(name);
             if (mHeaderTypes.TryGetValue(id, out type))
                 return type;
-            foreach (var item in mHeaderTypes.Values)
+            HeaderType[] items;
+            lock (mHeaderTypes)
+            {
+                items = mHeaderTypes.Values.ToArray();
+            }
+            foreach (var item in items)
             {
                 if (item.Compare(name))
                 {

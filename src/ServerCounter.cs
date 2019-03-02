@@ -99,7 +99,7 @@ namespace BeetleX.FastHttpApi
                     mLastSendBytes = result.TotalSendBytes;
                     result.TotalSendBytes = GetByteMB(result.TotalSendBytes);
                     result.SendBytesPer = GetByteMB(result.SendBytesPer);
-
+                   
                     foreach (var item in mServer.ActionFactory.Handlers)
                     {
                         ActionStatus actionStatus = new ActionStatus();

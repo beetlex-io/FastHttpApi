@@ -237,6 +237,7 @@ namespace BeetleX.FastHttpApi
                 .Setting(o =>
                 {
                     o.DefaultListen.Host = Options.Host;
+                    o.IOQueueEnabled = Options.IOQueueEnabled;
                     o.DefaultListen.Port = Options.Port;
                     o.BufferSize = Options.BufferSize;
                     o.LogLevel = Options.LogLevel;
@@ -245,6 +246,7 @@ namespace BeetleX.FastHttpApi
                     o.UseIPv6 = Options.UseIPv6;
                     o.BufferPoolMaxMemory = Options.BufferPoolMaxMemory;
                     o.LittleEndian = false;
+                    o.Statistical = Options.Statistical;
                 });
             if (Options.SSL)
             {
@@ -513,7 +515,7 @@ namespace BeetleX.FastHttpApi
         protected virtual void OnWebSocketRequest(ISession session, DataFrame data)
         {
 
-            if(session.Count> Options.WebSocketMaxRPS)
+            if (session.Count > Options.WebSocketMaxRPS)
             {
                 if (EnableLog(LogType.Error))
                 {

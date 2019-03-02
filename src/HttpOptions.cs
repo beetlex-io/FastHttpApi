@@ -43,7 +43,13 @@ namespace BeetleX.FastHttpApi
             Settings = new List<Setting>();
             MaxrpsSettings = new List<ActionMaxrps>();
             CacheLogLength = 0;
+            IOQueueEnabled = false;
+            Statistical = true;
         }
+
+        public bool Statistical { get; set; }
+
+        public bool IOQueueEnabled { get; set; }
 
         public int CacheLogLength { get; set; }
 
