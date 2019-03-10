@@ -99,7 +99,7 @@ namespace BeetleX.FastHttpApi
                     mLastSendBytes = result.TotalSendBytes;
                     result.TotalSendBytes = GetByteMB(result.TotalSendBytes);
                     result.SendBytesPer = GetByteMB(result.SendBytesPer);
-                   
+
                     foreach (var item in mServer.ActionFactory.Handlers)
                     {
                         ActionStatus actionStatus = new ActionStatus();
@@ -111,6 +111,9 @@ namespace BeetleX.FastHttpApi
                         actionStatus.Url = item.SourceUrl;
                         actionStatus.Requests = item.Requests;
                         actionStatus.RequestsPer = (long)((item.Requests - item.LastRequests) / second);
+                        actionStatus.Errors = item.Errors;
+                        actionStatus.ErrorsPer = (long)((item.Errors - item.LastErrors) / second);
+                        item.LastErrors = item.Errors;
                         item.LastRequests = item.Requests;
                         result.Actions.Add(actionStatus);
                     }
@@ -196,7 +199,13 @@ namespace BeetleX.FastHttpApi
             public string Url { get; set; }
 
             public long Requests { get; set; }
+
             public long RequestsPer { get; set; }
+
+            public long Errors { get; set; }
+
+            public long ErrorsPer { get; set; }
+
         }
     }
 }
