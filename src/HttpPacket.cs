@@ -43,7 +43,6 @@ namespace BeetleX.FastHttpApi
 
         private void OnHttpDecode(ISession session, PipeStream pstream)
         {
-        START:
             if (mRequest == null)
             {
                 mRequest = mServer.CreateRequest(session);
@@ -58,9 +57,10 @@ namespace BeetleX.FastHttpApi
                 {
                     mRequest = null;
                 }
-                if (pstream.Length == 0)
-                    return;
-                goto START;
+                //if (pstream.Length == 0)
+                //    return;
+                //goto START;
+                return;
             }
             else
             {
@@ -80,7 +80,12 @@ namespace BeetleX.FastHttpApi
                     {
                         session.Server.Log(LogType.Warring, session, "{0} http body too long!", session.RemoteEndPoint);
                     }
-                    session.Dispose();
+                    HttpToken token = (HttpToken)session.Tag;
+                    token.KeepAlive = false;
+                    var response = mRequest.CreateResponse();
+                    InnerErrorResult innerErrorResult = new InnerErrorResult("413", "Request Entity Too Large");
+                    response.Result(innerErrorResult);
+                    //session.Dispose();
                     return;
                 }
                 return;

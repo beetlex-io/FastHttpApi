@@ -145,9 +145,9 @@ namespace BeetleX.FastHttpApi
             else
             {
                 Handler.IncrementError();
-                resultHandler.Error(new Exception($"{Handler.SourceUrl} process error,out of max rps!"), EventArgs.LogType.Warring);
+                resultHandler.Error(new Exception($"{Handler.SourceUrl} process error,out of max rps!"), EventArgs.LogType.Warring, 509);
             }
-            
+
         }
         private bool FilterExecuting()
         {

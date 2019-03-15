@@ -7,7 +7,7 @@ namespace BeetleX.FastHttpApi
     public interface IActionResultHandler
     {
         void Success(object result);
-        void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error);
+        void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500);
     }
 
     struct WSActionResultHandler : IActionResultHandler
@@ -33,11 +33,11 @@ namespace BeetleX.FastHttpApi
 
         public WebSockets.DataFrame DataFrame;
 
-        public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error)
+        public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500)
         {
             if (Server.EnableLog(logType))
                 Server.Log(logType, "{0} ws execute {1} inner error {2}@{3}", Request.RemoteIPAddress, Result.Url, e_.Message, e_.StackTrace);
-            Result.Code = 500;
+            Result.Code = code;
             Result.Error = e_.Message;
             if (Server.Options.OutputStackTrace)
             {
@@ -88,12 +88,13 @@ namespace BeetleX.FastHttpApi
 
         public long StartTime;
 
-        public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error)
+        public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500)
         {
             if (Server.EnableLog(logType))
                 Server.Log(logType,
                     $"{Request.RemoteIPAddress} http {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
             InnerErrorResult result = new InnerErrorResult($"http execute {Request.BaseUrl} error ", e_, Server.Options.OutputStackTrace);
+            result.Code = code.ToString();
             Response.Result(result);
         }
 
