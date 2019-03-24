@@ -303,14 +303,11 @@ namespace BeetleX.FastHttpApi
                 else
                 {
                     ReadOnlySpan<Char> line = lineData;
+                    Tuple<string, string> result = HttpParse.AnalyzeHeader(line);
+                    this[result.Item1] = result.Item2;
                     if (line[0] == 'C' && line[5] == 'e' && line[1] == 'o' && line[2] == 'o' && line[3] == 'k' && line[4] == 'i')
                     {
                         HttpParse.AnalyzeCookie(line.Slice(8, line.Length - 8), cookies);
-                    }
-                    else
-                    {
-                        Tuple<string, string> result = HttpParse.AnalyzeHeader(line);
-                        this[result.Item1] = result.Item2;
                     }
                 }
             }

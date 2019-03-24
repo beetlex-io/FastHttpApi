@@ -152,8 +152,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         string filename = tmpFolder + System.IO.Path.DirectorySeparatorChar + item;
                         SaveTempFile(assembly, item, filename);
                         FileResource fr;
-                        bool nogzip = !(Server.Options.NoGzipFiles.IndexOf(ext) >= 0);
-                        bool cachefile = Server.Options.CacheFiles.IndexOf(ext) >= 0;
+                        bool nogzip = !(Server?.Options.NoGzipFiles.IndexOf(ext) >= 0);
+                        bool cachefile = Server?.Options.CacheFiles.IndexOf(ext) >= 0;
                         if (Debug)
                         {
                             fr = new NoCacheResource(filename, urlname);
@@ -175,7 +175,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         }
                         mResources[urlname] = fr;
                         fr.Load();
-                        Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
+                        Server?.BaseServer?.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
                     }
                 }
             }

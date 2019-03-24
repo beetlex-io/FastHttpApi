@@ -16,7 +16,7 @@ namespace BeetleX.FastHttpApi
 
         private static int mIdSeed = 0;
 
-        public ActionHandler(object controller, System.Reflection.MethodInfo method)
+        public ActionHandler(object controller, System.Reflection.MethodInfo method, HttpApiServer httpApiServer)
         {
 
             ID = System.Threading.Interlocked.Increment(ref mIdSeed);
@@ -25,6 +25,7 @@ namespace BeetleX.FastHttpApi
             mMethod = method;
             mMethodHandler = new MethodHandler(mMethod);
             Controller = controller;
+            HttpApiServer = httpApiServer;
             LoadParameter();
             Filters = new List<FilterAttribute>();
             Method = "GET";
@@ -35,7 +36,11 @@ namespace BeetleX.FastHttpApi
             this.AssmblyName = aname.Name;
             this.Version = aname.Version.ToString();
             Async = false;
+           
         }
+
+
+        public HttpApiServer HttpApiServer { get; private set; }
 
         public string Path { get; set; }
 
@@ -219,7 +224,11 @@ namespace BeetleX.FastHttpApi
                 }
                 else
                 {
-                    pb = new DefaultParameter();
+                    pb = HttpApiServer.ActionFactory.GetParameterBinder(pi.ParameterType);
+                    if (pb == null)
+                    {
+                        pb = new DefaultParameter();
+                    }
                 }
                 pb.ParameterInfo = pi;
                 pb.Name = pi.Name;
@@ -275,6 +284,16 @@ namespace BeetleX.FastHttpApi
             }
             return key.ToString();
         }
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ParameterBinderMapper : Attribute
+    {
+        public ParameterBinderMapper(Type type)
+        {
+            ParameterType = type;
+        }
+        public Type ParameterType { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]

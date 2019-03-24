@@ -20,6 +20,8 @@ namespace BeetleX.FastHttpApi
 
         private System.Collections.Generic.Dictionary<string, ActionHandler> mMethods = new Dictionary<string, ActionHandler>();
 
+        private Dictionary<Type, Type> mParameterBinders = new Dictionary<Type, Type>();
+
         public void Register(params Assembly[] assemblies)
         {
             foreach (Assembly item in assemblies)
@@ -53,8 +55,46 @@ namespace BeetleX.FastHttpApi
                             }
                         }
                     }
+                    ParameterBinderMapper mapper = type.GetCustomAttribute<ParameterBinderMapper>(false);
+                    if (mapper != null)
+                    {
+                        RegisterParameterBinder(mapper.ParameterType, type);
+                    }
                 }
             }
+        }
+
+        public void RegisterParameterBinder(Type type, Type binderType)
+        {
+            try
+            {
+                ParameterBinder parameterBinder = (ParameterBinder)Activator.CreateInstance(binderType);
+                mParameterBinders[type] = binderType;
+                if (Server.EnableLog(EventArgs.LogType.Info))
+                    Server.Log(EventArgs.LogType.Info, $"Register {type.Name}'s {binderType.Name} parameter binder success");
+            }
+            catch (Exception e_)
+            {
+                if (Server.EnableLog(EventArgs.LogType.Error))
+                {
+                    Server.Log(EventArgs.LogType.Error, $"Register {type.Name}'s {binderType.Name} parameter binder error {e_.Message} {e_.StackTrace}");
+                }
+            }
+        }
+
+        public void RegisterParameterBinder<T, BINDER>() where BINDER : ParameterBinder, new()
+        {
+            RegisterParameterBinder(typeof(T), typeof(BINDER));
+        }
+
+
+        public ParameterBinder GetParameterBinder(Type type)
+        {
+            if (mParameterBinders.TryGetValue(type, out Type binderType))
+            {
+                return (ParameterBinder)Activator.CreateInstance(binderType);
+            }
+            return null;
         }
 
         public object GetController(Type type)
@@ -263,7 +303,7 @@ namespace BeetleX.FastHttpApi
                         mi.Name);
                 }
 
-                handler = new ActionHandler(obj, mi);
+                handler = new ActionHandler(obj, mi, this.Server);
                 if (mi.ReturnType == typeof(Task) || mi.ReturnType.BaseType == typeof(Task))
                 {
                     handler.Async = true;
