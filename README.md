@@ -4,8 +4,8 @@ Performance higher than ap.net web api 200%
 
 **[Document](https://ikende.github.io/FastHttpApi/)**.
 
-## Personal blog websites system built on Beetlex.FastHttpApi framework
-[https://github.com/IKende/XBlog](https://github.com/IKende/XBlog)
+**[Samples](https://github.com/IKende/FastHttpApi/tree/master/samples)
+
 ## Online case
 [https://www.ikende.com](https://www.ikende.com)
 
