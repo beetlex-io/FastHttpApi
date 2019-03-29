@@ -108,7 +108,10 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
                 charname[indexs[i]] = '/';
             }
-            return HttpParse.CharToLower(charname);
+            if (Server.Options.UrlIgnoreCase)
+                return HttpParse.CharToLower(charname);
+            else
+                return new string(charname);
         }
 
         private void SaveTempFile(System.Reflection.Assembly assembly, string recname, string filename)
