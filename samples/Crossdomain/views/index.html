@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="jquery-1-8-0-min.js"></script>
+</head>
+<body>
+    <button onclick="hello()">TEST</button>
+    <button onclick="post()">post</button>
+    <script>
+        function hello() {
+            $.get('http://localhost:9090/hello?name=henry', function (result) {
+                alert(JSON.stringify(result));
+            });
+        }
+        function post() {
+            $.post('http://localhost:9090/post?name=henry', function (result) {
+                alert(JSON.stringify(result));
+            });
+        }
+    </script>
+</body>
+</html>
