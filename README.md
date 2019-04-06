@@ -21,7 +21,7 @@ Performance higher than ap.net web api 200%
 ### Install Packet
 
 ```
-Install-Package BeetleX.FastHttpApi -Version 0.9.9.7
+Install-Package BeetleX.FastHttpApi
 ```
 ### Setting Server GC
 `<ServerGarbageCollection>true</ServerGarbageCollection>`
