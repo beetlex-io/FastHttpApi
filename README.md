@@ -27,7 +27,7 @@ Install-Package BeetleX.FastHttpApi
 `<ServerGarbageCollection>true</ServerGarbageCollection>`
 
 ### sample code
-```
+``` csharp
     [Controller]
     class Program
     {
