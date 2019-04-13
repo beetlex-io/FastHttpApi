@@ -7,14 +7,20 @@
     <Company>ikende.com</Company>
     <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>1.4.0.0</Version>
+    <Version>1.4.5.6</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <AssemblyVersion>1.4.5.6</AssemblyVersion>
+    <FileVersion>1.4.5.6</FileVersion>
+    <LangVersion>7.3</LangVersion>
+    <Product>BeetleX.FastHttpApi</Product>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -33,8 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.2.5" />
+    <PackageReference Include="BeetleX" Version="1.2.6.5" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="SpanJson" Version="2.0.8" />
   </ItemGroup>
 
 </Project>

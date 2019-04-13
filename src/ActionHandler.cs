@@ -36,7 +36,7 @@ namespace BeetleX.FastHttpApi
             this.AssmblyName = aname.Name;
             this.Version = aname.Version.ToString();
             Async = false;
-           
+
         }
 
 
@@ -287,17 +287,24 @@ namespace BeetleX.FastHttpApi
     }
 
     [AttributeUsage(AttributeTargets.Class)]
-    public class ParameterBinderMapper : Attribute
+    public class PMapper : Attribute
     {
-        public ParameterBinderMapper(Type type)
+        public PMapper(Type type)
         {
             ParameterType = type;
         }
         public Type ParameterType { get; set; }
     }
 
+    public interface IParameterBinder
+    {
+        string Name { get; }
+
+        object GetValue(IHttpContext context);
+    }
+
     [AttributeUsage(AttributeTargets.Parameter)]
-    public abstract class ParameterBinder : Attribute
+    public abstract class ParameterBinder : Attribute, IParameterBinder
     {
         public Type Type { get; internal set; }
 

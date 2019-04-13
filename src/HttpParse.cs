@@ -327,7 +327,7 @@ namespace BeetleX.FastHttpApi
             int offset = 0;
             for (int i = 0; i < line.Length; i++)
             {
-                if (line[i] == ':' && name==null)
+                if (line[i] == ':' && name == null)
                 {
                     name = new string(line.Slice(offset, i - offset));
                     offset = i + 1;

@@ -197,8 +197,8 @@ namespace BeetleX.FastHttpApi
         {
             if (mState == LoadedState.None)
             {
-                string data;
-                if (!stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out data))
+                Span<char> data;
+                if (!stream.ReadLine(out data))
                 {
                     return;
                 }

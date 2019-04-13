@@ -195,17 +195,19 @@ namespace BeetleX.FastHttpApi
             HeaderType[] items;
             lock (mHeaderTypes)
             {
+                if (mHeaderTypes.TryGetValue(id, out type))
+                    return type;
                 items = mHeaderTypes.Values.ToArray();
-            }
-            foreach (var item in items)
-            {
-                if (item.Compare(name))
+                foreach (var item in items)
                 {
-                    Add(name, item);
-                    return item;
+                    if (item.Compare(name))
+                    {
+                        type = item;
+                    }
                 }
             }
-            type = new HeaderType(name);
+            if (type == null)
+                type = new HeaderType(name);
             Add(name, type);
             return type;
         }
@@ -293,10 +295,10 @@ namespace BeetleX.FastHttpApi
 
         public bool Read(PipeStream stream, Cookies cookies)
         {
-            string lineData;
-            while (stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out lineData))
+            Span<char> lineData;
+            while (stream.ReadLine(out lineData))
             {
-                if (string.IsNullOrEmpty(lineData))
+                if (lineData.Length == 0)
                 {
                     return true;
                 }

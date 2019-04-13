@@ -1,6 +1,7 @@
 ﻿using BeetleX.FastHttpApi;
 using Northwind.Data;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BeetlexWebapi
@@ -12,9 +13,9 @@ namespace BeetlexWebapi
         {
             mApiServer = new HttpApiServer();
             mApiServer.Register(typeof(Program).Assembly);//加载程序集中所有控制器信息和静态资源信息
-            mApiServer.ServerConfig.Port = 9090;
-            mApiServer.ServerConfig.LogLevel = BeetleX.EventArgs.LogType.Warring;
-            mApiServer.ServerConfig.LogToConsole = true;
+            mApiServer.Options.Port = 9090;
+            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Warring;
+            mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();//只有在Debug模式下生产，把静态资源加载目录指向项目的views目录
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
@@ -38,6 +39,12 @@ namespace BeetlexWebapi
         {
             return new JsonResult(new JsonMessage { message = "Hello, World!" });
         }
+
+        public List<Employee> Employees()
+        {
+            return DataHelper.Defalut.Employees;
+        }
+
         [Get(Route = "{id}")]
         public object Employee(int id)
         {

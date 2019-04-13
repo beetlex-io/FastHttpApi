@@ -29,6 +29,18 @@ namespace BeetleX.FastHttpApi
                 Type[] types = item.GetTypes();
                 foreach (Type type in types)
                 {
+                    PMapper mapper = type.GetCustomAttribute<PMapper>(false);
+                    if (mapper != null)
+                    {
+                        RegisterParameterBinder(mapper.ParameterType, type);
+                    }
+                }
+            }
+            foreach (Assembly item in assemblies)
+            {
+                Type[] types = item.GetTypes();
+                foreach (Type type in types)
+                {
                     ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
                     if (ca != null)
                     {
@@ -55,11 +67,7 @@ namespace BeetleX.FastHttpApi
                             }
                         }
                     }
-                    ParameterBinderMapper mapper = type.GetCustomAttribute<ParameterBinderMapper>(false);
-                    if (mapper != null)
-                    {
-                        RegisterParameterBinder(mapper.ParameterType, type);
-                    }
+
                 }
             }
         }
@@ -70,15 +78,11 @@ namespace BeetleX.FastHttpApi
             {
                 ParameterBinder parameterBinder = (ParameterBinder)Activator.CreateInstance(binderType);
                 mParameterBinders[type] = binderType;
-                if (Server.EnableLog(EventArgs.LogType.Info))
-                    Server.Log(EventArgs.LogType.Info, $"Register {type.Name}'s {binderType.Name} parameter binder success");
+                Server.Log(EventArgs.LogType.Info, $"Register {type.Name}'s {binderType.Name} parameter binder success");
             }
             catch (Exception e_)
             {
-                if (Server.EnableLog(EventArgs.LogType.Error))
-                {
-                    Server.Log(EventArgs.LogType.Error, $"Register {type.Name}'s {binderType.Name} parameter binder error {e_.Message} {e_.StackTrace}");
-                }
+                Server.Log(EventArgs.LogType.Error, $"Register {type.Name}'s {binderType.Name} parameter binder error {e_.Message} {e_.StackTrace}");
             }
         }
 

@@ -451,11 +451,23 @@ namespace BeetleX.FastHttpApi
             }
             string value;
             if (body is string)
+            {
                 value = (string)body;
+                int length = Options.Encoding.GetBytes(value, 0, value.Length, result, 0);
+                return new ArraySegment<byte>(result, 0, length);
+            }
             else
-                value = Newtonsoft.Json.JsonConvert.SerializeObject(body);
-            int length = Options.Encoding.GetBytes(value, 0, value.Length, result, 0);
-            return new ArraySegment<byte>(result, 0, length);
+            {
+                //value = Newtonsoft.Json.JsonConvert.SerializeObject(body);
+                //int length = Options.Encoding.GetBytes(value, 0, value.Length, result, 0);
+                //return new ArraySegment<byte>(result, 0, length);
+                System.IO.MemoryStream stream = new MemoryStream(result);
+                stream.SetLength(0);
+                stream.Position = 0;
+                var task = SpanJson.JsonSerializer.NonGeneric.Utf8.SerializeAsync(body, stream).AsTask();
+                task.Wait();
+                return new ArraySegment<byte>(result, 0, (int)stream.Length);
+            }
         }
 
         public virtual void FrameRecovery(byte[] buffer)

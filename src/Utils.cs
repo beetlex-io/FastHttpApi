@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.Buffers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -102,8 +103,7 @@ namespace BeetleX.FastHttpApi
             return baseDate.AddSeconds(seconds);
         }
 
-
-       public static byte[] EncryptStringAES(string plainText, byte[] Key, byte[] IV)
+        public static byte[] EncryptStringAES(string plainText, byte[] Key, byte[] IV)
         {
             // Check arguments.
             if (plainText == null || plainText.Length <= 0)

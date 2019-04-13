@@ -19,6 +19,13 @@ namespace HttpApiServer.WebSocket
                 var freame = e.CreateFrame($"{DateTime.Now}" + e.Frame.Body.ToString());
                 e.Response(freame);
             };
+            mApiServer.WebSocketConnect = (o, e) => {
+                //e.Request.Header
+                //e.Request.Cookies
+                e.Cancel = true;
+            };
+         
+
             Console.Write(mApiServer.BaseServer);
             Console.Read();
         }

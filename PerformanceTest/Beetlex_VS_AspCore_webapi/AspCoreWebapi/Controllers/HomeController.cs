@@ -24,7 +24,12 @@ namespace AspCoreWebapi.Controllers
         {
             return new JsonMessage { message = "Hello, World!" };
         }
-       
+
+        public List<Employee> Employees()
+        {
+            return DataHelper.Defalut.Employees;
+        }
+
         public Employee Employee(int id)
         {
             Employee result = DataHelper.Defalut.Employees.Find(e => e.EmployeeID == id);
