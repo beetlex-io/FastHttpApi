@@ -458,15 +458,15 @@ namespace BeetleX.FastHttpApi
             }
             else
             {
-                //value = Newtonsoft.Json.JsonConvert.SerializeObject(body);
-                //int length = Options.Encoding.GetBytes(value, 0, value.Length, result, 0);
-                //return new ArraySegment<byte>(result, 0, length);
-                System.IO.MemoryStream stream = new MemoryStream(result);
-                stream.SetLength(0);
-                stream.Position = 0;
-                var task = SpanJson.JsonSerializer.NonGeneric.Utf8.SerializeAsync(body, stream).AsTask();
-                task.Wait();
-                return new ArraySegment<byte>(result, 0, (int)stream.Length);
+                value = Newtonsoft.Json.JsonConvert.SerializeObject(body);
+                int length = Options.Encoding.GetBytes(value, 0, value.Length, result, 0);
+                return new ArraySegment<byte>(result, 0, length);
+                //System.IO.MemoryStream stream = new MemoryStream(result);
+                //stream.SetLength(0);
+                //stream.Position = 0;
+                //var task = SpanJson.JsonSerializer.NonGeneric.Utf8.SerializeAsync(body, stream).AsTask();
+                //task.Wait();
+                //return new ArraySegment<byte>(result, 0, (int)stream.Length);
             }
         }
 

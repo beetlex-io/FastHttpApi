@@ -259,10 +259,10 @@ namespace BeetleX.FastHttpApi
         {
             using (stream.LockFree())
             {
-                //response.JsonSerializer.Serialize(response.JsonWriter, Data);
-                //response.JsonWriter.Flush();
-                var task = SpanJson.JsonSerializer.NonGeneric.Utf8.SerializeAsync(Data, stream).AsTask();
-                task.Wait();
+                response.JsonSerializer.Serialize(response.JsonWriter, Data);
+                response.JsonWriter.Flush();
+                //var task = SpanJson.JsonSerializer.NonGeneric.Utf8.SerializeAsync(Data, stream).AsTask();
+                //task.Wait();
             }
         }
     }
