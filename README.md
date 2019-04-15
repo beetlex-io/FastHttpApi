@@ -139,6 +139,7 @@ mApiServer.ServerConfig.CertificatePassword="******";
         }
 ```
 - Json
+
 `{"name":"xxxx","value":"xxx"}`
 ``` csharp
         [Post]
@@ -160,6 +161,7 @@ or
         }
 ```
 - x-www-form-urlencoded
+
 `name=aaa&value=aaa`
 ``` csharp
         [Post]
