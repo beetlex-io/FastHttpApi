@@ -68,7 +68,7 @@ mApiServer.ServerConfig.SSL=true;
 mApiServer.ServerConfig.CertificateFile="you.com.pfx";
 mApiServer.ServerConfig.CertificatePassword="******";
 ```
-## Custom Result
+## Custom result
 - Text result
 ``` csharp
     public class TextResult : ResultBase
@@ -195,5 +195,70 @@ or
             Console.WriteLine(context.Data);
             string value = context.Request.Stream.ReadString(context.Request.Length);
             return value;
+        }
+```
+## Filter
+- custom filter
+``` csharp
+    public class GlobalFilter : FilterAttribute
+    {
+        public override bool Executing(ActionContext context)
+        {
+            Console.WriteLine(DateTime.Now + " globalFilter execting...");
+            return base.Executing(context);
+        }
+        public override void Executed(ActionContext context)
+        {
+            base.Executed(context);
+            Console.WriteLine(DateTime.Now + " globalFilter executed");
+        }
+    }
+```
+- using
+``` csharp
+        [CustomFilter]
+        public string Hello(string name)
+        {
+            return DateTime.Now + " hello " + name;
+        }
+```
+or
+``` csharp
+    [Controller]
+    [CustomFilter]
+    public class ControllerTest
+    {
+    
+    }
+```
+- skip filter
+``` csharp
+        [SkipFilter(typeof(GlobalFilter))]
+        public string Hello(string name)
+        {
+            return DateTime.Now + " hello " + name;
+        }
+```
+## async action
+``` csharp
+        [Get(Route = "{name}")]
+        public Task<String> Hello(string name)
+        {
+            string result = $"hello {name} {DateTime.Now}";
+            return Task.FromResult(result);
+        }
+
+        public async Task<String> Wait()
+        {
+            await Task.Delay(2000);
+            return $"{DateTime.Now}";
+        }
+```
+## Cross domain
+``` csharp
+        [Options(AllowOrigin = "www.ikende.com")]
+        public string GetTime(IHttpContext context)
+        {
+            return DateTime.Now.ToShortDateString();
         }
 ```
