@@ -131,10 +131,67 @@ mApiServer.ServerConfig.CertificatePassword="******";
         }
 ```
 `/SetValue?id=xxx&value=xxxx`or`/SetValue/xxx-xxx`
-```
+``` csharp
         [Get(Route = "{id}-{value}")]
         public object SetValue(string id, string value, IHttpContext context)
         {
             return $"{id}={value} {DateTime.Now}";
+        }
+```
+- Json
+`{"name":"xxxx","value":"xxx"}`
+``` csharp
+        [Post]
+        [JsonDataConvert]
+        public object Post(string name, string value, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            return $"{name}={value}";
+        }
+```
+or
+``` csharp
+        [Post]
+        [JsonDataConvert]
+        public object Post(Property body, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            return $"{body.name}={body.value}";
+        }
+```
+- x-www-form-urlencoded
+`name=aaa&value=aaa`
+``` csharp
+        [Post]
+        [FormUrlDataConvert]
+        public object PostForm(string name, string value, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            return $"{name}={value}";
+        }
+```
+- multipart/form-data
+``` csharp
+        [Post]
+        [MultiDataConvert]
+        public object UploadFile(string remark, IHttpContext context)
+        {
+            foreach (var file in context.Request.Files)
+                using (System.IO.Stream stream = System.IO.File.Create(file.FileName))
+                {
+                    file.Data.CopyTo(stream);
+                }
+            return $"{DateTime.Now} {remark} {string.Join(",", (from fs in context.Request.Files select fs.FileName).ToArray())}";
+        }
+```
+- Read stream
+``` csharp
+        [Post]
+        [NoDataConvert]
+        public object PostStream(IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            string value = context.Request.Stream.ReadString(context.Request.Length);
+            return value;
         }
 ```
