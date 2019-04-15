@@ -14,9 +14,6 @@ Performance higher than ap.net web api 200%
 
 ![](https://i.imgur.com/BMj7b4a.png)
 
-## Cluster configuration
-### [Cluster configuration project](https://github.com/IKende/ClusterConfiguration)
-
 ## using
 ### Install Packet
 
@@ -54,55 +51,90 @@ Install-Package BeetleX.FastHttpApi
         {
             return DateTime.Now;
         }
-        // Post /PostStream
-        // name=aaa&value=bbb
-        [Post]
-        [NoDataConvert]
-        public object PostStream(IHttpContext context)
-        {
-            Console.WriteLine(context.Data);
-            string value = context.Request.Stream.ReadString(context.Request.Length);
-            return value;
-        }
-        // Post /Post
-        // {"name":"henry","value":"bbbb"}
-        [Post]
-        public object Post(string name, string value, IHttpContext context)
-        {
-            Console.WriteLine(context.Data);
-            return $"{name}={value}";
-        }
-        
-        // Post /PostForm
-        // name=aaa&value=bbb
-        [Post]
-        [FormUrlDataConvert]
-        public object PostForm(string name, string value, IHttpContext context)
-        {
-            Console.WriteLine(context.Data);
-            return $"{name}={value}";
-        }
     }
 ```
 [samples](https://github.com/IKende/FastHttpApi/tree/master/samples)
 
-## monitoring and management Services
-#### Install Packet
+## HTTPS
+- HttpConfig.json
 ```
-Install-Package BeetleX.FastHttpApi.Admin -Version 0.6.2
+ "SSL": true,
+ "CertificateFile": "you.com.pfx",
+ "CertificatePassword": "******",
 ```
-#### Registering  management controller
+- Code
+``` csharp
+mApiServer.ServerConfig.SSL=true;
+mApiServer.ServerConfig.CertificateFile="you.com.pfx";
+mApiServer.ServerConfig.CertificatePassword="******";
 ```
-mApiServer.Register(typeof(BeetleX.FastHttpApi.Admin._Admin).Assembly);
+## Custom Result
+- Text result
+``` csharp
+    public class TextResult : ResultBase
+    {
+        public TextResult(string text)
+        {
+            Text = text == null ? "" : text;
+        }
+        public string Text { get; set; }
+        public override bool HasBody => true;
+        public override void Write(PipeStream stream, HttpResponse response)
+        {
+            stream.Write(Text);
+        }
+    }
 ```
-### access url
+- Using
+``` csharp
+        public object plaintext()
+        {
+            return new TextResult("Hello, World!");
+        }
 ```
-/_admin/index.html
-```
-![](https://i.imgur.com/mKrbW43.png)
+## Cookies 
+``` csharp
+        public object SetCookie(string name, string value, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            context.Response.SetCookie(name, value);
+            return $"{DateTime.Now}{name}={value}";
+        }
 
-![](https://i.imgur.com/K7zVzMx.png)
+        public string GetCookie(string name, IHttpContext context)
+        {
+            Console.WriteLine(context.Data);
+            return $"{DateTime.Now} {name}= {context.Request.Cookies[name]}";
+        }
+```
+## Header
+``` csharp
+        public void SetHeader(string token,IHttpContext context)
+        {
+            context.Response.Header["Token"]=token;
+        }
 
-![](https://i.imgur.com/ASTgD2r.png)
+        public string GetHeader(string name, IHttpContext context)
+        {
+            return  context.Request.Header[name];
+        }
+```
+## Data bind
+- url
 
-![](https://i.imgur.com/q5mf7ee.png)
+`/hello?name=xxx`or`/hello/henry`
+``` csharp
+        [Get(Route = "{name}")]
+        public object Hello(string name, IHttpContext context)
+        {
+            return $"hello {name} {DateTime.Now}";
+        }
+```
+`/SetValue?id=xxx&value=xxxx`or`/SetValue/xxx-xxx`
+```
+        [Get(Route = "{id}-{value}")]
+        public object SetValue(string id, string value, IHttpContext context)
+        {
+            return $"{id}={value} {DateTime.Now}";
+        }
+```
