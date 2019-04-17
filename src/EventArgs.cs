@@ -28,7 +28,20 @@ namespace BeetleX.FastHttpApi
 
         public object Controller { get; set; }
 
+        public IHttpContext Context { get; internal set; }
 
+
+    }
+
+    public class EventParameterBinding : System.EventArgs
+    {
+        public Type Type { get; internal set; }
+
+        public object Parameter { get; set; }
+
+        public IHttpContext Context { get; internal set; }
+
+        public ActionHandler ActionHandler { get; internal set; }
     }
 
 

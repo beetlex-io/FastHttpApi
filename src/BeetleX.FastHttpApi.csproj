@@ -7,11 +7,11 @@
     <Company>ikende.com</Company>
     <Description>dotnet core fast http api server support websocket and ssl
 </Description>
-    <Version>1.4.5.6</Version>
+    <Version>1.4.6</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.4.5.6</AssemblyVersion>
-    <FileVersion>1.4.5.6</FileVersion>
+    <AssemblyVersion>1.4.6.0</AssemblyVersion>
+    <FileVersion>1.4.6.0</FileVersion>
     <LangVersion>7.3</LangVersion>
     <Product>BeetleX.FastHttpApi</Product>
   </PropertyGroup>

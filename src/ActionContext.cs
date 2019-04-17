@@ -18,9 +18,9 @@ namespace BeetleX.FastHttpApi
             Controller = handler.Controller;
             if (!handler.SingleInstance)
             {
-                Controller = actionHandlerFactory.GetController(handler.ControllerType);
+                Controller = actionHandlerFactory.GetController(handler.ControllerType, context);
                 if (Controller == null)
-                    Controller = this.Controller;
+                    Controller = handler.Controller;
             }
         }
 

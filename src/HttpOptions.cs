@@ -47,6 +47,8 @@ namespace BeetleX.FastHttpApi
             Statistical = true;
         }
 
+        public bool ManageApiEnabled { get; set; } = true;
+
         public bool Statistical { get; set; }
 
         public bool IOQueueEnabled { get; set; }

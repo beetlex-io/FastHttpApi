@@ -58,27 +58,40 @@ namespace BeetleX.FastHttpApi
             AsyncResult = true;
         }
 
-        public void SetCookie(string name, string value, DateTime? expires = null)
-        {
-            SetCookie(name, value, "/", expires);
-        }
-
         public void SetCookie(string name, string value, string path, DateTime? expires = null)
         {
-            string cookie;
+            SetCookie(name, value, path, null, expires);
+        }
+
+        public void SetCookie(string name, string value, DateTime? expires = null)
+        {
+            SetCookie(name, value, "/", null, expires);
+        }
+
+        public void SetCookie(string name, string value, string path, string domain, DateTime? expires = null)
+        {
             if (string.IsNullOrEmpty(name))
                 return;
             name = System.Web.HttpUtility.UrlEncode(name);
             value = System.Web.HttpUtility.UrlEncode(value);
-            if (expires == null)
+            StringBuilder sb = new StringBuilder();
+            sb.Append(name).Append("=").Append(value);
+
+            if (!string.IsNullOrEmpty(path))
             {
-                cookie = string.Format("{0}={1};path={2};HttpOnly", name, value, path);
+                sb.Append(";Path=").Append(path);
             }
-            else
+            if (!string.IsNullOrEmpty(domain))
             {
-                cookie = string.Format("{0}={1};path={2};expires={3};HttpOnly", name, value, path, expires.Value.ToString("r"));
+                sb.Append(";Domain=").Append(domain);
             }
-            mSetCookies.Add(cookie);
+            if (expires != null)
+            {
+                sb.Append(";Expires=").Append(expires.Value.ToString("r"));
+            }
+
+            sb.Append(";HttpOnly");
+            mSetCookies.Add(sb.ToString());
         }
 
         public void Result(object data)

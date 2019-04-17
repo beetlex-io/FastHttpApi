@@ -227,9 +227,18 @@ namespace BeetleX.FastHttpApi
                     pb = HttpApiServer.ActionFactory.GetParameterBinder(pi.ParameterType);
                     if (pb == null)
                     {
-                        pb = new DefaultParameter();
+                        if (HttpApiServer.ActionFactory.HasParameterBindEvent)
+                        {
+                            pb = new ParamterEventBinder(HttpApiServer.ActionFactory);
+
+                        }
+                        else
+                        {
+                            pb = new DefaultParameter();
+                        }
                     }
                 }
+                pb.ActionHandler = this;
                 pb.ParameterInfo = pi;
                 pb.Name = pi.Name;
                 pb.Type = pi.ParameterType;
@@ -286,6 +295,31 @@ namespace BeetleX.FastHttpApi
         }
     }
 
+
+    public class ParamterEventBinder : ParameterBinder
+    {
+        public ParamterEventBinder(ActionHandlerFactory actionHandlerFactory)
+        {
+            ActionHandlerFactory = actionHandlerFactory;
+        }
+
+        public override bool DataParameter => false;
+
+        public ActionHandlerFactory ActionHandlerFactory { get; internal set; }
+
+        public override object GetValue(IHttpContext context)
+        {
+            EventParameterBinding e = new EventParameterBinding();
+            e.ActionHandler = this.ActionHandler;
+            e.Context = context;
+            e.Type = Type;
+            ActionHandlerFactory.OnParameterBinding(e);
+            return e.Parameter;
+        }
+    }
+
+
+
     [AttributeUsage(AttributeTargets.Class)]
     public class PMapper : Attribute
     {
@@ -309,6 +343,8 @@ namespace BeetleX.FastHttpApi
         public Type Type { get; internal set; }
 
         public System.Reflection.ParameterInfo ParameterInfo { get; internal set; }
+
+        public ActionHandler ActionHandler { get; internal set; }
 
         public string Name { get; internal set; }
 

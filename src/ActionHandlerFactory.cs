@@ -101,10 +101,11 @@ namespace BeetleX.FastHttpApi
             return null;
         }
 
-        public object GetController(Type type)
+        public object GetController(Type type, IHttpContext context)
         {
             EventControllerInstanceArgs e = new EventControllerInstanceArgs();
             e.Type = type;
+            e.Context = context;
             OnControllerInstance(e);
             return e.Controller;
         }
@@ -122,7 +123,23 @@ namespace BeetleX.FastHttpApi
             ControllerInstance?.Invoke(this, e);
         }
 
+        internal void OnParameterBinding(EventParameterBinding e)
+        {
+            ParameterBinding?.Invoke(this, e);
+        }
+
         public event System.EventHandler<EventControllerInstanceArgs> ControllerInstance;
+
+        public event System.EventHandler<EventParameterBinding> ParameterBinding;
+
+        public bool HasParameterBindEvent
+        {
+            get
+            {
+                return ParameterBinding != null;
+            }
+        }
+
 
         public void Clear()
         {

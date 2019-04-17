@@ -268,8 +268,11 @@ namespace BeetleX.FastHttpApi
             mResourceCenter.Debug = Options.Debug;
             mResourceCenter.Load();
             ModuleManager.Load();
-            ServerController serverStatusController = new ServerController();
-            mActionFactory.Register(serverStatusController);
+            if (Options.ManageApiEnabled)
+            {
+                ServerController serverStatusController = new ServerController();
+                mActionFactory.Register(serverStatusController);
+            }
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
