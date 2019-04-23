@@ -264,7 +264,7 @@ or
 ```
 ## Websocket
 - server
-```
+``` csharp
 [Controller]
     class Program
     {
@@ -296,7 +296,7 @@ or
 - Hello
 
 send json
-```
+``` javascript
 {
       url: '/Hello', 
       params: { name: 'test' }
@@ -305,7 +305,7 @@ send json
 - GetTime
 
 send json
-```
+``` javascript
 {
       url: '/GetTime', 
       params: { }
