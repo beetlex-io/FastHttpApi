@@ -262,3 +262,52 @@ or
             return DateTime.Now.ToShortDateString();
         }
 ```
+## Websocket
+- server
+```
+[Controller]
+    class Program
+    {
+        private static BeetleX.FastHttpApi.HttpApiServer mApiServer;
+        static void Main(string[] args)
+        {
+            mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            mApiServer.Debug();
+            mApiServer.Register(typeof(Program).Assembly);
+            mApiServer.Open();
+            Console.Write(mApiServer.BaseServer);
+            Console.Read();
+        }
+        // Get /hello?name=henry 
+        // or
+        // Get /hello/henry
+        [Get("{name}")]
+        public object Hello(string name)
+        {
+            return $"hello {name} {DateTime.Now}";
+        }
+        // Get /GetTime  
+        public object GetTime()
+        {
+            return DateTime.Now;
+        }
+    }
+```
+- Hello
+
+send json
+```
+{
+      url: '/Hello', 
+      params: { name: 'test' }
+}
+```
+- GetTime
+
+send json
+```
+{
+      url: '/GetTime', 
+      params: { }
+}
+```
