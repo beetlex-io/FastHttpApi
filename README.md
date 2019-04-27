@@ -2,9 +2,13 @@
 Fasthttpapi is a lightweight and high-performance HTTP service component in the dotnet core platform that supports WebSocket and SSL！
 Performance higher than ap.net web api 200%
 
+
 **[Document](https://ikende.github.io/FastHttpApi/)**.
 
 **[Samples](https://github.com/IKende/FastHttpApi/tree/master/samples)**
+
+## Nuget
+https://www.nuget.org/packages/BeetleX.FastHttpApi/
 
 ## Online case
 [https://www.ikende.com](https://www.ikende.com)
@@ -15,11 +19,6 @@ Performance higher than ap.net web api 200%
 ![](https://i.imgur.com/BMj7b4a.png)
 
 ## using
-### Install Packet
-
-```
-Install-Package BeetleX.FastHttpApi
-```
 ### Setting Server GC
 `<ServerGarbageCollection>true</ServerGarbageCollection>`
 
