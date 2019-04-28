@@ -40,7 +40,7 @@ https://www.nuget.org/packages/BeetleX.FastHttpApi/
         // Get /hello?name=henry 
         // or
         // Get /hello/henry
-        [Get("{name}")]
+        [Get(Route="{name}")]
         public object Hello(string name)
         {
             return $"hello {name} {DateTime.Now}";
