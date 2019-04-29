@@ -100,7 +100,9 @@ FastHttpApi.prototype.httpRequest = function () {
     //return this.sync();
     return this;
 }
-
+FastHttpApi.prototype.$ = function (callback, all) {
+    this.execute(callback, all);
+}
 FastHttpApi.prototype.execute = function (callback, all) {
     var id = ++__id;
     if (__id > 1024)
