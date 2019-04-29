@@ -310,3 +310,7 @@ send json
       params: { }
 }
 ```
+## Using javascript VSIX
+download https://github.com/IKende/FastHttpApi/blob/master/Extend/FastHttpApi.JSCreater.zip
+unzip execute `FastHttpApi.JSCreaterVSIX.vsix` support vs2017 only
+change controller file custom tool property to 'JSAPI'
