@@ -312,5 +312,5 @@ send json
 ```
 ## Using javascript VSIX
 download https://github.com/IKende/FastHttpApi/blob/master/Extend/FastHttpApi.JSCreater.zip
-unzip execute `FastHttpApi.JSCreaterVSIX.vsix` support vs2017 only
+unzip execute `FastHttpApi.JSCreaterVSIX.vsix` install to vs(support only vs2017),
 change controller file custom tool property to 'JSAPI'
