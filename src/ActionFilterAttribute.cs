@@ -27,4 +27,14 @@ namespace BeetleX.FastHttpApi
                 context.Result = new JsonResult(context.Result);
         }
     }
+    [AttributeUsage(AttributeTargets.Class)]
+    public class FilterRouteAttribute : Attribute
+    {
+        public FilterRouteAttribute(string url)
+        {
+            Url = url;
+        }
+        public string Url { get; set; }
+    }
+
 }

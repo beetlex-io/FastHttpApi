@@ -86,13 +86,21 @@ function FastHttpApi(url, params, http, post) {
 
 }
 
-FastHttpApi.prototype.httpRequest = function () {
-    this.http = true;
+FastHttpApi.prototype.sync = function () {
+    var _this = this;
+    //return new Promise(resolve => {
+    //    _this.execute(function (result) {
+    //        resolve(result);
+    //    });
+    //});
     return this;
 }
-FastHttpApi.prototype.$ = function (callback, all) {
-    this.execute(callback, all);
+FastHttpApi.prototype.httpRequest = function () {
+    this.http = true;
+    //return this.sync();
+    return this;
 }
+
 FastHttpApi.prototype.execute = function (callback, all) {
     var id = ++__id;
     if (__id > 1024)
@@ -109,14 +117,14 @@ FastHttpApi.prototype.execute = function (callback, all) {
             }
         }
         else {
-            var item = api_errors[result.Code.toString()];
-            if (item) {
-                item(result);
-            }
-            else {
+            if (result.Code == 200) {
                 if (callback) {
                     callback(result);
                 }
+            }
+            else {
+                var item = api_errors[result.Code.toString()];
+                item(result);
             }
         }
     }
@@ -156,7 +164,6 @@ FastHttpApi.prototype.execute = function (callback, all) {
     }
 
 }
-
 
 
 function api_connect(callback) {

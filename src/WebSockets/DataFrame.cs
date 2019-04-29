@@ -240,8 +240,8 @@ namespace BeetleX.FastHttpApi.WebSockets
             }
             finally
             {
-                this.DataPacketSerializer = null;
-                this.Body = null;
+                //this.DataPacketSerializer = null;
+                //this.Body = null;
             }
         }
 
