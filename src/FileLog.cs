@@ -76,6 +76,7 @@ namespace BeetleX.FastHttpApi
         {
             Add(new LogItem(type, message));
         }
+
         public void Add(LogItem e)
         {
             mDispatcher.Enqueue(e);

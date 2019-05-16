@@ -124,15 +124,15 @@ namespace BeetleX.FastHttpApi
             Completed(null);
         }
 
-        public void SetDate()
-        {
-            SetDate(DateTime.Now);
-        }
+        //public void SetDate()
+        //{
+        //    SetDate(DateTime.Now);
+        //}
 
-        public void SetDate(DateTime dateTime)
-        {
-            Header[HeaderTypeFactory.DATE] = dateTime.ToUniversalTime().ToString("r");
-        }
+        //public void SetDate(DateTime dateTime)
+        //{
+        //    Header[HeaderTypeFactory.DATE] = dateTime.ToUniversalTime().ToString("r");
+        //}
 
 
         private void Completed(object data)
@@ -187,6 +187,10 @@ namespace BeetleX.FastHttpApi
             stream.Write(buffer, 0, hlen);
             stream.Write(HeaderTypeFactory.SERVAR_HEADER_BYTES, 0, HeaderTypeFactory.SERVAR_HEADER_BYTES.Length);
             Header.Write(stream);
+
+            var datebuffer = GMTDate.Default.GetData(true);
+            stream.Write(datebuffer.Array, 0, datebuffer.Count);
+
             for (int i = 0; i < mSetCookies.Count; i++)
             {
                 HeaderTypeFactory.Write(HeaderTypeFactory.SET_COOKIE, stream);
