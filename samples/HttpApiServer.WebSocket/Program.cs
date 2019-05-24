@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeetleX.FastHttpApi;
+using System;
 
 namespace HttpApiServer.WebSocket
 {
@@ -13,18 +14,18 @@ namespace HttpApiServer.WebSocket
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
-            mApiServer.WebSocketReceive = (o, e) =>
-            {
-                Console.WriteLine(e.Frame.Body);
-                var freame = e.CreateFrame($"{DateTime.Now}" + e.Frame.Body.ToString());
-                e.Response(freame);
-            };
-            mApiServer.WebSocketConnect = (o, e) => {
-                //e.Request.Header
-                //e.Request.Cookies
-                e.Cancel = true;
-            };
-         
+            //mApiServer.WebSocketReceive = (o, e) =>
+            //{
+            //    Console.WriteLine(e.Frame.Body);
+            //    var freame = e.CreateFrame($"{DateTime.Now}" + e.Frame.Body.ToString());
+            //    e.Response(freame);
+            //};
+            //mApiServer.WebSocketConnect = (o, e) => {
+            //    //e.Request.Header
+            //    //e.Request.Cookies
+            //    e.Cancel = true;
+            //};
+
 
             Console.Write(mApiServer.BaseServer);
             Console.Read();
@@ -32,6 +33,10 @@ namespace HttpApiServer.WebSocket
 
         public string Hello(string name)
         {
+            ActionResult result = new ActionResult();
+            result.Data = new { type = "log", message = "henryfan@msn.com" };
+            var frame = mApiServer.CreateDataFrame(result);
+            mApiServer.SendToWebSocket(frame);
             return $"{name} {DateTime.Now}";
         }
     }
