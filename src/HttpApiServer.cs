@@ -855,6 +855,8 @@ namespace BeetleX.FastHttpApi
             return (int)(this.Options.LogLevel) <= (int)logType;
         }
 
+        public Validations.IValidationOutputHandler ValidationOutputHandler { get; set; } = new Validations.ValidationOutputHandler();
+
         public void Dispose()
         {
             if (BaseServer != null)

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
@@ -38,7 +39,6 @@ namespace BeetleX.FastHttpApi
             Async = false;
 
         }
-
 
         public HttpApiServer HttpApiServer { get; private set; }
 
@@ -242,6 +242,7 @@ namespace BeetleX.FastHttpApi
                 pb.ParameterInfo = pi;
                 pb.Name = pi.Name;
                 pb.Type = pi.ParameterType;
+                pb.Validations = pi.GetCustomAttributes<Validations.ValidationBase>(false).ToArray();
                 pb.CacheKey = pi.GetCustomAttribute<CacheKeyParameter>(false);
                 Parameters.Add(pb);
             }
@@ -292,6 +293,29 @@ namespace BeetleX.FastHttpApi
                 }
             }
             return key.ToString();
+        }
+
+        public bool ValidateParamters(object[] parameters, out (Validations.ValidationBase, ParameterInfo) error)
+        {
+            error = (null, null);
+            for (int i = 0; i < Parameters.Count; i++)
+            {
+                var dp = Parameters[i];
+                Validations.ValidationBase[] vs = dp.Validations;
+                if (vs != null && vs.Length > 0)
+                {
+                    for (int k = 0; k < vs.Length; k++)
+                    {
+                        if (!vs[k].Execute(parameters[i]))
+                        {
+                            error = (vs[k], dp.ParameterInfo);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
     }
 
@@ -349,6 +373,10 @@ namespace BeetleX.FastHttpApi
         public string Name { get; internal set; }
 
         public virtual bool DataParameter => true;
+
+
+        public Validations.ValidationBase[] Validations { get; set; }
+
 
         public abstract object GetValue(IHttpContext context);
 

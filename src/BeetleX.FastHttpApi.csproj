@@ -5,15 +5,16 @@
     <Copyright>Copyright © ikende.com 2019 email:henryfan@msn.com</Copyright>
     <Authors>henryfan</Authors>
     <Company>ikende.com</Company>
-    <Description>Fast HTTP API server components for .NET support websocket and ssl
-</Description>
-    <Version>1.4.7.0</Version>
+    <Description>high performance and lightweight web api and websocket server components for .NETCore</Description>
+    <Version>1.4.8.0</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.4.7.0</AssemblyVersion>
-    <FileVersion>1.4.7.0</FileVersion>
+    <AssemblyVersion>1.4.8.0</AssemblyVersion>
+    <FileVersion>1.4.8.0</FileVersion>
     <LangVersion>7.3</LangVersion>
     <Product>BeetleX.FastHttpApi</Product>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>high performance and lightweight web api and websocket server components for .NETCore</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
