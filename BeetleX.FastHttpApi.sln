@@ -56,7 +56,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpApiServer.WebSocket", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crossdomain", "samples\Crossdomain\Crossdomain.csproj", "{F716BFDD-0DCE-473A-A63E-6B98D22CFB6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeetleX.FastHttpApi.SpanJson", "BeetleX.FastHttpApi.SpanJson\BeetleX.FastHttpApi.SpanJson.csproj", "{D23C611B-5BD6-4CF9-BFD0-BDA829927334}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeetleX.FastHttpApi.SpanJson", "BeetleX.FastHttpApi.SpanJson\BeetleX.FastHttpApi.SpanJson.csproj", "{D23C611B-5BD6-4CF9-BFD0-BDA829927334}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpApiServer.ParametersValidation", "samples\HttpApiServer.ParametersValidation\HttpApiServer.ParametersValidation.csproj", "{92B1937D-68E5-49CA-A05C-92F0F7759F96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,6 +154,10 @@ Global
 		{D23C611B-5BD6-4CF9-BFD0-BDA829927334}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D23C611B-5BD6-4CF9-BFD0-BDA829927334}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D23C611B-5BD6-4CF9-BFD0-BDA829927334}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92B1937D-68E5-49CA-A05C-92F0F7759F96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92B1937D-68E5-49CA-A05C-92F0F7759F96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92B1937D-68E5-49CA-A05C-92F0F7759F96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92B1937D-68E5-49CA-A05C-92F0F7759F96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,6 +183,7 @@ Global
 		{F54A6E09-8CED-482C-8678-67E008F6D85D} = {490BAE07-CCBD-4D5B-A5C1-33AA4261ECC8}
 		{64A4D371-6639-476E-A73F-9B9A004B29C8} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 		{F716BFDD-0DCE-473A-A63E-6B98D22CFB6E} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
+		{92B1937D-68E5-49CA-A05C-92F0F7759F96} = {74AFF152-DF0F-4D19-8CF1-5453E95C126F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {988EEA11-1C48-44A4-9DF0-1C3D08600A4F}

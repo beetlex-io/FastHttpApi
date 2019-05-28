@@ -10,6 +10,8 @@ namespace HttpApiServer.Web
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Debug;
+            mApiServer.Options.LogToConsole = true;
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

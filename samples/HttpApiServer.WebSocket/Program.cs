@@ -11,6 +11,8 @@ namespace HttpApiServer.WebSocket
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Debug;
+            mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();

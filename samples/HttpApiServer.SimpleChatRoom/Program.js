@@ -1,32 +1,33 @@
-/************************************************************************************
-FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
-https://github.com/IKende/FastHttpApi
-**************************************************************************************/
-
-
-
-
-var ChatLoginUrl='/Login';
-/**
-* 'ChatLogin(params).execute(function(result){});'
-**/
-function ChatLogin(nickName,useHttp)
+function Chat()
 {
-    return api(ChatLoginUrl,{nickName:nickName},useHttp);
+this.url_Login='/Login';
+this.url_ListOnlines='/ListOnlines';
+this.url_Talk='/Talk';
 }
-var ChatListOnlinesUrl='/ListOnlines';
 /**
-* 'ChatListOnlines(params).execute(function(result){});'
+* 'Login(params).execute(function(result){});'
+* 'FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+* 'https://github.com/IKende/FastHttpApi
 **/
-function ChatListOnlines(useHttp)
+Chat.prototype.Login= function(nickName,useHttp)
 {
-    return api(ChatListOnlinesUrl,{},useHttp);
+    return api(this.url_Login,{nickName:nickName},useHttp);
 }
-var ChatTalkUrl='/Talk';
 /**
-* 'ChatTalk(params).execute(function(result){});'
+* 'ListOnlines(params).execute(function(result){});'
+* 'FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+* 'https://github.com/IKende/FastHttpApi
 **/
-function ChatTalk(nickName,message,useHttp)
+Chat.prototype.ListOnlines= function(useHttp)
 {
-    return api(ChatTalkUrl,{nickName:nickName,message:message},useHttp);
+    return api(this.url_ListOnlines,{},useHttp);
+}
+/**
+* 'Talk(params).execute(function(result){});'
+* 'FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+* 'https://github.com/IKende/FastHttpApi
+**/
+Chat.prototype.Talk= function(nickName,message,useHttp)
+{
+    return api(this.url_Talk,{nickName:nickName,message:message},useHttp);
 }

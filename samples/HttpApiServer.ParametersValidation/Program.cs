@@ -1,18 +1,18 @@
 ﻿using BeetleX.FastHttpApi;
 using System;
-using System.Threading.Tasks;
-
-namespace HttpApiServer.TaskActions
+using BeetleX.FastHttpApi.Validations;
+namespace HttpApiServer.ParametersValidation
 {
+
     [BeetleX.FastHttpApi.Controller]
-    class Program
+    public class Program
     {
+
         private static BeetleX.FastHttpApi.HttpApiServer mApiServer;
 
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Debug;
             mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
@@ -20,17 +20,22 @@ namespace HttpApiServer.TaskActions
             Console.Write(mApiServer.BaseServer);
             Console.Read();
         }
-        [Get(Route = "{name}")]
-        public Task<String> Hello(string name)
-        {
-            string result = $"hello {name} {DateTime.Now}";
-            return Task.FromResult(result);
-        }
 
-        public async Task<String> Wait()
+        public bool Login(
+            [StringRegion(Min = 6)]string name, 
+            [StringRegion(Min = 6)] string pwd)
         {
-            await Task.Delay(2000);
-            return $"{DateTime.Now}";
+            return true;
+        }
+        [Post]
+        public bool Register(
+            [StringRegion(Min = 6)]string name,
+            [StringRegion(Min = 6)]string pwd,
+            [EmailFormater]string email,
+            [MPhoneFormater]string phone,
+            [UrlFormater]string homePage)
+        {
+            return true;
         }
     }
 }

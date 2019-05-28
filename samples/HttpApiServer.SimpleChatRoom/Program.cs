@@ -10,6 +10,8 @@ namespace HttpApiServer.SimpleChatRoom
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Debug;
+            mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
@@ -45,7 +47,7 @@ namespace HttpApiServer.SimpleChatRoom
             return true;
         }
         [NotAction]
-        public void Init(BeetleX.FastHttpApi.HttpApiServer server,string path)
+        public void Init(BeetleX.FastHttpApi.HttpApiServer server, string path)
         {
             server.HttpDisconnect += (o, e) =>
             {

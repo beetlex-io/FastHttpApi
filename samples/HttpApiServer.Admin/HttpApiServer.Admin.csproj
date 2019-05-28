@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Extend\BeetleX.FastHttpApi.Admin\BeetleX.FastHttpApi.Admin.csproj" />
-    <ProjectReference Include="..\..\src\BeetleX.FastHttpApi.csproj" />
+    <PackageReference Include="BeetleX.FastHttpApi" Version="1.4.8" />
+    <PackageReference Include="BeetleX.FastHttpApi.Admin" Version="0.8.0" />
   </ItemGroup>
 
   <ItemGroup>
