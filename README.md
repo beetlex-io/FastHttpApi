@@ -22,9 +22,12 @@ https://www.nuget.org/packages/BeetleX.FastHttpApi/
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.Debug();
+            mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Trace;
+            mApiServer.Options.LogToConsole = true;
+            mApiServer.Debug();//set view path with vs project folder
             mApiServer.Register(typeof(Program).Assembly);
-            mApiServer.Open();
+            //mApiServer.Options.Port=80; set listen port to 80
+            mApiServer.Open();//default listen port 9090  
             Console.Write(mApiServer.BaseServer);
             Console.Read();
         }
