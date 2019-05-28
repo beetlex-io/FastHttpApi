@@ -1,17 +1,8 @@
 ### introduction
-Fasthttpapi is a lightweight and high-performance HTTP service component in the dotnet core platform that supports WebSocket and SSL！
-Performance higher than ap.net web api 200%
-
-
-**[Document](https://ikende.github.io/FastHttpApi/)**.
-
-**[Samples](https://github.com/IKende/FastHttpApi/tree/master/samples)**
+Fasthttpapi is a lightweight and high-performance HTTP service component in the dotnet core platform that supports WebSocket and SSL. Performance higher than ap.net web api 200% [**[Document](https://ikende.github.io/FastHttpApi/)**][**[Samples](https://github.com/IKende/FastHttpApi/tree/master/samples)**]
 
 ## Nuget
 https://www.nuget.org/packages/BeetleX.FastHttpApi/
-
-## Online case
-[https://www.ikende.com](https://www.ikende.com)
 
 ## PerformanceTest
 **[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest/Beetlex_VS_AspCore_webapi)**
@@ -236,6 +227,21 @@ or
         public string Hello(string name)
         {
             return DateTime.Now + " hello " + name;
+        }
+```
+## Parameters validation
+``` csharp
+public bool Register(
+      [StringRegion(Min = 5)]string name,
+      [StringRegion(Min = 5)]string pwd,
+      [DateRegion(Min = "2019-1-1", Max = "2019-2-1")]DateTime dateTime,
+      [EmailFormater]string email,
+      [IPFormater]string ipaddress,
+      [NumberRegion(Min = 18, Max = 56)]int age,
+      [DoubleRegion(Min = 10)]double memory
+                  )
+        {
+           return true;
         }
 ```
 ## async action
