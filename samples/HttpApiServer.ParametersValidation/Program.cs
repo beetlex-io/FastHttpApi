@@ -16,6 +16,7 @@ namespace HttpApiServer.ParametersValidation
             mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();
             mApiServer.Register(typeof(Program).Assembly);
+            
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();

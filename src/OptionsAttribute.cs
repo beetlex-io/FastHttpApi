@@ -13,7 +13,7 @@ namespace BeetleX.FastHttpApi
             HasBody = false;
         }
 
-        public virtual string ContentType => "text/plain";
+        public virtual IHeaderItem ContentType => ContentTypes.TEXT_UTF8;
 
         public int Length { get; set; }
 

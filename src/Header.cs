@@ -7,6 +7,28 @@ using static BeetleX.FastHttpApi.HttpParse;
 
 namespace BeetleX.FastHttpApi
 {
+
+    public interface IHeaderItem
+    {
+        void Write(PipeStream stream);
+    }
+
+    public class HeaderItem : IHeaderItem
+    {
+        public HeaderItem(string value)
+        {
+            mData = Encoding.UTF8.GetBytes(value);
+        }
+
+        private byte[] mData;
+
+        public void Write(PipeStream stream)
+        {
+            stream.Write(mData, 0, mData.Length);
+        }
+    }
+
+
     public class HeaderTypeFactory
     {
 
@@ -222,7 +244,7 @@ namespace BeetleX.FastHttpApi
     public class Header
     {
 
-        private Dictionary<long, HeaderValue> mValues = new Dictionary<long, HeaderValue>(8);
+        private Dictionary<long, HeaderValue> mValues = new Dictionary<long, HeaderValue>();
 
         public void Add(string name, string value)
         {
@@ -359,7 +381,6 @@ namespace BeetleX.FastHttpApi
         }
     }
 
-
     public class HeaderType
     {
 
@@ -372,7 +393,7 @@ namespace BeetleX.FastHttpApi
         {
             Name = name;
             Bytes = Encoding.UTF8.GetBytes(name + ": ");
-            ID = GetNameCode(name); //name.GetHashCode();
+            ID = GetNameCode(name);
         }
 
         public string Name { get; set; }
@@ -380,11 +401,6 @@ namespace BeetleX.FastHttpApi
         public byte[] Bytes { get; set; }
 
         public long ID { get; set; }
-
-        //public override int GetHashCode()
-        //{
-        //    return this.ID;
-        //}
 
         public bool Compare(string value)
         {

@@ -10,7 +10,7 @@ namespace BeetleX.FastHttpApi
 {
     public interface IResult
     {
-        string ContentType { get; }
+        IHeaderItem ContentType { get; }
 
         int Length { get; set; }
 
@@ -23,7 +23,7 @@ namespace BeetleX.FastHttpApi
 
     public abstract class ResultBase : IResult
     {
-        public virtual string ContentType => "text/plain;charset=utf-8";
+        public virtual IHeaderItem ContentType => ContentTypes.TEXT_UTF8;
 
         public virtual int Length { get; set; }
 
@@ -251,7 +251,7 @@ namespace BeetleX.FastHttpApi
 
         public object Data { get; set; }
 
-        public override string ContentType => "application/json";
+        public override IHeaderItem ContentType => ContentTypes.JSON;
 
         public override bool HasBody => true;
 

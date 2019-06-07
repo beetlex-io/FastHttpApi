@@ -14,7 +14,7 @@ namespace BeetleX.FastHttpApi.SpanJson
 
         public object Data { get; set; }
 
-        public override string ContentType => "application/json";
+        public override IHeaderItem ContentType => ContentTypes.JSON;
 
         public override bool HasBody => true;
 

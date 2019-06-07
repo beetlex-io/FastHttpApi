@@ -135,6 +135,8 @@ namespace BeetleX.FastHttpApi
 
         public string SourceUrl { get; set; }
 
+        public bool HasValidation { get; private set; } = false;
+
         private void LoadParameter()
         {
             DescriptionAttribute da = mMethod.GetCustomAttribute<DescriptionAttribute>(false);
@@ -243,6 +245,8 @@ namespace BeetleX.FastHttpApi
                 pb.Name = pi.Name;
                 pb.Type = pi.ParameterType;
                 pb.Validations = pi.GetCustomAttributes<Validations.ValidationBase>(false).ToArray();
+                if (!HasValidation)
+                    HasValidation = pb.Validations != null && pb.Validations.Length > 0;
                 pb.CacheKey = pi.GetCustomAttribute<CacheKeyParameter>(false);
                 Parameters.Add(pb);
             }
@@ -374,9 +378,7 @@ namespace BeetleX.FastHttpApi
 
         public virtual bool DataParameter => true;
 
-
         public Validations.ValidationBase[] Validations { get; set; }
-
 
         public abstract object GetValue(IHttpContext context);
 

@@ -6,7 +6,6 @@ using System.Text;
 namespace HttpApiServer.Filters
 {
     [Controller]
-    [NotFoundFilter]
     public class ControllerTest
     {
         //  /hello?name=
@@ -45,19 +44,24 @@ namespace HttpApiServer.Filters
         {
             return item;
         }
+        [CatchException]
+        public void Throw()
+        {
+            throw new Exception("hello");
+        }
     }
 
     public class GlobalFilter : FilterAttribute
     {
         public override bool Executing(ActionContext context)
         {
-            Console.WriteLine(DateTime.Now + " globalFilter execting...");
+            Console.WriteLine($"{DateTime.Now} {context.HttpContext.Request.Url} globalFilter execting...");
             return base.Executing(context);
         }
         public override void Executed(ActionContext context)
         {
             base.Executed(context);
-            Console.WriteLine(DateTime.Now + " globalFilter executed");
+            Console.WriteLine($"{DateTime.Now} {context.HttpContext.Request.Url} globalFilter executed");
         }
     }
 
@@ -88,6 +92,19 @@ namespace HttpApiServer.Filters
         {
             Console.WriteLine(DateTime.Now + " CustomFilter executed");
             base.Executed(context);
+        }
+    }
+
+    public class CatchException : FilterAttribute
+    {
+        public override void Executed(ActionContext context)
+        {
+            base.Executed(context);
+            if (context.Exception != null)
+            {
+                context.Result = new TextResult(context.Exception.Message);
+                context.Exception = null;
+            }
         }
     }
 

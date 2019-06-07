@@ -45,7 +45,15 @@ namespace BeetleX.FastHttpApi
             CacheLogLength = 0;
             IOQueueEnabled = false;
             Statistical = true;
+            int threads = (Environment.ProcessorCount / 2);
+            if (threads == 0)
+                threads = 1;
+            IOQueues = Math.Min(threads, 16);
         }
+
+        public int IOQueues { get; set; }
+
+        public bool SyncAccept { get; set; } = true;
 
         public bool ManageApiEnabled { get; set; } = true;
 

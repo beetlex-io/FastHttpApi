@@ -231,12 +231,16 @@ namespace BeetleX.FastHttpApi
 
         public void Open()
         {
+            var ct = ContentTypes.TEXT_UTF8;
+            var a = HeaderTypeFactory.Find("Content-Length");
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this);
             var gtmdate = GMTDate.Default;
             mServer = SocketFactory.CreateTcpServer(this, hp)
                 .Setting(o =>
                 {
+                    o.SyncAccept = Options.SyncAccept;
+                    o.IOQueues = Options.IOQueues;
                     o.DefaultListen.Host = Options.Host;
                     o.IOQueueEnabled = Options.IOQueueEnabled;
                     o.DefaultListen.Port = Options.Port;
@@ -304,7 +308,7 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
-            mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi start@[v:{typeof(HttpApiServer).Assembly.GetName().Version}]");
+            mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi [V:{typeof(HttpApiServer).Assembly.GetName().Version}]");
             OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
             OnStrated(new EventHttpServerStartedArgs { HttpApiServer = this });
 

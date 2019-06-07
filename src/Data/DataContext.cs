@@ -8,7 +8,7 @@ namespace BeetleX.FastHttpApi.Data
     public class DataContxt : IDataContext
     {
 
-        private Dictionary<string, object> mProperties = new Dictionary<string, object>(4);
+        private Dictionary<string, object> mProperties = new Dictionary<string, object>();
 
         public string this[string name]
         {

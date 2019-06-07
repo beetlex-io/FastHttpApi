@@ -13,6 +13,7 @@ namespace HttpApiServer.JWT
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
+            
             mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Trace;
             mApiServer.Options.LogToConsole = true;
             mApiServer.Debug();

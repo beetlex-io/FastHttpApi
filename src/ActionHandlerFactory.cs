@@ -420,7 +420,7 @@ namespace BeetleX.FastHttpApi
                     ActionContext context = new ActionContext(handler, dc, this);
                     long startTime = server.BaseServer.GetRunTime();
                     WSActionResultHandler wSActionResultHandler = new WSActionResultHandler(dc, server, request, result, dataFrame, startTime);
-                    if (handler.ValidateParamters(context.Parameters, out (Validations.ValidationBase, ParameterInfo) error))
+                    if (!handler.HasValidation || handler.ValidateParamters(context.Parameters, out (Validations.ValidationBase, ParameterInfo) error))
                     {
                         context.Execute(wSActionResultHandler);
                     }
@@ -493,7 +493,8 @@ namespace BeetleX.FastHttpApi
                     ActionContext context = new ActionContext(handler, pc, this);
                     if (handler.OptionsAttribute != null)
                         handler.OptionsAttribute.SetResponse(request, response);
-                    if (handler.ValidateParamters(context.Parameters, out (Validations.ValidationBase, ParameterInfo) error))
+
+                    if (!handler.HasValidation || handler.ValidateParamters(context.Parameters, out (Validations.ValidationBase, ParameterInfo) error))
                     {
                         context.Execute(actionResult);
                     }

@@ -73,6 +73,10 @@ namespace BeetleX.FastHttpApi
             if (!WebSocket)
             {
                 ClearStream();
+                //Header = new Header();
+                //mFiles = new List<PostFile>();
+                //mDataContxt = new Data.DataContxt();
+                //mCookies = new Cookies();
                 Header.Clear();
                 mFiles.Clear();
                 mDataContxt.Clear();

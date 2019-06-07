@@ -47,6 +47,8 @@ namespace BeetleX.FastHttpApi
             AsyncResult = false;
             Header.Clear();
             mSetCookies.Clear();
+            //Header = new Header();
+            //mSetCookies = new List<string>();
             mCompletedStatus = 0;
             mBody = null;
             Code = "200";
@@ -124,16 +126,6 @@ namespace BeetleX.FastHttpApi
             Completed(null);
         }
 
-        //public void SetDate()
-        //{
-        //    SetDate(DateTime.Now);
-        //}
-
-        //public void SetDate(DateTime dateTime)
-        //{
-        //    Header[HeaderTypeFactory.DATE] = dateTime.ToUniversalTime().ToString("r");
-        //}
-
 
         private void Completed(object data)
         {
@@ -164,12 +156,9 @@ namespace BeetleX.FastHttpApi
             IResult result = mBody as IResult;
             if (result != null)
             {
-                this.Header[HeaderTypeFactory.CONTENT_TYPE] = result.ContentType;
                 result.Setting(this);
             }
-
             byte[] buffer = HttpParse.GetByteBuffer();
-
             int hlen = 0;
             hlen = hlen + Encoding.ASCII.GetBytes(HttpVersion, 0, HttpVersion.Length, buffer, hlen);
             buffer[hlen] = HeaderTypeFactory._SPACE_BYTE;
@@ -187,8 +176,12 @@ namespace BeetleX.FastHttpApi
             stream.Write(buffer, 0, hlen);
             stream.Write(HeaderTypeFactory.SERVAR_HEADER_BYTES, 0, HeaderTypeFactory.SERVAR_HEADER_BYTES.Length);
             Header.Write(stream);
-
+            if (result != null)
+            {
+                result.ContentType.Write(stream);
+            }
             var datebuffer = GMTDate.Default.GetData(true);
+
             stream.Write(datebuffer.Array, 0, datebuffer.Count);
 
             for (int i = 0; i < mSetCookies.Count; i++)
@@ -200,12 +193,9 @@ namespace BeetleX.FastHttpApi
             if (mBody != null)
             {
 
-                //StaticResurce.FileBlock fb = mBody as StaticResurce.FileBlock;
-                //if (fb != null)
                 if (mBody is IDataResponse dataResponse)
                 {
                     stream.Write(HeaderTypeFactory.LINE_BYTES, 0, 2);
-                    //((IDataResponse)fb).Write(stream);
                     dataResponse.Write(stream);
                 }
                 else

@@ -17,7 +17,7 @@ namespace HttpApiServer.HelloWorld
             Console.Read();
         }
     }
-    [Controller]
+    [Controller(SingleInstance =false)]
     public class Home
     {
         /// <summary>

@@ -6,7 +6,7 @@ namespace BeetleX.FastHttpApi
 {
     public class Cookies
     {
-        private Dictionary<string, string> mItems = new Dictionary<string, string>(4);
+        private Dictionary<string, string> mItems = new Dictionary<string, string>();
 
         public string this[string name]
         {

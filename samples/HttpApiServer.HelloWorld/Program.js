@@ -1,30 +1,18 @@
-/************************************************************************************
-FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
-https://github.com/IKende/FastHttpApi
-**************************************************************************************/
-
-
-
-
-/** 
-Hello Word url 
-**/
-var HomeHelloUrl='/hello';
-/** Hello Word 'var result=await HomeHello(params)'
-/* @param name string:  you name
-/* @param useHttp only http request
-/* @return string
-**/
-function HomeHello(name,useHttp)
+function Home()
 {
-    return api(HomeHelloUrl,{name:name},useHttp).sync();
+this.url_Hello='/Hello';
 }
-/** Hello Word 'HomeHelloAsync(params).execute(function(result){},useHttp)'
+/** 
+* 'Hello Word url 
+* 'FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+* 'https://github.com/IKende/FastHttpApi
+**/
+/** Hello Word 'Hello(params).execute(function(result){},useHttp)'
 /* @param name string:  you name
 /* @param useHttp only http request
 /* @return string
 **/
-function HomeHelloAsync(name,useHttp)
+Home.prototype.Hello= function(name,useHttp)
 {
-    return api(HomeHelloUrl,{name:name},useHttp);
+    return api(this.url_Hello,{name:name},useHttp);
 }
