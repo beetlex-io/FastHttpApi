@@ -5,14 +5,13 @@
     <Copyright>Copyright © ikende.com 2019 email:henryfan@msn.com</Copyright>
     <Authors>henryfan</Authors>
     <Company>ikende.com</Company>
-    <Description>
-      SpanJson data result in FastHttpApi
-    </Description>
-    <Version>0.5</Version>
+    <Description>SpanJson data result for FastHttpApi
+</Description>
+    <Version>0.5.2</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>0.5</AssemblyVersion>
-    <FileVersion>0.5</FileVersion>
+    <AssemblyVersion>0.5.2</AssemblyVersion>
+    <FileVersion>0.5.2</FileVersion>
     <LangVersion>7.3</LangVersion>
     <Product>BeetleX.FastHttpApi.SpanJson</Product>
   </PropertyGroup>

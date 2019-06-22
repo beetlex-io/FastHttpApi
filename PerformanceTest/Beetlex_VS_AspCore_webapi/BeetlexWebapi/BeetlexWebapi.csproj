@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="BeetleX.FastHttpApi" Version="1.4.9.8" />
+    <PackageReference Include="BeetleX.FastHttpApi.SpanJson" Version="0.5.2" />
     <PackageReference Include="Northwind.Data" Version="1.0.0" />
   </ItemGroup>
 

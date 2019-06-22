@@ -18,15 +18,17 @@ namespace BeetleX.FastHttpApi
         {
             if (string.IsNullOrEmpty(Templete))
                 return null;
-            if (string.IsNullOrEmpty(parent))
-                parent = "/";
-            if (parent[parent.Length - 1] != '/')
-                parent += "/";
-            if (!Regex.IsMatch(Templete, @"(\{[A-Za-z0-9]+\})"))
+            //if (string.IsNullOrEmpty(parent))
+            //    parent = "/";
+            //if (parent[parent.Length - 1] != '/')
+            //    parent += "/";
+            if (!Regex.IsMatch(Templete, @"(\{[A-Za-z0-9_]+\})"))
             {
                 return null;
 
             }
+            if (string.IsNullOrEmpty(parent))
+                return Templete;
             return parent + Templete;
         }
     }

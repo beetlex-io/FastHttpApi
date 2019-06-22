@@ -49,7 +49,15 @@ namespace BeetleX.FastHttpApi
             if (threads == 0)
                 threads = 1;
             IOQueues = Math.Min(threads, 16);
+            BufferPoolGroups = Environment.ProcessorCount;
         }
+
+
+        public bool PrivateBufferPool { get; set; } = false;
+
+        public int BufferPoolSize { get; set; } = 10;
+
+        public int BufferPoolGroups { get; set; }
 
         public int IOQueues { get; set; }
 

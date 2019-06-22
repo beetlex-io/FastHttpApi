@@ -33,7 +33,7 @@ namespace BeetleX.FastHttpApi.SpanJson
         public override void Executed(ActionContext context)
         {
             base.Executed(context);
-            if (!(context.Result is SpanJsonResult || context.Result is JsonResult))
+            if (!(context.Result is IResult))
                 context.Result = new SpanJsonResult(context.Result);
         }
     }

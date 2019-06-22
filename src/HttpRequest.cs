@@ -73,10 +73,7 @@ namespace BeetleX.FastHttpApi
             if (!WebSocket)
             {
                 ClearStream();
-                //Header = new Header();
-                //mFiles = new List<PostFile>();
-                //mDataContxt = new Data.DataContxt();
-                //mCookies = new Cookies();
+
                 Header.Clear();
                 mFiles.Clear();
                 mDataContxt.Clear();
@@ -99,9 +96,9 @@ namespace BeetleX.FastHttpApi
 
         public Data.DataContxt Data => mDataContxt;
 
-        public string Path { get; set; }
+        public string Path { get; internal set; }
 
-        public string VersionNumber { get; set; }
+        public string VersionNumber { get; internal set; }
 
         public bool WebSocket { get { return mWebSocket; } set { mWebSocket = value; } }
 
@@ -144,21 +141,23 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public string Method { get; set; }
+       // public long UrlCode { get; internal set; }
 
-        public bool IsRewrite { get; set; }
+        public string Method { get; internal set; }
 
-        public string SourceUrl { get; set; }
+        public bool IsRewrite { get; internal set; }
 
-        public string BaseUrl { get; set; }
+        public string SourceUrl { get; internal set; }
 
-        public string Url { get; set; }
+        public string BaseUrl { get; internal set; }
 
-        public string HttpVersion { get; set; }
+        public string Url { get; internal set; }
 
-        public string Ext { get { return mExt; } set { mExt = value; } }
+        public string HttpVersion { get; internal set; }
 
-        public HttpApiServer Server { get; set; }
+        public string Ext { get { return mExt; } internal set { mExt = value; } }
+
+        public HttpApiServer Server { get; internal set; }
 
         public string IfNoneMatch => Header[HeaderTypeFactory.IF_NONE_MATCH];
 
@@ -195,8 +194,6 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-
-
         private void LoadMethod(PipeStream stream)
         {
             if (mState == LoadedState.None)
@@ -213,6 +210,7 @@ namespace BeetleX.FastHttpApi
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
                 else
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
+                //UrlCode = BaseUrl.GetHashCode() << 16 | BaseUrl.Length;
                 RouteMatchResult routeMatchResult = new RouteMatchResult();
                 if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
                 {
@@ -269,8 +267,6 @@ namespace BeetleX.FastHttpApi
                 }
             }
         }
-
-
 
         public override string ToString()
         {

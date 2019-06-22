@@ -31,7 +31,10 @@ namespace BeetleX.FastHttpApi
             get
             {
                 if (mDefault == null)
+                {
                     mDefault = new GMTDate();
+                    mDefault.Init();
+                }
                 return mDefault;
             }
         }
@@ -67,21 +70,33 @@ namespace BeetleX.FastHttpApi
             mMoth.Add(Encoding.ASCII.GetBytes("Nov"));
             mMoth.Add(Encoding.ASCII.GetBytes("Dec"));
         }
-        [ThreadStatic]
-        private static byte[] GTM_BUFFER;
-        public ArraySegment<byte> GetData(bool inLine = false)
+
+        private System.Threading.Timer mUpdateTime;
+
+        private void Init()
+        {
+            DATE = GetData(true);
+            mUpdateTime = new System.Threading.Timer(o => {
+                DATE = GetData(true);
+            }, null, 1000, 1000);   
+        }
+
+        public ArraySegment<byte> DATE
+        {
+            get; set;
+        }
+
+
+        private ArraySegment<byte> GetData(bool inLine = false)
         {
             return GetData(DateTime.Now, inLine);
         }
-        public ArraySegment<byte> GetData(DateTime date, bool inLine = false)
+        private ArraySegment<byte> GetData(DateTime date, bool inLine = false)
         {
             date = date.ToUniversalTime();
             int offset = 0;
-            if (GTM_BUFFER == null)
-            {
-                GTM_BUFFER = new byte[50];
-                Encoding.ASCII.GetBytes("Date: ", 0, 6, GTM_BUFFER, 0);
-            }
+            var GTM_BUFFER = new byte[50];
+            Encoding.ASCII.GetBytes("Date: ", 0, 6, GTM_BUFFER, 0);
             offset = 6;
             var buffer = GTM_BUFFER;
             // week

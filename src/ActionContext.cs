@@ -149,6 +149,9 @@ namespace BeetleX.FastHttpApi
             }
 
         }
+
+        private int mFilterIndex;
+
         private bool FilterExecuting()
         {
             if (mFilters.Count > 0)
@@ -156,6 +159,7 @@ namespace BeetleX.FastHttpApi
                 for (int i = 0; i < mFilters.Count; i++)
                 {
                     bool result = mFilters[i].Executing(this);
+                    mFilterIndex++;
                     if (!result)
                         return false;
                 }
@@ -167,7 +171,7 @@ namespace BeetleX.FastHttpApi
         {
             if (mFilters.Count > 0)
             {
-                int start = mFilters.Count - 1;
+                int start = mFilterIndex - 1;
                 for (int i = start; i >= 0; i--)
                 {
                     mFilters[i].Executed(this);

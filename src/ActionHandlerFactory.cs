@@ -313,9 +313,31 @@ namespace BeetleX.FastHttpApi
                 if (!string.IsNullOrEmpty(route))
                 {
                     ra = new RouteTemplateAttribute(route);
-                    string reurl = ra.Analysis(url);
-                    if (reurl != null)
-                        server.UrlRewrite.Add(reurl, url);
+                    string reurl;
+                    if (route[0] == '/')
+                    {
+                        reurl = ra.Analysis(null);
+                    }
+                    else if (route[0] == '{')
+                    {
+                        reurl = ra.Analysis(url + "/");
+                    }
+                    else
+                    {
+                        reurl = ra.Analysis(route.IndexOf('/', 0) > 0 ? rooturl : url + "/");
+                    }
+                    if (reurl == null)
+                    {
+                        if(route[0]=='/')
+                        {
+                            reurl = route;
+                        }
+                        else
+                        {
+                            reurl = rooturl + route;
+                        }
+                    }
+                    server.UrlRewrite.Add(reurl, url);
                 }
                 ActionHandler handler = GetAction(url);
                 if (handler != null)

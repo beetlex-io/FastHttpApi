@@ -42,6 +42,8 @@ namespace BeetleX.FastHttpApi
 
         internal bool AsyncResult { get; set; }
 
+        private byte[] mLengthBuffer = new byte[10];
+
         internal void Reset()
         {
             AsyncResult = false;
@@ -150,6 +152,15 @@ namespace BeetleX.FastHttpApi
         }
 
 
+        private byte[] GetLengthBuffer(string length)
+        {
+            Encoding.ASCII.GetBytes(length, 0, length.Length, mLengthBuffer, 0);
+            for(int i=length.Length;i<10;i++)
+            {
+                mLengthBuffer[i] = 32;
+            }
+            return mLengthBuffer;
+        }
 
         private void OnWrite(PipeStream stream)
         {
@@ -180,7 +191,7 @@ namespace BeetleX.FastHttpApi
             {
                 result.ContentType.Write(stream);
             }
-            var datebuffer = GMTDate.Default.GetData(true);
+            var datebuffer = GMTDate.Default.DATE;
 
             stream.Write(datebuffer.Array, 0, datebuffer.Count);
 
@@ -217,7 +228,8 @@ namespace BeetleX.FastHttpApi
                             int len = stream.CacheLength;
                             result.Write(stream, this);
                             int count = stream.CacheLength - len;
-                            contentLength.Full(count.ToString().PadRight(10), stream.Encoding);
+                            // contentLength.Full(count.ToString().PadRight(10), stream.Encoding);
+                            contentLength.Full(GetLengthBuffer(count.ToString()));
                         }
 
                     }

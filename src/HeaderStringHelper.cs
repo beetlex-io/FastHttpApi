@@ -102,6 +102,18 @@ namespace BeetleX.FastHttpApi
 
         public static bool ReadLine(this PipeStream stream, out Span<char> line)
         {
+            //line = default;
+            //if (stringBuffer == null)
+            //    stringBuffer = new StringBuffer();
+            //int count = stream.IndexOf(HeaderTypeFactory.LINE_BYTES, stringBuffer.Bytes);
+            //if (count > 0)
+            //{
+            //    stream.ReadFree(count);
+            //    var len = Encoding.ASCII.GetChars(stringBuffer.Bytes, 0, count - 2, stringBuffer.Chars, 0);
+            //    line = new Span<char>(stringBuffer.Chars, 0, len);
+            //    return true;
+            //}
+            //return false;
             line = default;
             if (stringBuffer == null)
                 stringBuffer = new StringBuffer();

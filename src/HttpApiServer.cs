@@ -197,6 +197,8 @@ namespace BeetleX.FastHttpApi
 
         private List<System.Reflection.Assembly> mAssemblies = new List<System.Reflection.Assembly>();
 
+        private DispatchCenter<IOQueueProcessArgs> mRequestIOQueues;
+
         public ISession LogOutput { get; set; }
 
         public void Register(params System.Reflection.Assembly[] assemblies)
@@ -231,6 +233,7 @@ namespace BeetleX.FastHttpApi
 
         public void Open()
         {
+            var date = GMTDate.Default.DATE;
             var ct = ContentTypes.TEXT_UTF8;
             var a = HeaderTypeFactory.Find("Content-Length");
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
@@ -240,9 +243,9 @@ namespace BeetleX.FastHttpApi
                 .Setting(o =>
                 {
                     o.SyncAccept = Options.SyncAccept;
-                    o.IOQueues = Options.IOQueues;
+                   // o.IOQueues = Options.IOQueues;
                     o.DefaultListen.Host = Options.Host;
-                    o.IOQueueEnabled = Options.IOQueueEnabled;
+                   // o.IOQueueEnabled = Options.IOQueueEnabled;
                     o.DefaultListen.Port = Options.Port;
                     o.BufferSize = Options.BufferSize;
                     o.LogLevel = Options.LogLevel;
@@ -252,7 +255,15 @@ namespace BeetleX.FastHttpApi
                     o.BufferPoolMaxMemory = Options.BufferPoolMaxMemory;
                     o.LittleEndian = false;
                     o.Statistical = Options.Statistical;
+                    o.BufferPoolGroups = Options.BufferPoolGroups;
+                    o.BufferPoolSize = Options.BufferPoolSize;
+                    o.PrivateBufferPool = Options.PrivateBufferPool;
+                    o.PrivateBufferPoolSize = Options.MaxBodyLength;
                 });
+            if(Options.IOQueueEnabled)
+            {
+                mRequestIOQueues = new DispatchCenter<IOQueueProcessArgs>(OnIOQueueProcess, Options.IOQueues);
+            }
             if (Options.SSL)
             {
                 mServer.Setting(o =>
@@ -308,7 +319,7 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
-            mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi [V:{typeof(HttpApiServer).Assembly.GetName().Version}]");
+            mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi [IOQueue:{Options.IOQueueEnabled}|Threads:{Options.IOQueues}] [V:{typeof(HttpApiServer).Assembly.GetName().Version}]");
             OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
             OnStrated(new EventHttpServerStartedArgs { HttpApiServer = this });
 
@@ -386,6 +397,8 @@ namespace BeetleX.FastHttpApi
             token.Request.Init(e.Session, this);
             e.Session.Tag = token;
             e.Session.SocketProcessHandler = this;
+            if (Options.IOQueueEnabled)
+                token.IOQueue = mRequestIOQueues.Next();
             HttpConnected?.Invoke(server, e);
             base.Connected(server, e);
         }
@@ -481,13 +494,13 @@ namespace BeetleX.FastHttpApi
         {
             HttpToken token = (HttpToken)request.Session.Tag;
             token.KeepAlive = true;
-            token.WebSocket = true;
-            request.WebSocket = true;
             if (EnableLog(LogType.Info))
             {
                 mServer.Log(LogType.Info, request.Session, "{0} upgrade to websocket", request.Session.RemoteEndPoint);
             }
             ConnectionUpgradeWebsocket(request, response);
+            token.WebSocket = true;
+            request.WebSocket = true;
 
         }
 
@@ -657,9 +670,9 @@ namespace BeetleX.FastHttpApi
                         if (EnableLog(LogType.Error))
                         {
                             BaseServer.Error(e_, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.BaseUrl} file error {e_.Message}");
-                            InnerErrorResult result = new InnerErrorResult($"response file error ", e_, Options.OutputStackTrace);
-                            response.Result(result);
                         }
+                        InnerErrorResult result = new InnerErrorResult($"response file error ", e_, Options.OutputStackTrace);
+                        response.Result(result);
                     }
                 }
                 else
@@ -677,16 +690,38 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        private void OnRequestHandler(object state)
+        internal class IOQueueProcessArgs
         {
-            PacketDecodeCompletedEventArgs e = (PacketDecodeCompletedEventArgs)state;
+
+            public HttpRequest Request;
+
+            public HttpResponse Response;
+
+        }
+
+        private void OnIOQueueProcess(IOQueueProcessArgs e)
+        {
             try
             {
+                OnHttpRequest(e.Request, e.Response);
+            }
+            catch(Exception e_)
+            {
+                if (EnableLog(LogType.Error))
+                {
+                    mServer.Error(e_, e.Request.Session, "{0} On queue process error {1}", e.Request.Session.RemoteEndPoint, e_.Message);
+                }
+            }
+        }
 
+        private void OnRequestHandler(PacketDecodeCompletedEventArgs e)
+        {
+            try
+            {
                 HttpToken token = (HttpToken)e.Session.Tag;
                 if (token.WebSocket)
                 {
-                    OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
+                     OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
                 }
                 else
                 {
@@ -710,19 +745,34 @@ namespace BeetleX.FastHttpApi
                     else
                     {
                         token.FirstRequest = false;
-                        OnHttpRequest(request, response);
+                        if (!Options.IOQueueEnabled)
+                        {
+                            OnHttpRequest(request, response);
+                        }
+                        else
+                        {
+                            IOQueueProcessArgs args = new IOQueueProcessArgs
+                            {
+                                Request = request,
+                                Response = response
+                            };
+                            token.IOQueue.Enqueue(args);
+                        }                       
                     }
                 }
             }
             catch (Exception e_)
             {
-                mServer.Error(e_, e.Session, "{0} OnRequestHandler error {1}", e.Session.RemoteEndPoint, e.Message);
+                if (EnableLog(LogType.Error))
+                {
+                    mServer.Error(e_, e.Session, "{0} OnRequestHandler error {1}", e.Session.RemoteEndPoint, e.Message);
+                }
             }
         }
 
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
-            if (Options.SessionTimeOut > 0)
+            if (Options.SessionTimeOut > 0 && Options.Statistical)
             {
                 BaseServer.UpdateSession(e.Session);
             }
@@ -762,18 +812,23 @@ namespace BeetleX.FastHttpApi
 
         public void RequestError()
         {
-            System.Threading.Interlocked.Increment(ref mRequestErrors);
+            if (Options.Statistical)
+                System.Threading.Interlocked.Increment(ref mRequestErrors);
         }
 
         public void RequestExecting()
         {
-            System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
+            if(Options.Statistical)
+                System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
         }
 
         public void RequestExecuted()
         {
-            System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
-            System.Threading.Interlocked.Increment(ref mTotalRequests);
+            if (Options.Statistical)
+            {
+                System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
+                System.Threading.Interlocked.Increment(ref mTotalRequests);
+            }
         }
 
         protected virtual void OnHttpRequest(HttpRequest request, HttpResponse response)

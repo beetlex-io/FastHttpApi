@@ -23,7 +23,7 @@ namespace BeetleX.FastHttpApi
 
     public abstract class ResultBase : IResult
     {
-        public virtual IHeaderItem ContentType => ContentTypes.TEXT_UTF8;
+        public virtual IHeaderItem ContentType => ContentTypes.TEXT;
 
         public virtual int Length { get; set; }
 

@@ -33,7 +33,7 @@ namespace BeetleX.FastHttpApi
 
         private void Add(UrlRoute item)
         {
-            mServer.Log(EventArgs.LogType.Info, "rewrite setting {0} to {1}", item.Url, item.Rewrite);
+            mServer.Log(EventArgs.LogType.Info, $"rewrite url [{item.Url}] to [{item.Rewrite}]");
             item.UrlIgnoreCase = this.UrlIgnoreCase;
             item.Init();
             RouteGroup rg = null;

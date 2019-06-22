@@ -7,6 +7,7 @@ namespace BeetleX.FastHttpApi
     public class ContentTypes
     {
         #region types
+        public static IHeaderItem TEXT = new HeaderItem("Content-Type: text/plain\r\n");
         public static IHeaderItem TEXT_UTF8 = new HeaderItem("Content-Type: text/plain; charset=UTF-8\r\n");
         public static IHeaderItem ZIP = new HeaderItem("Content-Type: application/zip\r\n");
         public static IHeaderItem OCTET_STREAM = new HeaderItem("Content-Type: application/octet-stream\r\n");

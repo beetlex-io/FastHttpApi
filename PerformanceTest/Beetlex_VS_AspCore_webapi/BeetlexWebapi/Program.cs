@@ -1,4 +1,5 @@
 ﻿using BeetleX.FastHttpApi;
+using BeetleX.FastHttpApi.SpanJson;
 using Northwind.Data;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,11 @@ namespace BeetlexWebapi
         }
 
         public List<Employee> Employees()
+        {
+            return DataHelper.Defalut.Employees;
+        }
+        [SpanJsonResultFilter]
+        public List<Employee> EmployeesSpan()
         {
             return DataHelper.Defalut.Employees;
         }
