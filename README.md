@@ -15,7 +15,7 @@ https://www.nuget.org/packages/BeetleX.FastHttpApi/
 ### Setting Server GC
 `<ServerGarbageCollection>true</ServerGarbageCollection>`
 
-### sample code
+### base code
 ``` csharp
     [Controller]
     class Program
@@ -47,6 +47,23 @@ https://www.nuget.org/packages/BeetleX.FastHttpApi/
             return DateTime.Now;
         }
     }
+```
+### Hosting
+`Install-Package BeetleX.FastHttpApi.Hosting -Version 0.8.2`
+```
+     var builder = new HostBuilder()
+     .ConfigureServices((hostContext, services) =>
+      {
+              services
+               .AddSingleton<UserService>()
+               .UseBeetlexHttp(o => {
+                        o.Port = 8080;
+                        o.LogToConsole = true;
+                        o.LogLevel = BeetleX.EventArgs.LogType.Debug;
+                        o.SetDebug();
+               }, typeof(Program).Assembly);
+        });
+       builder.Build().Run();
 ```
 [samples](https://github.com/IKende/FastHttpApi/tree/master/samples)
 
