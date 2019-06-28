@@ -50,7 +50,7 @@ https://www.nuget.org/packages/BeetleX.FastHttpApi/
 ```
 ### Hosting
 `Install-Package BeetleX.FastHttpApi.Hosting -Version 0.8.2`
-```
+``` csharp
      var builder = new HostBuilder()
      .ConfigureServices((hostContext, services) =>
       {
