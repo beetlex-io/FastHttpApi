@@ -8,6 +8,8 @@ https://www.nuget.org/packages/BeetleX.FastHttpApi/
 
 ## FrameworkBenchmarks
 https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/frameworks/CSharp/beetlex
+#### Last test status
+https://tfb-status.techempower.com/
 
 ## PerformanceTest
 **[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest/Beetlex_VS_AspCore_webapi)**
