@@ -6,9 +6,7 @@ https://ikende.com/doc/
 ## Nuget
 https://www.nuget.org/packages/BeetleX.FastHttpApi/
 
-## FrameworkBenchmarks
-https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/frameworks/CSharp/beetlex
-#### Last test status
+## FrameworkBenchmarks last test status
 https://tfb-status.techempower.com/
 
 ## PerformanceTest
