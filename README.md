@@ -6,7 +6,7 @@ https://ikende.com/doc/
 ## Nuget
 https://www.nuget.org/packages/BeetleX.FastHttpApi/
 
-## FrameworkBenchmarks last test status
+## Framework benchmarks last test status
 https://tfb-status.techempower.com/
 
 ## PerformanceTest
