@@ -5,7 +5,7 @@ https://ikende.com/doc/
 
 ## Framework benchmarks last test status
 https://tfb-status.techempower.com/
-### 2019-08-01 result
+### 2019-08-01 result for .net
 ![](https://github.com/IKende/FastHttpApi/blob/master/images/20190801.png?raw=true)
 
 ## using
