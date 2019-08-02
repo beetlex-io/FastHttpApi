@@ -3,16 +3,10 @@ Fasthttpapi is a lightweight and high-performance HTTP service component in the 
 
 https://ikende.com/doc/
 
-## Nuget
-https://www.nuget.org/packages/BeetleX.FastHttpApi/
-
 ## Framework benchmarks last test status
 https://tfb-status.techempower.com/
-
-## PerformanceTest
-**[master/PerformanceTest](https://github.com/IKende/FastHttpApi/tree/master/PerformanceTest/Beetlex_VS_AspCore_webapi)**
-
-![](https://i.imgur.com/BMj7b4a.png)
+### 2019-08-01 result
+![](https://github.com/IKende/FastHttpApi/blob/master/images/20190801.png?raw=true)
 
 ## using
 ### Setting Server GC
