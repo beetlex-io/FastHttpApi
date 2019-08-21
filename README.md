@@ -8,11 +8,12 @@ https://tfb-status.techempower.com/
 ### 2019-08-01 result for .net
 ![](https://github.com/IKende/FastHttpApi/blob/master/images/20190801.png?raw=true)
 
-## using
-### Setting Server GC
-`<ServerGarbageCollection>true</ServerGarbageCollection>`
+## Using
 
-### base code
+### Install BeetleX.FastHttpApi
+`Install-Package BeetleX.FastHttpApi -Version 1.5.4.2`
+
+### Base sample code
 ``` csharp
     [Controller]
     class Program
@@ -45,7 +46,7 @@ https://tfb-status.techempower.com/
         }
     }
 ```
-### Hosting
+### Hosting service
 `Install-Package BeetleX.FastHttpApi.Hosting -Version 0.8.2`
 ``` csharp
      var builder = new HostBuilder()
@@ -64,7 +65,7 @@ https://tfb-status.techempower.com/
 ```
 [samples](https://github.com/IKende/FastHttpApi/tree/master/samples)
 
-## HTTPS
+## Https
 - HttpConfig.json
 ```
  "SSL": true,
@@ -77,7 +78,7 @@ mApiServer.ServerConfig.SSL=true;
 mApiServer.ServerConfig.CertificateFile="you.com.pfx";
 mApiServer.ServerConfig.CertificatePassword="******";
 ```
-## Custom result
+## Defined result
 - Text result
 ``` csharp
     public class TextResult : ResultBase
@@ -94,7 +95,7 @@ mApiServer.ServerConfig.CertificatePassword="******";
         }
     }
 ```
-- Using
+- Use result
 ``` csharp
         public object plaintext()
         {
@@ -129,7 +130,7 @@ mApiServer.ServerConfig.CertificatePassword="******";
         }
 ```
 ## Data bind
-- url
+- Url
 
 `/hello?name=xxx`or`/hello/henry`
 ``` csharp
@@ -207,7 +208,7 @@ or
         }
 ```
 ## Filter
-- custom filter
+- Defined filter
 ``` csharp
     public class GlobalFilter : FilterAttribute
     {
@@ -223,7 +224,7 @@ or
         }
     }
 ```
-- using
+- Use
 ``` csharp
         [CustomFilter]
         public string Hello(string name)
@@ -240,7 +241,7 @@ or
     
     }
 ```
-- skip filter
+- Skip filter
 ``` csharp
         [SkipFilter(typeof(GlobalFilter))]
         public string Hello(string name)
@@ -263,7 +264,7 @@ public bool Register(
            return true;
         }
 ```
-## async action
+## Async action
 ``` csharp
         [Get(Route = "{name}")]
         public Task<String> Hello(string name)
@@ -287,7 +288,7 @@ public bool Register(
         }
 ```
 ## Websocket
-- server
+- Server
 ``` csharp
 [Controller]
     class Program
@@ -319,7 +320,7 @@ public bool Register(
 ```
 - Hello
 
-send json
+Request json
 ``` javascript
 {
       url: '/Hello', 
@@ -328,7 +329,7 @@ send json
 ```
 - GetTime
 
-send json
+Request json
 ``` javascript
 {
       url: '/GetTime', 
