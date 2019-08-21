@@ -63,9 +63,8 @@ https://tfb-status.techempower.com/
         });
        builder.Build().Run();
 ```
-[samples](https://github.com/IKende/FastHttpApi/tree/master/samples)
 
-## Https
+## Setting https
 - HttpConfig.json
 ```
  "SSL": true,
