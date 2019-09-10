@@ -13,7 +13,7 @@ namespace HttpApiServer.DataPost
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
             mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Warring;
             mApiServer.Options.LogToConsole = true;
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

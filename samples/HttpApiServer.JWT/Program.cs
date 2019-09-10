@@ -16,7 +16,7 @@ namespace HttpApiServer.JWT
             
             mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Trace;
             mApiServer.Options.LogToConsole = true;
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

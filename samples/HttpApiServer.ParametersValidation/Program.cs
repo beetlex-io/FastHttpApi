@@ -14,7 +14,7 @@ namespace HttpApiServer.ParametersValidation
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
             mApiServer.Options.LogToConsole = true;
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Register(typeof(Program).Assembly);
             
             mApiServer.Open();

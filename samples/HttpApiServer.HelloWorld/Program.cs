@@ -10,7 +10,7 @@ namespace HttpApiServer.HelloWorld
         static void Main(string[] args)
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

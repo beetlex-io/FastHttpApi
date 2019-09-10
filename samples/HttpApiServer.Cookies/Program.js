@@ -1,38 +1,23 @@
-/************************************************************************************
-FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
-https://github.com/IKende/FastHttpApi
-**************************************************************************************/
-
-
-
-
-var HomesetCookieUrl='/setcookie';
-/**
-* 'var result= await HomesetCookie(params);'
-**/
-function HomesetCookie(name,value,useHttp)
+function Home()
 {
-    return api(HomesetCookieUrl,{name:name,value:value},useHttp).sync();
+this.url_setCookie='/setCookie';
+this.url_getCookie='/getCookie';
 }
 /**
-* 'HomesetCookieAsync(params).execute(function(result){},useHttp);'
+* 'setCookie(params).execute(function(result){});'
+* 'FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+* 'https://github.com/IKende/FastHttpApi
 **/
-function HomesetCookieAsync(name,value,useHttp)
+Home.prototype.setCookie= function(name,value,useHttp)
 {
-    return api(HomesetCookieUrl,{name:name,value:value},useHttp);
-}
-var HomegetCookieUrl='/getcookie';
-/**
-* 'var result= await HomegetCookie(params);'
-**/
-function HomegetCookie(name,useHttp)
-{
-    return api(HomegetCookieUrl,{name:name},useHttp).sync();
+    return api(this.url_setCookie,{name:name,value:value},useHttp);
 }
 /**
-* 'HomegetCookieAsync(params).execute(function(result){},useHttp);'
+* 'getCookie(params).execute(function(result){});'
+* 'FastHttpApi javascript api Generator Copyright © henryfan 2018 email:henryfan@msn.com
+* 'https://github.com/IKende/FastHttpApi
 **/
-function HomegetCookieAsync(name,useHttp)
+Home.prototype.getCookie= function(name,useHttp)
 {
-    return api(HomegetCookieUrl,{name:name},useHttp);
+    return api(this.url_getCookie,{name:name},useHttp);
 }

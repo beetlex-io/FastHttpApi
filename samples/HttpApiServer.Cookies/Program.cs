@@ -11,7 +11,7 @@ namespace HttpApiServer.Cookies
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
             mApiServer.Register(typeof(Program).Assembly);
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();

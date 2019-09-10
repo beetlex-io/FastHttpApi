@@ -14,7 +14,7 @@ namespace HttpApiServer.Options
         {
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
             mApiServer.Options.LogToConsole = true;
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);

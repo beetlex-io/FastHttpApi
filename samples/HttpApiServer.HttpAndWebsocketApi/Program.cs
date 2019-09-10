@@ -14,7 +14,7 @@ namespace HttpApiServer.HttpAndWebsocketApi
             //config.SSL = true;
             //mApiServer.ServerConfig.CertificateFile = @"c:\ssltest.pfx";
             //mApiServer.ServerConfig.CertificatePassword = "123456";
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Open();
             Console.Write(mApiServer.BaseServer);
             Console.Read();

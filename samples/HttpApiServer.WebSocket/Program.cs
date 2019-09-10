@@ -13,7 +13,7 @@ namespace HttpApiServer.WebSocket
             mApiServer = new BeetleX.FastHttpApi.HttpApiServer();
             mApiServer.Options.LogLevel = BeetleX.EventArgs.LogType.Debug;
             mApiServer.Options.LogToConsole = true;
-            mApiServer.Debug();
+            mApiServer.Options.SetDebug();
             mApiServer.Register(typeof(Program).Assembly);
             mApiServer.Open();
             //mApiServer.WebSocketReceive = (o, e) =>
