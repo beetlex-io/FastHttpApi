@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BeetleX.FastHttpApi
 {
@@ -67,6 +68,8 @@ namespace BeetleX.FastHttpApi
                 Server.Log(EventArgs.LogType.Info, "{0} ws execute {1} action use time:{2}ms", Request.RemoteIPAddress,
                     DataContext.ActionUrl, Server.BaseServer.GetRunTime() - StartTime);
         }
+
+
     }
 
     struct HttpActionResultHandler : IActionResultHandler

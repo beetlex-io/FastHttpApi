@@ -84,7 +84,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        private async void OnAsyncExecute(IActionResultHandler resultHandler)
+        private async Task OnAsyncExecute(IActionResultHandler resultHandler)
         {
             HttpContext.Server.RequestExecting();
             try
@@ -128,18 +128,60 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        struct ActionTask : IEventWork
+        {
+            public ActionTask(ActionContext context, IActionResultHandler resultHandler)
+            {
+                Context = context;
+                ResultHandler = resultHandler;
+
+            }
+
+            public ActionContext Context { get; set; }
+
+            public IActionResultHandler ResultHandler { get; set; }
+
+            public void Dispose()
+            {
+
+            }
+
+            public async Task Execute()
+            {
+                if (Context.Handler.Async)
+                {
+                    await Context.OnAsyncExecute(ResultHandler);
+                }
+                else
+                {
+                    Context.OnExecute(ResultHandler);
+                }
+            }
+        }
+
+
         internal void Execute(IActionResultHandler resultHandler)
         {
             if (Handler.ValidateRPS())
             {
                 Handler.IncrementRequest();
-                if (Handler.Async)
+                if (Handler.ThreadQueue == null || Handler.ThreadQueue.Type == ThreadQueueType.None)
                 {
-                    OnAsyncExecute(resultHandler);
+                    if (Handler.Async)
+                    {
+                        OnAsyncExecute(resultHandler);
+                    }
+                    else
+                    {
+                        OnExecute(resultHandler);
+                    }
                 }
                 else
                 {
-                    OnExecute(resultHandler);
+                    ActionTask actionTask = new ActionTask(this, resultHandler);
+                    var queue = Handler.ThreadQueue.GetQueue(this.HttpContext);
+                    this.HttpContext.Queue = queue;
+                    queue.Enqueue(actionTask);
                 }
             }
             else

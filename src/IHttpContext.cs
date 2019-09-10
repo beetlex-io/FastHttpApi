@@ -36,5 +36,7 @@ namespace BeetleX.FastHttpApi
         IDataContext Data { get; }
 
         string ActionUrl { get; }
+
+        NextQueue Queue { get; set; }
     }
 }

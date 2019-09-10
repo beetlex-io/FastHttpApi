@@ -17,6 +17,8 @@ namespace BeetleX.FastHttpApi
     {
         public HeaderItem(string value)
         {
+            if (value.IndexOf("\r\n") == -1)
+                value += "\r\n";
             mData = Encoding.UTF8.GetBytes(value);
         }
 

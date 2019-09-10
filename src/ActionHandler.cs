@@ -36,9 +36,13 @@ namespace BeetleX.FastHttpApi
             var aname = controller.GetType().Assembly.GetName();
             this.AssmblyName = aname.Name;
             this.Version = aname.Version.ToString();
+            ThreadQueue = method.GetCustomAttribute<ThreadQueueAttribute>(false);
             Async = false;
 
         }
+
+
+        public ThreadQueueAttribute ThreadQueue { get; private set; }
 
         public HttpApiServer HttpApiServer { get; private set; }
 

@@ -22,8 +22,11 @@ namespace BeetleX.FastHttpApi
 
         private Dictionary<Type, Type> mParameterBinders = new Dictionary<Type, Type>();
 
+        public Action<Assembly[]> AssembliesLoading{ get; set; }
+
         public void Register(params Assembly[] assemblies)
         {
+            AssembliesLoading?.Invoke(assemblies);
             foreach (Assembly item in assemblies)
             {
                 Type[] types = item.GetTypes();

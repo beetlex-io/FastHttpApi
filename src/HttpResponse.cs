@@ -134,7 +134,7 @@ namespace BeetleX.FastHttpApi
             if (System.Threading.Interlocked.CompareExchange(ref mCompletedStatus, 1, 0) == 0)
             {
                 mBody = data;
-                Session.Server.Send(this, this.Session);
+                Session?.Server?.Send(this, this.Session);
             }
         }
 

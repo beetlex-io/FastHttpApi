@@ -3,6 +3,8 @@ using BeetleX.FastHttpApi;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -52,6 +54,22 @@ namespace BeetleX.FastHttpApi
             BufferPoolGroups = Environment.ProcessorCount;
         }
 
+
+        [Conditional("DEBUG")]
+        public void SetDebug(string viewpath = null)
+        {
+            Debug = true;
+            if (string.IsNullOrEmpty(viewpath))
+            {
+                string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+                path += @"views";
+                StaticResourcePath = path;
+            }
+            else
+            {
+                StaticResourcePath = viewpath;
+            }
+        }
 
         public bool PrivateBufferPool { get; set; } = false;
 

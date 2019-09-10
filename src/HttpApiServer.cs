@@ -42,7 +42,7 @@ namespace BeetleX.FastHttpApi
             mModuleManager = new ModuleManager(this);
         }
 
-        private string mConfigFile = "HttpConfig.json";
+        const string mConfigFile = "HttpConfig.json";
 
         private RouteRewrite mUrlRewrite;
 
@@ -135,7 +135,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public HttpOptions LoadOptions()
+        public static HttpOptions LoadOptions()
         {
             string file = Directory.GetCurrentDirectory() + System.IO.Path.DirectorySeparatorChar + mConfigFile;
             if (System.IO.File.Exists(file))
@@ -215,21 +215,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        [Conditional("DEBUG")]
-        public void Debug(string viewpath = null)
-        {
-            Options.Debug = true;
-            if (string.IsNullOrEmpty(viewpath))
-            {
-                string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-                path += @"views";
-                Options.StaticResourcePath = path;
-            }
-            else
-            {
-                Options.StaticResourcePath = viewpath;
-            }
-        }
+
 
         public void Open()
         {
@@ -239,13 +225,15 @@ namespace BeetleX.FastHttpApi
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this);
             var gtmdate = GMTDate.Default;
+            string serverInfo = $"Server: FastHttpApi[{typeof(BeetleX.BXException).Assembly.GetName().Version}]@BeetleX[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
+            HeaderTypeFactory.SERVAR_HEADER_BYTES = Encoding.ASCII.GetBytes(serverInfo);
             mServer = SocketFactory.CreateTcpServer(this, hp)
                 .Setting(o =>
                 {
                     o.SyncAccept = Options.SyncAccept;
-                   // o.IOQueues = Options.IOQueues;
+                    // o.IOQueues = Options.IOQueues;
                     o.DefaultListen.Host = Options.Host;
-                   // o.IOQueueEnabled = Options.IOQueueEnabled;
+                    // o.IOQueueEnabled = Options.IOQueueEnabled;
                     o.DefaultListen.Port = Options.Port;
                     o.BufferSize = Options.BufferSize;
                     o.LogLevel = Options.LogLevel;
@@ -260,7 +248,7 @@ namespace BeetleX.FastHttpApi
                     o.PrivateBufferPool = Options.PrivateBufferPool;
                     o.PrivateBufferPoolSize = Options.MaxBodyLength;
                 });
-            if(Options.IOQueueEnabled)
+            if (Options.IOQueueEnabled)
             {
                 mRequestIOQueues = new DispatchCenter<IOQueueProcessArgs>(OnIOQueueProcess, Options.IOQueues);
             }
@@ -346,6 +334,7 @@ namespace BeetleX.FastHttpApi
         }
 
         public string Name { get { return mServer.Name; } set { mServer.Name = value; } }
+
 
         public void SendToWebSocket(DataFrame data, Func<ISession, HttpRequest, bool> filter = null)
         {
@@ -494,13 +483,14 @@ namespace BeetleX.FastHttpApi
         {
             HttpToken token = (HttpToken)request.Session.Tag;
             token.KeepAlive = true;
+            token.WebSocket = true;
+            request.WebSocket = true;
             if (EnableLog(LogType.Info))
             {
                 mServer.Log(LogType.Info, request.Session, "{0} upgrade to websocket", request.Session.RemoteEndPoint);
             }
             ConnectionUpgradeWebsocket(request, response);
-            token.WebSocket = true;
-            request.WebSocket = true;
+
 
         }
 
@@ -705,7 +695,7 @@ namespace BeetleX.FastHttpApi
             {
                 OnHttpRequest(e.Request, e.Response);
             }
-            catch(Exception e_)
+            catch (Exception e_)
             {
                 if (EnableLog(LogType.Error))
                 {
@@ -721,7 +711,7 @@ namespace BeetleX.FastHttpApi
                 HttpToken token = (HttpToken)e.Session.Tag;
                 if (token.WebSocket)
                 {
-                     OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
+                    OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
                 }
                 else
                 {
@@ -757,7 +747,7 @@ namespace BeetleX.FastHttpApi
                                 Response = response
                             };
                             token.IOQueue.Enqueue(args);
-                        }                       
+                        }
                     }
                 }
             }
@@ -818,7 +808,7 @@ namespace BeetleX.FastHttpApi
 
         public void RequestExecting()
         {
-            if(Options.Statistical)
+            if (Options.Statistical)
                 System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
         }
 
