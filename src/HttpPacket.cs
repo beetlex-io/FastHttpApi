@@ -37,12 +37,15 @@ namespace BeetleX.FastHttpApi
 
         private long mLastTime;
 
+        private int mReceives = 0;
+
         private DataFrame mDataPacket;
 
         private WebSockets.IDataFrameSerializer mDataPacketSerializer;
 
         private void OnHttpDecode(ISession session, PipeStream pstream)
         {
+            mReceives++;
             if (mRequest == null)
             {
                 mRequest = mServer.CreateRequest(session);
@@ -56,16 +59,40 @@ namespace BeetleX.FastHttpApi
                 finally
                 {
                     mRequest = null;
+                    mReceives = 0;
                 }
-                //if (pstream.Length == 0)
-                //    return;
-                //goto START;
                 return;
             }
             else
             {
                 if (session.Server.EnableLog(LogType.Info))
                     session.Server.Log(LogType.Info, session, $"{session.RemoteEndPoint} Multi receive to http request");
+                if (mRequest.State == LoadedState.None)
+                {
+                    if (mReceives > 2 || pstream.FirstBuffer.Length < 32)
+                    {
+                        if (session.Server.EnableLog(LogType.Warring))
+                        {
+                            session.Server.Log(LogType.Warring, session, "{0} http receive data error!", session.RemoteEndPoint);
+                        }
+                        session.Dispose();
+                        return;
+                    }
+                    var span = pstream.FirstBuffer.Memory.Slice(0, 10).Span;
+                    var method = Encoding.ASCII.GetString(span.ToArray());
+                    bool ismethod = method.IndexOf("GET") == 0 || method.IndexOf("POST") == 0 || method.IndexOf("HEAD") == 0 ||
+                        method.IndexOf("PUT") == 0 || method.IndexOf("DELETE") == 0 || method.IndexOf("CONNECT") == 0 || method.IndexOf("OPTIONS") == 0 ||
+                        method.IndexOf("TRACE") == 0;
+                    if (!ismethod)
+                    {
+                        if (session.Server.EnableLog(LogType.Warring))
+                        {
+                            session.Server.Log(LogType.Warring, session, "{0} http protocol data error!", session.RemoteEndPoint);
+                        }
+                        session.Dispose();
+                        return;
+                    }
+                }
                 if ((int)mRequest.State < (int)LoadedState.Header && pstream.Length > 1024 * 4)
                 {
                     if (session.Server.EnableLog(LogType.Warring))
@@ -85,7 +112,6 @@ namespace BeetleX.FastHttpApi
                     var response = mRequest.CreateResponse();
                     InnerErrorResult innerErrorResult = new InnerErrorResult("413", "Request Entity Too Large");
                     response.Result(innerErrorResult);
-                    //session.Dispose();
                     return;
                 }
                 return;
@@ -181,24 +207,6 @@ namespace BeetleX.FastHttpApi
                 if (session.Server.EnableLog(LogType.Error))
                     session.Server.Log(LogType.Error, session, $"{session.RemoteEndPoint} response {data} no impl  IDataResponse");
             }
-            //StaticResurce.FileBlock fb = data as StaticResurce.FileBlock;
-            //if (fb != null)
-            //{
-            //    fb.Write(pstream);
-            //}
-            //else
-            //{
-            //    DataFrame dataPacket = data as DataFrame;
-            //    if (dataPacket != null)
-            //    {
-            //        dataPacket.Write(pstream);
-            //    }
-            //    else
-            //    {
-            //        HttpResponse response = (HttpResponse)data;
-            //        response.Write(pstream);
-            //    }
-            //}
         }
 
         public byte[] Encode(object data, IServer server)
