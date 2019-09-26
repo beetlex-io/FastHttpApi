@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    [Controller(BaseUrl = "/")]
+    [Controller(BaseUrl = "/__system")]
     [DefaultJsonResultFilter]
     [AccessTokenFilter]
     class ServerController : IController
@@ -106,7 +106,7 @@ namespace BeetleX.FastHttpApi
                 server.Options.WriteLog,
                 server.Options.LogToConsole,
                 server.Options.DefaultPage,
-                server.Options.CacheLogLength
+                server.Options.CacheLogMaxSize
             };
         }
 
@@ -159,7 +159,7 @@ namespace BeetleX.FastHttpApi
             server.Options.MaxConnections = body.MaxConnections;
             server.Options.WriteLog = body.WriteLog;
             server.Options.LogToConsole = body.LogToConsole;
-            server.Options.CacheLogLength = body.CacheLogLength;
+            server.Options.CacheLogMaxSize = body.CacheLogLength;
             server.ResourceCenter.SetDefaultPages(body.DefaultPage);
             server.ResourceCenter.SetFileExts(body.StaticResurceType);
             server.SaveOptions();

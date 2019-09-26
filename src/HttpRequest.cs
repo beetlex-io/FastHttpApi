@@ -34,6 +34,8 @@ namespace BeetleX.FastHttpApi
             this.Server = httpApiServer;
         }
 
+        public double RequestTime { get; set; }
+
         internal void Reset()
         {
             mState = LoadedState.None;

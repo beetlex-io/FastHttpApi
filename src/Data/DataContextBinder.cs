@@ -25,9 +25,8 @@ namespace BeetleX.FastHttpApi.Data
             }
         }
 
-        public static void BindFormUrl(IDataContext context, string data)
+        public static void BindFormUrl(IDataContext context, ReadOnlySpan<char> data)
         {
-            context.SetValue("body", data);
             HttpParse.AsynczeFromUrlEncoded(data, context);
         }
 

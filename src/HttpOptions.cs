@@ -28,7 +28,7 @@ namespace BeetleX.FastHttpApi
             MaxConnections = 2000;
             NoGzipFiles = "jpg;jpeg;png;gif;png;ico;zip;rar";
             CacheFiles = "html;htm;js;css";
-            BufferSize = 1024 * 8;
+            BufferSize = 1024 * 4;
             WebSocketMaxRPS = 30;
             LogLevel = EventArgs.LogType.Warring;
             LogToConsole = false;
@@ -44,7 +44,7 @@ namespace BeetleX.FastHttpApi
             StaticResurceCacheTime = 0;
             Settings = new List<Setting>();
             MaxrpsSettings = new List<ActionMaxrps>();
-            CacheLogLength = 0;
+            CacheLogMaxSize = 0;
             IOQueueEnabled = false;
             Statistical = true;
             int threads = (Environment.ProcessorCount / 2);
@@ -71,6 +71,8 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        public int MaxWaitQueue { get; set; } = 50;
+
         public bool PrivateBufferPool { get; set; } = false;
 
         public int BufferPoolSize { get; set; } = 10;
@@ -87,7 +89,7 @@ namespace BeetleX.FastHttpApi
 
         public bool IOQueueEnabled { get; set; }
 
-        public int CacheLogLength { get; set; }
+        public int CacheLogMaxSize { get; set; }
 
         public List<ActionMaxrps> MaxrpsSettings { get; set; }
 

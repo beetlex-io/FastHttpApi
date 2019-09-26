@@ -344,7 +344,12 @@ namespace BeetleX.FastHttpApi.Data
                 else
                 {
                     if (value is string)
-                        return Newtonsoft.Json.JsonConvert.DeserializeObject((string)value, type);
+                    {
+                        if (type.IsEnum)
+                            return Enum.Parse(type,(string)value);
+                        else
+                            return Newtonsoft.Json.JsonConvert.DeserializeObject((string)value, type);
+                    }
                     return value;
                 }
             }

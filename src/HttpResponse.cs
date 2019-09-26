@@ -272,6 +272,7 @@ namespace BeetleX.FastHttpApi
             }
             finally
             {
+                Request.Server.OnResponsed(Request, this);
                 Request.Recovery();
             }
         }

@@ -7,6 +7,24 @@ namespace BeetleX.FastHttpApi
 {
     public delegate void EventHttpServerLog(IServer server, BeetleX.EventArgs.ServerLogEventArgs e);
 
+    public class EventHttpResponsedArgs : System.EventArgs
+    {
+        public HttpRequest Request { get; internal set; }
+
+        public HttpResponse Response { get; internal set; }
+
+        public double Time
+        {
+            get
+            {
+                return TimeWatch.GetTotalMilliseconds() - Request.RequestTime;
+            }
+        }
+
+        public string Status => Response.Code;
+
+        public string StatusMessage => Response.CodeMsg;
+    }
 
     public class WebSocketConnectArgs : System.EventArgs
     {

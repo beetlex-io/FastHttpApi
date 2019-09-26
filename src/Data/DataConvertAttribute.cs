@@ -37,12 +37,33 @@ namespace BeetleX.FastHttpApi.Data
 
     public class FormUrlDataConvertAttribute : DataConvertAttribute
     {
+
+        public FormUrlDataConvertAttribute()
+        {
+
+        }
+
+        public FormUrlDataConvertAttribute(string encoding)
+        {
+            mEncoding = encoding;
+        }
+
+        private string mEncoding;
+
         public override void Execute(IDataContext dataContext, HttpRequest request)
         {
             if (request.Length > 0)
             {
-                string data = request.Stream.ReadString(request.Length);
-                DataContextBind.BindFormUrl(dataContext, data);
+                using (var bytes = System.Buffers.MemoryPool<byte>.Shared.Rent(request.Length))
+                {
+                    request.Stream.Read(bytes.Memory.Span);
+                    Encoding encoding = string.IsNullOrEmpty(mEncoding) ? Encoding.UTF8 : Encoding.GetEncoding(mEncoding);
+                    using (var chars = System.Buffers.MemoryPool<char>.Shared.Rent(request.Length))
+                    {
+                        var len = encoding.GetChars(bytes.Memory.Span, chars.Memory.Span);
+                        DataContextBind.BindFormUrl(dataContext, chars.Memory.Slice(0, len).Span);
+                    }
+                }
             }
         }
     }

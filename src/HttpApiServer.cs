@@ -108,6 +108,7 @@ namespace BeetleX.FastHttpApi
         internal HttpRequest CreateRequest(ISession session)
         {
             HttpToken token = (HttpToken)session.Tag;
+            token.Request.RequestTime = TimeWatch.GetTotalMilliseconds();
             return token.Request;
         }
 
@@ -193,6 +194,8 @@ namespace BeetleX.FastHttpApi
 
         public event EventHandler<EventOptionsReloadArgs> OptionLoad;
 
+        public event EventHandler<EventHttpResponsedArgs> HttpResponsed;
+
         public EventHandler<WebSocketConnectArgs> WebSocketConnect { get; set; }
 
         private List<System.Reflection.Assembly> mAssemblies = new List<System.Reflection.Assembly>();
@@ -211,11 +214,26 @@ namespace BeetleX.FastHttpApi
             }
             catch (Exception e_)
             {
-                Log(LogType.Error, " http api server load controller error " + e_.Message + "[" + e_.StackTrace + "]");
+                Log(LogType.Error, " http api server load controller error " + e_.Message + "@" + e_.StackTrace);
             }
         }
 
-
+        internal virtual void OnResponsed(HttpRequest request, HttpResponse response)
+        {
+            try
+            {
+                if (HttpResponsed != null)
+                {
+                    var e = new EventHttpResponsedArgs { Request = request, Response = response };
+                    HttpResponsed(this, e);
+                }
+            }
+            catch (Exception e_)
+            {
+                if (EnableLog(LogType.Error))
+                    Log(LogType.Error, $"{request.Session.RemoteEndPoint} {request.Method} {request.Url} responsed event error {e_.Message}@{e_.StackTrace}");
+            }
+        }
 
         public void Open()
         {
@@ -225,7 +243,7 @@ namespace BeetleX.FastHttpApi
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this);
             var gtmdate = GMTDate.Default;
-            string serverInfo = $"Server: FastHttpApi[{typeof(BeetleX.BXException).Assembly.GetName().Version}]@BeetleX[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
+            string serverInfo = $"Server: FastHttpApi[{typeof(BeetleX.BXException).Assembly.GetName().Version}]/BeetleX[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
             HeaderTypeFactory.SERVAR_HEADER_BYTES = Encoding.ASCII.GetBytes(serverInfo);
             mServer = SocketFactory.CreateTcpServer(this, hp)
                 .Setting(o =>
@@ -247,6 +265,7 @@ namespace BeetleX.FastHttpApi
                     o.BufferPoolSize = Options.BufferPoolSize;
                     o.PrivateBufferPool = Options.PrivateBufferPool;
                     o.PrivateBufferPoolSize = Options.MaxBodyLength;
+                    o.MaxWaitMessages = Options.MaxWaitQueue;
                 });
             if (Options.IOQueueEnabled)
             {
@@ -593,14 +612,14 @@ namespace BeetleX.FastHttpApi
 
         private void CacheLog(ServerLogEventArgs e)
         {
-            if (Options.CacheLogLength > 0)
+            if (Options.CacheLogMaxSize > 0)
             {
                 LogRecord record = new LogRecord();
                 record.Type = e.Type.ToString();
                 record.Message = e.Message;
                 record.Time = DateTime.Now.ToString("H:mm:ss");
                 System.Threading.Interlocked.Increment(ref mCacheLogLength);
-                if (mCacheLogLength > Options.CacheLogLength)
+                if (mCacheLogLength > Options.CacheLogMaxSize)
                 {
                     mCacheLogQueue.TryDequeue(out LogRecord log);
                     System.Threading.Interlocked.Decrement(ref mCacheLogLength);
@@ -693,7 +712,8 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
-                OnHttpRequest(e.Request, e.Response);
+                if (!e.Request.Session.IsDisposed)
+                    OnHttpRequest(e.Request, e.Response);
             }
             catch (Exception e_)
             {
@@ -762,7 +782,7 @@ namespace BeetleX.FastHttpApi
 
         public override void SessionPacketDecodeCompleted(IServer server, PacketDecodeCompletedEventArgs e)
         {
-            if (Options.SessionTimeOut > 0 && Options.Statistical)
+            if (Options.SessionTimeOut > 0)
             {
                 BaseServer.UpdateSession(e.Session);
             }
