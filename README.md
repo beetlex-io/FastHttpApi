@@ -4,10 +4,15 @@ Fasthttpapi is a lightweight and high-performance HTTP service component in the 
 ## document
 [https://github.com/IKende/FastHttpApi/wiki](https://github.com/IKende/FastHttpApi/wiki)
 
-## Framework benchmarks last test status
-https://tfb-status.techempower.com/
-### 2019-08-01 result for .net
-![](https://github.com/IKende/FastHttpApi/blob/master/images/20190801.png?raw=true)
+## [TechEmpower Framework Benchmarks for .net (2019-8-9)](https://www.techempower.com/benchmarks/#section=test&runid=01ac057d-9871-4f71-9ed4-8320dcb8fdca)
+- Json
+![](https://img3.tomap.me/json.png)
+- Single query
+![](https://img3.tomap.me/db.png)
+- Multiple queries 
+![](https://img3.tomap.me/query.png)
+- Fortunes
+![](https://img3.tomap.me/fortune.png)
 
 ## Using
 
