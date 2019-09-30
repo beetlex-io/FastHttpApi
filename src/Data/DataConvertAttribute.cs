@@ -56,11 +56,11 @@ namespace BeetleX.FastHttpApi.Data
             {
                 using (var bytes = System.Buffers.MemoryPool<byte>.Shared.Rent(request.Length))
                 {
-                    request.Stream.Read(bytes.Memory.Span);
+                    int len = request.Stream.Read(bytes.Memory.Span);
                     Encoding encoding = string.IsNullOrEmpty(mEncoding) ? Encoding.UTF8 : Encoding.GetEncoding(mEncoding);
                     using (var chars = System.Buffers.MemoryPool<char>.Shared.Rent(request.Length))
                     {
-                        var len = encoding.GetChars(bytes.Memory.Span, chars.Memory.Span);
+                        len = encoding.GetChars(bytes.Memory.Slice(0, len).Span, chars.Memory.Span);
                         DataContextBind.BindFormUrl(dataContext, chars.Memory.Slice(0, len).Span);
                     }
                 }
