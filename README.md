@@ -17,7 +17,7 @@ Fasthttpapi is a lightweight and high-performance HTTP service component in the 
 ## Using
 
 ### Install BeetleX.FastHttpApi
-`Install-Package BeetleX.FastHttpApi -Version 1.5.4.2`
+`Install-Package BeetleX.FastHttpApi`
 
 ### Base sample code
 ``` csharp
