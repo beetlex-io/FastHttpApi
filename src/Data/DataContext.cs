@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BeetleX.FastHttpApi.Data
@@ -346,7 +347,7 @@ namespace BeetleX.FastHttpApi.Data
                     if (value is string)
                     {
                         if (type.IsEnum)
-                            return Enum.Parse(type,(string)value);
+                            return Enum.Parse(type, (string)value);
                         else
                             return Newtonsoft.Json.JsonConvert.DeserializeObject((string)value, type);
                     }
@@ -362,6 +363,14 @@ namespace BeetleX.FastHttpApi.Data
             foreach (var item in mProperties)
                 sb.AppendFormat("{0}={1}\r\n", item.Key, item.Value);
             return sb.ToString();
+        }
+
+        public IDictionary<string, object> Copy()
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            foreach (var item in mProperties)
+                result[item.Key] = item.Value;
+            return result;
         }
     }
 }

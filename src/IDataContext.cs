@@ -49,7 +49,7 @@ namespace BeetleX.FastHttpApi
                     result.Url = this.ActionUrl;
                 frame = Server.CreateDataFrame(result);
             }
-            Request.Session.Send(frame);
+            frame.Send(Request.Session);
         }
 
         internal bool AsyncResult { get; set; }

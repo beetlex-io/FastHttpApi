@@ -49,6 +49,7 @@ namespace BeetleX.FastHttpApi
             if (mRequest == null)
             {
                 mRequest = mServer.CreateRequest(session);
+                mRequest.ID = HttpRequest.GetID();
             }
             if (mRequest.Read(pstream) == LoadedState.Completed)
             {
@@ -66,14 +67,14 @@ namespace BeetleX.FastHttpApi
             else
             {
                 if (session.Server.EnableLog(LogType.Info))
-                    session.Server.Log(LogType.Info, session, $"{session.RemoteEndPoint} Multi receive to http request");
+                    session.Server.Log(LogType.Info, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} request from multi receive");
                 if (mRequest.State == LoadedState.None)
                 {
                     if (mReceives > 2 || pstream.FirstBuffer.Length < 32)
                     {
                         if (session.Server.EnableLog(LogType.Warring))
                         {
-                            session.Server.Log(LogType.Warring, session, "{0} http receive data error!", session.RemoteEndPoint);
+                            session.Server.Log(LogType.Warring, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} receive data error!");
                         }
                         session.Dispose();
                         return;
@@ -87,7 +88,7 @@ namespace BeetleX.FastHttpApi
                     {
                         if (session.Server.EnableLog(LogType.Warring))
                         {
-                            session.Server.Log(LogType.Warring, session, "{0} http protocol data error!", session.RemoteEndPoint);
+                            session.Server.Log(LogType.Warring, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} protocol data error!");
                         }
                         session.Dispose();
                         return;
@@ -97,7 +98,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (session.Server.EnableLog(LogType.Warring))
                     {
-                        session.Server.Log(LogType.Warring, session, "{0} http header too long!", session.RemoteEndPoint);
+                        session.Server.Log(LogType.Warring, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} header too long!");
                     }
                     session.Dispose();
                 }
@@ -105,7 +106,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (session.Server.EnableLog(LogType.Warring))
                     {
-                        session.Server.Log(LogType.Warring, session, "{0} http body too long!", session.RemoteEndPoint);
+                        session.Server.Log(LogType.Warring, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} body too long!");
                     }
                     HttpToken token = (HttpToken)session.Tag;
                     token.KeepAlive = false;
@@ -122,7 +123,7 @@ namespace BeetleX.FastHttpApi
         START:
             if (mDataPacket == null)
             {
-                mDataPacket = new DataFrame();
+                mDataPacket = new DataFrame(mServer);
                 mDataPacket.DataPacketSerializer = this.mDataPacketSerializer;
             }
             if (mDataPacket.Read(pstream) == DataPacketLoadStep.Completed)
@@ -135,7 +136,7 @@ namespace BeetleX.FastHttpApi
                     {
                         if (session.Server.EnableLog(LogType.Warring))
                         {
-                            session.Server.Log(LogType.Warring, session, "{0} websocket session rps to max!", session.RemoteEndPoint);
+                            session.Server.Log(LogType.Warring, session, $"Websocket {mRequest?.ID} {session.RemoteEndPoint} session rps to max!");
                         }
                         session.Dispose();
                     }
@@ -168,7 +169,7 @@ namespace BeetleX.FastHttpApi
             {
                 if (session.Server.EnableLog(LogType.Warring))
                 {
-                    session.Server.Log(LogType.Warring, session, "{0} http protocol data to long!", session.RemoteEndPoint);
+                    session.Server.Log(LogType.Warring, session, $"HTTP {session.RemoteEndPoint} protocol data to long!");
                 }
                 session.Dispose();
                 return;
@@ -205,7 +206,7 @@ namespace BeetleX.FastHttpApi
             else
             {
                 if (session.Server.EnableLog(LogType.Error))
-                    session.Server.Log(LogType.Error, session, $"{session.RemoteEndPoint} response {data} no impl  IDataResponse");
+                    session.Server.Log(LogType.Error, session, $"HTTP {session.RemoteEndPoint} response {data} no impl  IDataResponse");
             }
         }
 

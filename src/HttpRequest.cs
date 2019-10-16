@@ -28,6 +28,15 @@ namespace BeetleX.FastHttpApi
             KeepAlive = true;
         }
 
+        private static long mID = 0;
+
+        internal static long GetID()
+        {
+            return System.Threading.Interlocked.Increment(ref mID);
+        }
+
+        public long ID { get; internal set; }
+
         internal void Init(ISession session, HttpApiServer httpApiServer)
         {
             this.Session = session;
@@ -118,6 +127,8 @@ namespace BeetleX.FastHttpApi
 
         public PipeStream Stream => mStream;
 
+        public ActionHandler ActionHandler { get; set; }
+
         public bool KeepAlive { get { return mKeepAlive; } set { mKeepAlive = value; } }
 
         public Header Header { get; private set; }
@@ -135,7 +146,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (Session.RemoteEndPoint is IPEndPoint IP)
                     {
-                        value = IP.Address.ToString() + ":" + IP.Port.ToString();
+                        value = IP.Address.ToString();
                         Header[HeaderTypeFactory.CLIENT_IPADDRESS] = value;
                     }
                 }
@@ -143,7 +154,7 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-       // public long UrlCode { get; internal set; }
+        // public long UrlCode { get; internal set; }
 
         public string Method { get; internal set; }
 
@@ -220,7 +231,7 @@ namespace BeetleX.FastHttpApi
                     this.SourceUrl = this.Url;
                     if (Server.EnableLog(EventArgs.LogType.Info))
                     {
-                        Server.BaseServer.Log(EventArgs.LogType.Info, Session, "request rewrite {0}  to {1}", Url, routeMatchResult.RewriteUrl);
+                        Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} request rewrite {Url} to {routeMatchResult.RewriteUrl}");
                     }
                     Url = routeMatchResult.RewriteUrl;
                     if (Server.Options.UrlIgnoreCase)
@@ -273,7 +284,7 @@ namespace BeetleX.FastHttpApi
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(this.Method + " " + this.Url);
+            sb.AppendLine("");
             sb.Append(Header.ToString());
             sb.Append(this.Cookies.ToString());
             return sb.ToString();

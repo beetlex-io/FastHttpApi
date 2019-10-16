@@ -19,6 +19,10 @@ namespace BeetleX.FastHttpApi
     public class HttpApiServer : ServerHandlerBase, BeetleX.ISessionSocketProcessHandler, WebSockets.IDataFrameSerializer, IWebSocketServer, IDisposable
     {
 
+        public const int WEBSOCKET_SUCCESS = 250;
+
+        public const int WEBSOCKET_ERROR = 550;
+
         public HttpApiServer() : this(null)
         {
 
@@ -36,6 +40,8 @@ namespace BeetleX.FastHttpApi
             {
                 Options = LoadOptions();
             }
+            mActionSettings.Load();
+            mIPv4Tables.Load();
             mActionFactory = new ActionHandlerFactory(this);
             mResourceCenter = new StaticResurce.ResourceCenter(this);
             mUrlRewrite = new RouteRewrite(this);
@@ -45,6 +51,8 @@ namespace BeetleX.FastHttpApi
         const string mConfigFile = "HttpConfig.json";
 
         private RouteRewrite mUrlRewrite;
+
+        private IPv4Tables mIPv4Tables = new IPv4Tables();
 
         private ModuleManager mModuleManager;
 
@@ -60,15 +68,13 @@ namespace BeetleX.FastHttpApi
 
         private FileLogWriter mFileLog;
 
-        private long mCurrentHttpRequests;
-
-        //private long mCurrentWebSocketRequests;
-
         private long mRequestErrors;
 
         private long mTotalRequests;
 
         private long mTotalConnections;
+
+        private ActionSettings mActionSettings = new ActionSettings();
 
         private ActionHandlerFactory mActionFactory;
 
@@ -83,13 +89,11 @@ namespace BeetleX.FastHttpApi
 
         private ConcurrentDictionary<string, object> mProperties = new ConcurrentDictionary<string, object>();
 
-        public long CurrentHttpRequests => mCurrentHttpRequests;
-
         public long RequestErrors => mRequestErrors;
 
-        public ModuleManager ModuleManager => mModuleManager;
+        public IPv4Tables IPv4Tables => mIPv4Tables;
 
-        //public long CurrentWebSocketRequests => mCurrentWebSocketRequests;
+        public ModuleManager ModuleManager => mModuleManager;
 
         public StaticResurce.ResourceCenter ResourceCenter => mResourceCenter;
 
@@ -192,6 +196,8 @@ namespace BeetleX.FastHttpApi
 
         public event EventHandler<EventHttpServerStartedArgs> Started;
 
+        public event EventHandler<EventActionExecutingArgs> ActionExecuting;
+
         public event EventHandler<EventOptionsReloadArgs> OptionLoad;
 
         public event EventHandler<EventHttpResponsedArgs> HttpResponsed;
@@ -214,17 +220,20 @@ namespace BeetleX.FastHttpApi
             }
             catch (Exception e_)
             {
-                Log(LogType.Error, " http api server load controller error " + e_.Message + "@" + e_.StackTrace);
+                Log(LogType.Error, "http api server load controller error " + e_.Message + "@" + e_.StackTrace);
             }
         }
 
-        internal virtual void OnResponsed(HttpRequest request, HttpResponse response)
+        public virtual void IncrementResponsed(HttpRequest request, HttpResponse response, double time, int code, string msg)
         {
             try
             {
+                System.Threading.Interlocked.Increment(ref mTotalRequests);
+                if (code >= 500)
+                    System.Threading.Interlocked.Increment(ref mRequestErrors);
                 if (HttpResponsed != null)
                 {
-                    var e = new EventHttpResponsedArgs { Request = request, Response = response };
+                    var e = new EventHttpResponsedArgs(request, response, time, code, msg);
                     HttpResponsed(this, e);
                 }
             }
@@ -243,7 +252,7 @@ namespace BeetleX.FastHttpApi
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this);
             var gtmdate = GMTDate.Default;
-            string serverInfo = $"Server: FastHttpApi[{typeof(BeetleX.BXException).Assembly.GetName().Version}]/BeetleX[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
+            string serverInfo = $"Server: BeetleX[{typeof(BeetleX.BXException).Assembly.GetName().Version}]/FastHttpApi[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
             HeaderTypeFactory.SERVAR_HEADER_BYTES = Encoding.ASCII.GetBytes(serverInfo);
             mServer = SocketFactory.CreateTcpServer(this, hp)
                 .Setting(o =>
@@ -326,11 +335,32 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
+
             mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi [IOQueue:{Options.IOQueueEnabled}|Threads:{Options.IOQueues}] [V:{typeof(HttpApiServer).Assembly.GetName().Version}]");
             OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
             OnStrated(new EventHttpServerStartedArgs { HttpApiServer = this });
 
 
+        }
+
+        public void ActionSettings(ActionHandler handler)
+        {
+            mActionSettings.SetAction(handler);
+        }
+
+        public void SaveActionSettings()
+        {
+            try
+            {
+                mActionSettings.Save(ActionFactory.Handlers);
+                if (EnableLog(LogType.Info))
+                    Log(LogType.Info, $"HTTP save actions settings success");
+            }
+            catch (Exception e_)
+            {
+                if (EnableLog(LogType.Error))
+                    Log(LogType.Error, $"HTTP save actions settings error {e_.Message}@{e_.StackTrace}");
+            }
         }
 
         public Assembly ResolveHandler(object sender, ResolveEventArgs args)
@@ -453,6 +483,19 @@ namespace BeetleX.FastHttpApi
             if (server.Count > Options.MaxConnections)
             {
                 e.Cancel = true;
+                if (EnableLog(LogType.Warring))
+                {
+                    Log(LogType.Warring, $"HTTP ${e.Socket.RemoteEndPoint} out of max connections!");
+                }
+            }
+            IPEndPoint ipPoint = (IPEndPoint)e.Socket.RemoteEndPoint;
+            if (!IPv4Tables.Verify(ipPoint.Address))
+            {
+                e.Cancel = true;
+                if (EnableLog(LogType.Warring))
+                {
+                    Log(LogType.Warring, $"HTTP ${e.Socket.RemoteEndPoint} IPv4 tables verify no permission!");
+                }
             }
             e.Socket.NoDelay = true;
         }
@@ -506,7 +549,7 @@ namespace BeetleX.FastHttpApi
             request.WebSocket = true;
             if (EnableLog(LogType.Info))
             {
-                mServer.Log(LogType.Info, request.Session, "{0} upgrade to websocket", request.Session.RemoteEndPoint);
+                mServer.Log(LogType.Info, request.Session, $"HTTP {request.ID} {request.Session.RemoteEndPoint} upgrade to websocket");
             }
             ConnectionUpgradeWebsocket(request, response);
 
@@ -522,7 +565,7 @@ namespace BeetleX.FastHttpApi
             {
                 if (EnableLog(LogType.Warring))
                 {
-                    mServer.Log(LogType.Warring, request.Session, "{0} cancel upgrade to websocket", request.Session.RemoteEndPoint);
+                    mServer.Log(LogType.Warring, request.Session, $"HTTP {request.ID} {request.Session.RemoteEndPoint} cancel upgrade to websocket");
                 }
                 response.Session.Dispose();
             }
@@ -533,29 +576,29 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public ActionResult ExecuteWS(HttpRequest request, DataFrame dataFrame)
+        public void ExecuteWS(HttpRequest request, DataFrame dataFrame)
         {
             JToken dataToken = (JToken)Newtonsoft.Json.JsonConvert.DeserializeObject((string)dataFrame.Body);
-            return this.mActionFactory.ExecuteWithWS(request, this, dataToken);
+            this.mActionFactory.ExecuteWithWS(request, this, dataToken);
         }
 
 
         public DataFrame CreateDataFrame(object body = null)
         {
-            DataFrame dp = new DataFrame();
+            DataFrame dp = new DataFrame(this);
             dp.DataPacketSerializer = this.FrameSerializer;
             dp.Body = body;
             return dp;
         }
 
-        protected virtual void OnWebSocketRequest(ISession session, DataFrame data)
+        protected virtual void OnWebSocketRequest(HttpRequest request, ISession session, DataFrame data)
         {
 
             if (session.Count > Options.WebSocketMaxRPS)
             {
                 if (EnableLog(LogType.Error))
                 {
-                    mServer.Log(LogType.Error, session, $"{session.RemoteEndPoint} Session message queuing exceeds maximum rps!");
+                    mServer.Log(LogType.Error, session, $"Websocket {request.ID} {request.RemoteIPAddress} session message queuing exceeds maximum rps!");
                 }
                 session.Dispose();
                 return;
@@ -563,7 +606,7 @@ namespace BeetleX.FastHttpApi
 
             if (EnableLog(LogType.Info))
             {
-                mServer.Log(LogType.Info, session, "{0} receive websocket data {1}", session.RemoteEndPoint, data.Type.ToString());
+                mServer.Log(LogType.Info, session, $"Websocket {request.ID} {request.RemoteIPAddress} receive {data.Type.ToString()}");
             }
             HttpToken token = (HttpToken)session.Tag;
             if (data.Type == DataPacketType.ping)
@@ -583,12 +626,12 @@ namespace BeetleX.FastHttpApi
                 {
                     if (data.Type == DataPacketType.text)
                     {
-                        ActionResult result = ExecuteWS(token.Request, data);
+                        ExecuteWS(token.Request, data);
                     }
                 }
                 else
                 {
-                    RequestExecting();
+
                     try
                     {
                         var args = new WebSocketReceiveArgs();
@@ -600,7 +643,7 @@ namespace BeetleX.FastHttpApi
                     }
                     finally
                     {
-                        RequestExecuted();
+
                     }
                 }
 
@@ -652,20 +695,20 @@ namespace BeetleX.FastHttpApi
         protected virtual void OnOptionLoad(EventOptionsReloadArgs e)
         {
             if (EnableLog(LogType.Debug))
-                Log(LogType.Debug, "invoke options reload event!");
+                Log(LogType.Debug, "HTTP server options reload event!");
             OptionLoad?.Invoke(this, e);
         }
 
         protected virtual void OnStrated(EventHttpServerStartedArgs e)
         {
             if (EnableLog(LogType.Debug))
-                Log(LogType.Debug, "invoke server started event!");
+                Log(LogType.Debug, "HTTP server started event!");
             Started?.Invoke(this, e);
         }
 
         protected virtual void OnProcessResource(HttpRequest request, HttpResponse response)
         {
-            RequestExecting();
+
             try
             {
                 if (request.Method == HttpParse.GET_TAG)
@@ -695,7 +738,6 @@ namespace BeetleX.FastHttpApi
             }
             finally
             {
-                RequestExecuted();
             }
         }
 
@@ -719,7 +761,7 @@ namespace BeetleX.FastHttpApi
             {
                 if (EnableLog(LogType.Error))
                 {
-                    mServer.Error(e_, e.Request.Session, "{0} On queue process error {1}", e.Request.Session.RemoteEndPoint, e_.Message);
+                    mServer.Error(e_, e.Request.Session, $"HTTP {e.Request.ID} {e.Request.RemoteIPAddress} on queue process error {e_.Message}@{e_.StackTrace}");
                 }
             }
         }
@@ -731,18 +773,18 @@ namespace BeetleX.FastHttpApi
                 HttpToken token = (HttpToken)e.Session.Tag;
                 if (token.WebSocket)
                 {
-                    OnWebSocketRequest(e.Session, (WebSockets.DataFrame)e.Message);
+                    OnWebSocketRequest(token.Request, e.Session, (WebSockets.DataFrame)e.Message);
                 }
                 else
                 {
                     HttpRequest request = (HttpRequest)e.Message;
                     if (EnableLog(LogType.Info))
                     {
-                        mServer.Log(LogType.Info, e.Session, $"{request.RemoteIPAddress} {request.Method} {request.Url} request");
+                        mServer.Log(LogType.Info, null, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {request.Url}");
                     }
                     if (EnableLog(LogType.Debug))
                     {
-                        mServer.Log(LogType.Debug, e.Session, $"{request.RemoteIPAddress} {request.Method} {request.Url} request detail {request.ToString()}");
+                        mServer.Log(LogType.Debug, e.Session, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {request.Url} detail {request.ToString()}");
                     }
                     request.Server = this;
                     HttpResponse response = request.CreateResponse();
@@ -775,7 +817,7 @@ namespace BeetleX.FastHttpApi
             {
                 if (EnableLog(LogType.Error))
                 {
-                    mServer.Error(e_, e.Session, "{0} OnRequestHandler error {1}", e.Session.RemoteEndPoint, e.Message);
+                    mServer.Error(e_, e.Session, $"HTTP {e.Session.RemoteEndPoint} {0} OnRequestHandler error {e_.Message}@{e_.StackTrace}");
                 }
             }
         }
@@ -789,6 +831,17 @@ namespace BeetleX.FastHttpApi
             OnRequestHandler(e);
         }
 
+        internal bool OnActionExecuting(IHttpContext context)
+        {
+            if (ActionExecuting != null)
+            {
+                EventActionExecutingArgs e = new EventActionExecutingArgs();
+                e.HttpContext = context;
+                ActionExecuting(this, e);
+                return !e.Cancel;
+            }
+            return true;
+        }
 
         internal EventHttpRequestArgs OnHttpRequesNotfound(HttpRequest request, HttpResponse response)
         {
@@ -820,26 +873,27 @@ namespace BeetleX.FastHttpApi
             return new ServerCounter.ServerStatus();
         }
 
-        public void RequestError()
-        {
-            if (Options.Statistical)
-                System.Threading.Interlocked.Increment(ref mRequestErrors);
-        }
+        //public void RequestError()
+        //{
+        //    if (Options.Statistical)
+        //        System.Threading.Interlocked.Increment(ref mRequestErrors);
+        //}
 
-        public void RequestExecting()
-        {
-            if (Options.Statistical)
-                System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
-        }
+        //public void RequestExecting()
+        //{
+        //    if (Options.Statistical)
+        //        System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
+        //}
 
-        public void RequestExecuted()
-        {
-            if (Options.Statistical)
-            {
-                System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
-                System.Threading.Interlocked.Increment(ref mTotalRequests);
-            }
-        }
+        //public void RequestExecuted()
+        //{
+        //    if (Options.Statistical)
+        //    {
+        //        System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
+        //        System.Threading.Interlocked.Increment(ref mTotalRequests);
+
+        //    }
+        //}
 
         protected virtual void OnHttpRequest(HttpRequest request, HttpResponse response)
         {

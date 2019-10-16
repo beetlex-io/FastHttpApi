@@ -7,23 +7,29 @@ namespace BeetleX.FastHttpApi
 {
     public delegate void EventHttpServerLog(IServer server, BeetleX.EventArgs.ServerLogEventArgs e);
 
-    public class EventHttpResponsedArgs : System.EventArgs
+    public struct EventHttpResponsedArgs
     {
-        public HttpRequest Request { get; internal set; }
+        public EventHttpResponsedArgs(HttpRequest request, HttpResponse response, double time, int status, string statusMsg)
+        {
+            Request = request;
+            Response = response;
+            Time = time;
+            Status = status;
+            StatusMessage = statusMsg;
+        }
 
-        public HttpResponse Response { get; internal set; }
+        public HttpRequest Request { get; set; }
+
+        public HttpResponse Response { get; set; }
 
         public double Time
         {
-            get
-            {
-                return TimeWatch.GetTotalMilliseconds() - Request.RequestTime;
-            }
+            get; set;
         }
 
-        public string Status => Response.Code;
+        public int Status { get; set; }
 
-        public string StatusMessage => Response.CodeMsg;
+        public string StatusMessage { get; set; }
     }
 
     public class WebSocketConnectArgs : System.EventArgs
@@ -60,6 +66,15 @@ namespace BeetleX.FastHttpApi
         public IHttpContext Context { get; internal set; }
 
         public ActionHandler ActionHandler { get; internal set; }
+    }
+
+    public class EventActionExecutingArgs : System.EventArgs
+    {
+
+
+        public IHttpContext HttpContext { get; internal set; }
+
+        public bool Cancel { get; set; }
     }
 
 

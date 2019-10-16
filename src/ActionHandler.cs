@@ -41,8 +41,7 @@ namespace BeetleX.FastHttpApi
 
         }
 
-
-        public ThreadQueueAttribute ThreadQueue { get; private set; }
+        public ThreadQueueAttribute ThreadQueue { get; set; }
 
         public HttpApiServer HttpApiServer { get; private set; }
 

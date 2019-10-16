@@ -37,14 +37,14 @@ namespace BeetleX.FastHttpApi
         public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500)
         {
             if (Server.EnableLog(logType))
-                Server.Log(logType, "{0} ws execute {1} inner error {2}@{3}", Request.RemoteIPAddress, Result.Url, e_.Message, e_.StackTrace);
+                Server.Log(logType, $"Websocket {Request.ID} {Request.RemoteIPAddress} execute {DataContext.ActionUrl} inner error {e_.Message}@{e_.StackTrace}");
             Result.Code = code;
             Result.Error = e_.Message;
             if (Server.Options.OutputStackTrace)
             {
                 Result.StackTrace = e_.StackTrace;
             }
-            DataFrame.Send(Request.Session);
+            DataFrame.Send(Request.Session, true);
         }
 
         public long StartTime;
@@ -63,10 +63,9 @@ namespace BeetleX.FastHttpApi
             {
                 Result.Data = result;
             }
-            DataFrame.Send(Request.Session);
+            DataFrame.Send(Request.Session, false);
             if (Server.EnableLog(EventArgs.LogType.Info))
-                Server.Log(EventArgs.LogType.Info, "{0} ws execute {1} action use time:{2}ms", Request.RemoteIPAddress,
-                    DataContext.ActionUrl, Server.BaseServer.GetRunTime() - StartTime);
+                Server.Log(EventArgs.LogType.Info, $"Websocket {Request.ID} {Request.RemoteIPAddress} execute {DataContext.ActionUrl} action use time:{ Server.BaseServer.GetRunTime() - StartTime}ms");
         }
 
 
@@ -95,7 +94,7 @@ namespace BeetleX.FastHttpApi
         {
             if (Server.EnableLog(logType))
                 Server.Log(logType,
-                    $"{Request.RemoteIPAddress} http {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
+                    $"HTTP {Request.ID} {Request.RemoteIPAddress} {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
             InnerErrorResult result = new InnerErrorResult($"http execute {Request.BaseUrl} error ", e_, Server.Options.OutputStackTrace);
             result.Code = code.ToString();
             Response.Result(result);
@@ -105,7 +104,7 @@ namespace BeetleX.FastHttpApi
         {
             if (Server.EnableLog(EventArgs.LogType.Info))
                 Server.BaseServer.Log(EventArgs.LogType.Info, Request.Session,
-                    $"{Request.RemoteIPAddress} http {Request.Method} {Request.BaseUrl} use time:{Server.BaseServer.GetRunTime() - StartTime}ms");
+                    $"HTTP {Request.ID} {Request.RemoteIPAddress} {Request.Method} {Request.BaseUrl} use time:{Server.BaseServer.GetRunTime() - StartTime}ms");
             Response.Result(result);
         }
     }

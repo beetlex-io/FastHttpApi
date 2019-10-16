@@ -21,6 +21,14 @@ namespace BeetleX.FastHttpApi
             mItems.Clear();
         }
 
+        public IDictionary<string, string> Copy()
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            foreach (var item in mItems)
+                result[item.Key] = item.Value;
+            return result;
+        }
+
         private string GetValue(string name)
         {
             string result = null;

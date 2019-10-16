@@ -19,11 +19,12 @@ namespace BeetleX.FastHttpApi.WebSockets
 
     public class DataFrame : IDataResponse
     {
-        internal DataFrame()
+        internal DataFrame(HttpApiServer server)
         {
             this.FIN = true;
             Type = DataPacketType.text;
             IsMask = false;
+            mServer = server;
         }
 
         const int CHECK_B1 = 0x1;
@@ -50,6 +51,8 @@ namespace BeetleX.FastHttpApi.WebSockets
 
         public bool RSV3 { get; set; }
 
+        private HttpApiServer mServer;
+
         internal IDataFrameSerializer DataPacketSerializer { get; set; }
 
         public DataPacketType Type { get; set; }
@@ -63,6 +66,7 @@ namespace BeetleX.FastHttpApi.WebSockets
         public ulong Length { get; set; }
 
         public byte[] MaskKey { get; set; }
+
 
         private DataPacketLoadStep mLoadStep = DataPacketLoadStep.None;
 
@@ -245,15 +249,23 @@ namespace BeetleX.FastHttpApi.WebSockets
             }
         }
 
-        public void Send(ISession session)
+        public void Send(ISession session, bool isError = false)
         {
             HttpToken token = (HttpToken)session.Tag;
             if (token != null && token.WebSocket)
             {
+                if (isError)
+                {
+                    mServer.IncrementResponsed(token.Request, null, 0, HttpApiServer.WEBSOCKET_ERROR, null);
+                }
+                else
+                {
+                    mServer.IncrementResponsed(token.Request, null, 0, HttpApiServer.WEBSOCKET_SUCCESS, null);
+                }
                 session.Send(this);
                 if (session.Server.EnableLog(EventArgs.LogType.Info))
                 {
-                    session.Server.Log(EventArgs.LogType.Info, session, "{0} websocket send data {1}", session.RemoteEndPoint, this.Type.ToString());
+                    session.Server.Log(EventArgs.LogType.Info, session, $"Websocket {token?.Request?.ID} {token?.Request?.RemoteIPAddress} websocket send data {this.Type.ToString()}");
                 }
             }
         }

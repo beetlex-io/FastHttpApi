@@ -41,7 +41,6 @@ namespace BeetleX.FastHttpApi
                 if (!_doingWork)
                 {
                     System.Threading.ThreadPool.QueueUserWorkItem(OnStart);
-                    //Task.Run(() => OnStart());
                     _doingWork = true;
                 }
             }
@@ -173,13 +172,14 @@ namespace BeetleX.FastHttpApi
     public class ThreadQueueAttribute : Attribute
     {
 
-
         public ThreadQueueAttribute(ThreadQueueType type, int queues = 1)
         {
             Type = type;
             QueueGroup = new NextQueueGroup(queues);
-
+            Count = queues;
         }
+
+        public int Count { get; private set; }
 
         private static NextQueueGroup mUniqueQueueGroup = new NextQueueGroup(25 * Environment.ProcessorCount);
 

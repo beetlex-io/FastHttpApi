@@ -47,7 +47,6 @@ namespace BeetleX.FastHttpApi
 
         private void OnExecute(IActionResultHandler resultHandler)
         {
-            HttpContext.Server.RequestExecting();
             try
             {
                 if (FilterExecuting())
@@ -78,15 +77,10 @@ namespace BeetleX.FastHttpApi
                 Handler.IncrementError();
                 resultHandler.Error(e_);
             }
-            finally
-            {
-                HttpContext.Server.RequestExecuted();
-            }
         }
 
         private async Task OnAsyncExecute(IActionResultHandler resultHandler)
         {
-            HttpContext.Server.RequestExecting();
             try
             {
                 if (FilterExecuting())
@@ -121,10 +115,6 @@ namespace BeetleX.FastHttpApi
             {
                 Handler.IncrementError();
                 resultHandler.Error(e_);
-            }
-            finally
-            {
-                HttpContext.Server.RequestExecuted();
             }
         }
 

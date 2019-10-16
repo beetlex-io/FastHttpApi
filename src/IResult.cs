@@ -59,7 +59,6 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
-            response.Request.Server.RequestError();
             response.Code = "404";
             response.CodeMsg = "not found";
             response.Request.ClearStream();
@@ -125,7 +124,6 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
-            response.Request.Server.RequestError();
             response.Code = Code;
             response.CodeMsg = Message;
             response.Request.ClearStream();
@@ -155,7 +153,6 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
-            response.Request.Server.RequestError();
             response.Code = "401";
             response.CodeMsg = "Unauthorized";
             response.Request.ClearStream();
@@ -186,7 +183,6 @@ namespace BeetleX.FastHttpApi
 
         public override void Setting(HttpResponse response)
         {
-            response.Request.Server.RequestError();
             response.Code = "403";
             response.CodeMsg = "not support";
             response.Request.ClearStream();

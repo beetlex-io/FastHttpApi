@@ -47,7 +47,7 @@ namespace BeetleX.FastHttpApi
 
         private int mNextStatu = 0;
 
-        public ServerStatus Next(bool actionDetail=false)
+        public ServerStatus Next(bool actionDetail = false)
         {
             if (mServer.BaseServer.GetRunTime() - mLastNextTime > 1000)
             {
@@ -76,9 +76,7 @@ namespace BeetleX.FastHttpApi
                     result.TotalMemory = Environment.WorkingSet / 1024;
 
                     result.CurrentConnectinos = mServer.BaseServer.Count;
-                    result.CurrentHttpRequest = (long)mServer.CurrentHttpRequests;
-                    result.CurrentRequest = result.CurrentHttpRequest;// + result.CurrentWSRequest;
-                                                                      // result.CurrentWSRequest = (long)mServer.CurrentWebSocketRequests;
+                   
 
                     result.TotalRequest = mServer.TotalRequest;
                     result.RequestPer = (long)((result.TotalRequest - mLastTotalRequest) / second);
@@ -163,11 +161,11 @@ namespace BeetleX.FastHttpApi
 
             public long CurrentConnectinos { get; set; }
 
-            public long CurrentRequest { get; set; }
+            // public long CurrentRequest { get; set; }
 
             //  public long CurrentWSRequest { get; set; }
 
-            public long CurrentHttpRequest { get; set; }
+            //public long CurrentHttpRequest { get; set; }
 
             public double TotalSendBytes { get; set; }
 

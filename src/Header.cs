@@ -268,6 +268,15 @@ namespace BeetleX.FastHttpApi
             mValues.Clear();
         }
 
+
+        public IDictionary<string, string> Copy()
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            foreach (var item in mValues)
+                result[item.Value.Type.Name] = item.Value.Value;
+            return result;
+        }
+
         private HeaderValue Find(string name)
         {
             HeaderType type = HeaderTypeFactory.Find(name);

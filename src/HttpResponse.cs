@@ -155,7 +155,7 @@ namespace BeetleX.FastHttpApi
         private byte[] GetLengthBuffer(string length)
         {
             Encoding.ASCII.GetBytes(length, 0, length.Length, mLengthBuffer, 0);
-            for(int i=length.Length;i<10;i++)
+            for (int i = length.Length; i < 10; i++)
             {
                 mLengthBuffer[i] = 32;
             }
@@ -247,11 +247,11 @@ namespace BeetleX.FastHttpApi
             }
 
             if (Session.Server.EnableLog(EventArgs.LogType.Debug))
-                Session.Server.Log(EventArgs.LogType.Debug, Session, "{0} {1}", Request.RemoteIPAddress, this.ToString());
+                Session.Server.Log(EventArgs.LogType.Debug, Session, $"HTTP {Request.ID} {Request.RemoteIPAddress} response detail {this.ToString()}");
 
             if (Session.Server.EnableLog(EventArgs.LogType.Info))
             {
-                Session.Server.Log(EventArgs.LogType.Info, Session, "{4} {0} {1} response {2} {3}", Request.Method, Request.Url, Code, CodeMsg, Request.RemoteIPAddress);
+                Session.Server.Log(EventArgs.LogType.Info, Session, $"HTTP {Request.ID} {Request.RemoteIPAddress} {Request.Method} {Request.Url} response {Code} {CodeMsg}");
             }
         }
 
@@ -272,7 +272,7 @@ namespace BeetleX.FastHttpApi
             }
             finally
             {
-                Request.Server.OnResponsed(Request, this);
+                Request.Server.IncrementResponsed(Request, this, TimeWatch.GetTotalMilliseconds() - Request.RequestTime, int.Parse(this.Code), CodeMsg);
                 Request.Recovery();
             }
         }
@@ -280,6 +280,7 @@ namespace BeetleX.FastHttpApi
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine("");
             sb.AppendLine(Request.Method + " " + Request.Url + " response " + Code + " " + CodeMsg);
             sb.Append(this.Header.ToString());
             for (int i = 0; i < mSetCookies.Count; i++)

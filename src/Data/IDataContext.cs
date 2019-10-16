@@ -41,6 +41,7 @@ namespace BeetleX.FastHttpApi.Data
 
         bool TryGetChar(string name, out char value);
 
+        IDictionary<string, object> Copy();
     }
 
 
