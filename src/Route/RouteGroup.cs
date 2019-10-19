@@ -9,36 +9,53 @@ namespace BeetleX.FastHttpApi
 
         public RouteGroup()
         {
-            Routes = new List<UrlRoute>();
+            mRoutes = new List<UrlRoute>();
         }
 
         public string Ext { get; set; }
 
-        public List<UrlRoute> Routes { get; private set; }
+        private List<UrlRoute> mRoutes;
+
+        private UrlRoute[] mMatchRoute = new UrlRoute[0];
+
+        public UrlRoute[] Routes => mMatchRoute;
+
+        public void Remove(UrlRoute route)
+        {
+            mRoutes.RemoveAll(p => string.Compare(p.Url, route.Url, true) == 0);
+            mMatchRoute = mRoutes.ToArray();
+        }
+
 
         public void Add(UrlRoute route)
         {
-            for (int i = 0; i < Routes.Count; i++)
+            for (int i = 0; i < mRoutes.Count; i++)
             {
-                if (Routes[i].Url == route.Url)
+                if (string.Compare(mRoutes[i].Url, route.Url, true) == 0)
                 {
-                    Routes[i] = route;
+                    mRoutes[i] = route;
                     return;
                 }
             }
-            Routes.Add(route);
+            mRoutes.Add(route);
+            mMatchRoute = mRoutes.ToArray();
         }
 
         public bool Match(string url, ref RouteMatchResult result, QueryString queryString)
         {
-            for (int i = 0; i < Routes.Count; i++)
+            var items = mMatchRoute;
+            for (int i = 0; i < items.Length; i++)
             {
-                UrlRoute urlRoute = Routes[i];
-                if (urlRoute.Match(url, queryString))
+                UrlRoute urlRoute = items[i];
+                Dictionary<string, string> ps = new Dictionary<string, string>();
+                if (urlRoute.Match(url, ps))
                 {
-                    result.Ext = urlRoute.Ext;
-                    result.RewriteUrl = urlRoute.Rewrite;
-                    result.RewriteUrlLower = urlRoute.Rewrite;
+                    if (ps.Count > 0)
+                        foreach (var item in ps)
+                            queryString.Add(item.Key, item.Value);
+                    result.Ext = urlRoute.ReExt;
+                    result.RewriteUrl = urlRoute.GetRewriteUrl(ps);
+                    result.RewriteUrlLower = HttpParse.CharToLower(result.RewriteUrl);
                     return true;
                 }
             }

@@ -14,6 +14,8 @@ namespace BeetleX.FastHttpApi
         public string BaseUrl { get; set; }
 
         public bool SingleInstance { get; set; }
+
+        public bool SkipPublicFilter { get; set; } = false;
     }
 
 
@@ -21,7 +23,7 @@ namespace BeetleX.FastHttpApi
 
     public interface IController
     {
-        void Init(HttpApiServer server,string path);
+        void Init(HttpApiServer server, string path);
     }
 
     [AttributeUsage(AttributeTargets.Method)]

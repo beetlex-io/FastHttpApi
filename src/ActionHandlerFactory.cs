@@ -238,7 +238,8 @@ namespace BeetleX.FastHttpApi
             }
             RequestMaxRPS control_maxRPS = controllerType.GetCustomAttribute<RequestMaxRPS>();
             List<FilterAttribute> filters = new List<FilterAttribute>();
-            filters.AddRange(config.Filters);
+            if (!ca.SkipPublicFilter)
+                filters.AddRange(config.Filters);
             IEnumerable<FilterAttribute> fas = controllerType.GetCustomAttributes<FilterAttribute>(false);
             filters.AddRange(fas);
             IEnumerable<SkipFilterAttribute> skipfilters = controllerType.GetCustomAttributes<SkipFilterAttribute>(false);
@@ -348,7 +349,6 @@ namespace BeetleX.FastHttpApi
                     server.Log(EventArgs.LogType.Warring, "{0} already exists! replaced with {1}.{2}!", url, controllerType.Name,
                         mi.Name);
                 }
-
                 handler = new ActionHandler(obj, mi, this.Server);
                 if (mi.ReturnType == typeof(Task) || mi.ReturnType.BaseType == typeof(Task))
                 {
@@ -363,6 +363,8 @@ namespace BeetleX.FastHttpApi
                     handler.OptionsAttribute = controllerOptionsAttribute;
                 else
                     handler.OptionsAttribute = methodOptionsAttribute;
+                if (handler.OptionsAttribute == null && !ca.SkipPublicFilter)
+                    handler.OptionsAttribute = handler.HttpApiServer.Options.CrossDomain;
                 handler.NoConvert = noconvert;
                 handler.SingleInstance = ca.SingleInstance;
                 handler.DataConvert = actionConvert;
@@ -511,7 +513,7 @@ namespace BeetleX.FastHttpApi
                     {
                         handler.DataConvert = DataContextBind.GetConvertAttribute(request.ContentType);
                     }
-                  
+
                     if (!handler.NoConvert)
                         handler.DataConvert.Execute(request.Data, request);
                     HttpContext pc = new HttpContext(server, request, response, request.Data);

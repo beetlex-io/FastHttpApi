@@ -19,6 +19,19 @@ namespace BeetleX.FastHttpApi
         public const string OPTIONS_TAG = "OPTIONS";
 
         [ThreadStatic]
+        private static StringBuilder mStringBuilderBuffer;
+
+        public static StringBuilder StringBuilderBuffer
+        {
+            get
+            {
+                if (mStringBuilderBuffer == null)
+                    mStringBuilderBuffer = new StringBuilder();
+                return mStringBuilderBuffer;
+            }
+        }
+
+        [ThreadStatic]
         private static char[] mCharCacheBuffer;
 
         public static char[] GetCharBuffer()
@@ -445,6 +458,8 @@ namespace BeetleX.FastHttpApi
                     break;
                 }
             }
+            if (queryString == null)
+                return result;
             if (result > 0)
             {
                 string name = null;

@@ -309,7 +309,8 @@ namespace BeetleX.FastHttpApi
             mServer.Open();
             mServerCounter = new ServerCounter(this);
             mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
-            mUrlRewrite.AddRegion(this.Options.Routes);
+            mUrlRewrite.Load();
+            //mUrlRewrite.AddRegion(this.Options.Routes);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {

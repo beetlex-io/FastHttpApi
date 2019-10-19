@@ -108,7 +108,10 @@ namespace BeetleX.FastHttpApi
         public bool UrlIgnoreCase { get; set; }
 
         [JsonIgnore]
-        public UrlRoute[] Routes { get; set; }
+        public OptionsAttribute CrossDomain { get; set; }
+
+        //[JsonIgnore]
+        //public UrlRoute[] Routes { get; set; }
 
         public int PacketCombined { get; set; }
 
@@ -143,6 +146,8 @@ namespace BeetleX.FastHttpApi
         public string Host { get; set; }
 
         public bool Debug { get; set; }
+
+        public bool AgentRewrite { get; set; } = false;
 
         public int Port { get; set; }
 

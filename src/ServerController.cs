@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
-    [Controller(BaseUrl = "/__system")]
+    [Controller(BaseUrl = "/__system",SkipPublicFilter =true)]
     [DefaultJsonResultFilter]
     [AccessTokenFilter]
     class ServerController : IController

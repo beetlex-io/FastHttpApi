@@ -250,6 +250,8 @@ namespace BeetleX.FastHttpApi
 
         public void Add(string name, string value)
         {
+            if (string.IsNullOrEmpty(name))
+                return;
             if (value == null)
                 value = string.Empty;
             Find(name).Value = value;
@@ -314,6 +316,8 @@ namespace BeetleX.FastHttpApi
             }
             set
             {
+                if (string.IsNullOrEmpty(name))
+                    return;
                 Find(name).Value = value;
             }
         }
@@ -385,6 +389,8 @@ namespace BeetleX.FastHttpApi
             byte[] buffer = HttpParse.GetByteBuffer();
             int count = Type.Bytes.Length;
             System.Buffer.BlockCopy(Type.Bytes, 0, buffer, 0, count);
+            if (Value == null)
+                Value = string.Empty;
             count = count + Encoding.UTF8.GetBytes(Value, 0, Value.Length, buffer, count);
             buffer[count] = HeaderTypeFactory._LINE_R;
             buffer[count + 1] = HeaderTypeFactory._LINE_N;

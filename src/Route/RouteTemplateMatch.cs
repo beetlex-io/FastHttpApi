@@ -57,8 +57,29 @@ namespace BeetleX.FastHttpApi
                 }
             }
         }
-
-        public bool Execut(string url, QueryString queryString)
+        public bool Execute(string url, Dictionary<string, string> parameters)
+        {
+            if (mItems.Count == 0)
+            {
+                return url == mTemplate;
+            }
+            else
+            {
+                int offset = mOffset;
+                for (int i = 0; i < mItems.Count; i++)
+                {
+                    MatchItem item = mItems[i];
+                    string value;
+                    var count = item.Match(url, offset, out value);
+                    if (count <= 0)
+                        return false;
+                    parameters[item.Name] = value;
+                    offset += count;
+                }
+                return true;
+            }
+        }
+        public bool Execute(string url, QueryString queryString)
         {
             if (mItems.Count == 0)
             {
@@ -101,7 +122,7 @@ namespace BeetleX.FastHttpApi
                     {
                         if (offset + k < length)
                         {
-                            if (Start[k] != url[offset + k])
+                            if (char.ToLower(Start[k]) != char.ToLower(url[offset + k]))
                                 return -1;
                         }
                         else
@@ -114,12 +135,12 @@ namespace BeetleX.FastHttpApi
                 {
                     for (int i = offset; i < length; i++)
                     {
-                        if (Eof != null && url[i] == Eof[0])
+                        if (Eof != null && char.ToLower(url[i]) == char.ToLower(Eof[0]))
                         {
                             bool submatch = true;
                             for (int k = 1; k < Eof.Length; k++)
                             {
-                                if (url[i + k] != Eof[k])
+                                if (char.ToLower(url[i + k]) != char.ToLower(Eof[k]))
                                 {
                                     submatch = false;
                                     break;

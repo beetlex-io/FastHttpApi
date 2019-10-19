@@ -47,6 +47,7 @@ namespace BeetleX.FastHttpApi
 
         internal void Reset()
         {
+            IsRewrite = false;
             mState = LoadedState.None;
             mWebSocket = false;
             mKeepAlive = true;
@@ -160,7 +161,33 @@ namespace BeetleX.FastHttpApi
 
         public bool IsRewrite { get; internal set; }
 
-        public string SourceUrl { get; internal set; }
+        internal string SourcePath { get; set; }
+
+        internal string SourceUrl { get; set; }
+
+        public string GetSourcePath()
+        {
+            if (IsRewrite)
+                return SourcePath;
+            return Path;
+        }
+
+
+        public string GetSourceUrl()
+        {
+            if (IsRewrite)
+                return SourceUrl;
+            return Url;
+        }
+
+        internal string SourceBaseUrl { get; set; }
+
+        public string GetSourceBaseUrl()
+        {
+            if (IsRewrite)
+                return SourceBaseUrl;
+            return BaseUrl;
+        }
 
         public string BaseUrl { get; internal set; }
 
@@ -223,22 +250,42 @@ namespace BeetleX.FastHttpApi
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
                 else
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
-                //UrlCode = BaseUrl.GetHashCode() << 16 | BaseUrl.Length;
                 RouteMatchResult routeMatchResult = new RouteMatchResult();
+                this.IsRewrite = false;
                 if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
                 {
                     this.IsRewrite = true;
-                    this.SourceUrl = this.Url;
+                    this.SourceUrl = Url;
+                    this.SourceBaseUrl = BaseUrl;
+                    this.SourcePath = Path;
+                    if (Server.Options.UrlIgnoreCase)
+                        Url = routeMatchResult.RewriteUrlLower;
+                    else
+                        Url = routeMatchResult.RewriteUrl;
+                    if (Server.Options.AgentRewrite)
+                    {
+                        if (len > 0 && this.SourceUrl.Length > len + 1)
+                        {
+                            if (Url.IndexOf('?') > 0)
+                            {
+                                Url += "&";
+                            }
+                            else
+                            {
+                                Url += "?";
+                            }
+                            Url += new string(SourceUrl.AsSpan().Slice(len + 1));
+                        }
+                    }
+                    len = HttpParse.ReadUrlQueryString(Url, null, this);
+                    if (len > 0)
+                        HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
+                    else
+                        HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
                     if (Server.EnableLog(EventArgs.LogType.Info))
                     {
-                        Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} request rewrite {Url} to {routeMatchResult.RewriteUrl}");
+                        Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} {((IPEndPoint)Session.RemoteEndPoint).Address} request {SourceUrl} rewrite to {Url}");
                     }
-                    Url = routeMatchResult.RewriteUrl;
-                    if (Server.Options.UrlIgnoreCase)
-                        BaseUrl = routeMatchResult.RewriteUrlLower;
-                    else
-                        BaseUrl = routeMatchResult.RewriteUrl;
-                    Ext = routeMatchResult.Ext;
                 }
                 mState = LoadedState.Method;
             }
