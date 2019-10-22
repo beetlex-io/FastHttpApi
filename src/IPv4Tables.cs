@@ -11,7 +11,7 @@ namespace BeetleX.FastHttpApi
     {
         const string IPTABLE_FILE = "iptables.json";
 
-        private VerifyType mType = VerifyType.None;
+        public VerifyType Type { get; set; } = VerifyType.None;
 
         private List<IPv4Match> mWhiteList = new List<IPv4Match>();
 
@@ -59,6 +59,8 @@ namespace BeetleX.FastHttpApi
             Reload();
         }
 
+
+
         public void CleanWhite()
         {
             mWhiteList.Clear();
@@ -81,7 +83,7 @@ namespace BeetleX.FastHttpApi
         {
             CleanWhite();
             CleanBlack();
-            mType = config.Type;
+            Type = config.Type;
             if (config.WhiteList != null)
                 AddWhite(config.WhiteList);
             if (config.BlackList != null)
@@ -92,7 +94,7 @@ namespace BeetleX.FastHttpApi
         {
             return new Config
             {
-                Type = mType,
+                Type = Type,
                 BlackList = (from a in mBlackList select a.Source).ToArray(),
                 WhiteList = (from a in mWhiteList select a.Source).ToArray()
             };
@@ -122,7 +124,7 @@ namespace BeetleX.FastHttpApi
 
         public bool Verify(System.Net.IPAddress ipaddress)
         {
-            if (mType == VerifyType.None)
+            if (Type == VerifyType.None)
                 return true;
             if (!ipaddress.IsIPv4MappedToIPv6)
             {
@@ -131,7 +133,7 @@ namespace BeetleX.FastHttpApi
                     return true;
                 }
             }
-            if (mType == VerifyType.Black)
+            if (Type == VerifyType.Black)
             {
                 IPv4Match[] items = mBlackMatchs;
                 foreach (var item in items)

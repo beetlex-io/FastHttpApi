@@ -186,6 +186,8 @@ namespace BeetleX.FastHttpApi
 
         public EventHandler<WebSocketReceiveArgs> WebSocketReceive { get; set; }
 
+        public event EventHandler<ConnectingEventArgs> HttpConnecting;
+
         public event EventHandler<ConnectedEventArgs> HttpConnected;
 
         public event EventHandler<EventHttpRequestArgs> HttpRequesting;
@@ -498,6 +500,7 @@ namespace BeetleX.FastHttpApi
                     Log(LogType.Warring, $"HTTP ${e.Socket.RemoteEndPoint} IPv4 tables verify no permission!");
                 }
             }
+            HttpConnecting?.Invoke(this, e);
             e.Socket.NoDelay = true;
         }
 

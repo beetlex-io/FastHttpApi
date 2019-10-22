@@ -12,7 +12,11 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        public int ID { get; set; }
+        public bool HasQueryString { get; set; } = false;
+
+        public long ID { get; set; }
+
+        public int PathLevel { get; set; }
 
         public bool UrlIgnoreCase { get; set; }
 
@@ -33,14 +37,21 @@ namespace BeetleX.FastHttpApi
             for (int i = 0; i < Url.Length; i++)
             {
                 if (Url[i] == '/')
+                {
                     index = i;
-                else if (Url[i] == '{')
+                    PathLevel++;
+                }
+                else if (Url[i] == '?')
+                {
+                    HasQueryString = true;
                     break;
+                }
             }
             Path = Url.Substring(0, index + 1);
             Valid = Regex.IsMatch(Url, parent);
-            ID = GetPathID(Path);
-            TemplateMatch = new RouteTemplateMatch(Url, Path.Length);
+            ID = GetPathID(Path, PathLevel);
+            //TemplateMatch = new RouteTemplateMatch(Url, Path.Length);
+            TemplateMatch = new RouteTemplateMatch(Url, 0);
             if (!string.IsNullOrEmpty(Rewrite))
             {
                 ReExt = HttpParse.GetBaseUrlExt(Rewrite);
@@ -50,9 +61,10 @@ namespace BeetleX.FastHttpApi
 
         public bool HasRewriteParamters { get; set; } = false;
 
-        public static int GetPathID(string path)
+        public static long GetPathID(string path, long level)
         {
-            return path.ToLower().GetHashCode() << 16 | path.Length;
+
+            return ((long)path.ToLower().GetHashCode() << 16 | (long)path.Length) << 8 | level;
         }
 
 

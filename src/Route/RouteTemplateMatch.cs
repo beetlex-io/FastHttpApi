@@ -61,7 +61,7 @@ namespace BeetleX.FastHttpApi
         {
             if (mItems.Count == 0)
             {
-                return url == mTemplate;
+                return string.Compare(url, Template, true) == 0;
             }
             else
             {

@@ -43,6 +43,34 @@ namespace BeetleX.FastHttpApi
 
 
 
+    public class BadRequestResult : ResultBase
+    {
+        public BadRequestResult(string message)
+        {
+            Message = message;
+        }
+
+        public BadRequestResult(string formater, params object[] data) : this(string.Format(formater, data)) { }
+
+        public string Message { get; set; }
+
+
+        public override bool HasBody => true;
+
+        public override void Setting(HttpResponse response)
+        {
+            response.Code = "400";
+            response.CodeMsg = "Bad Request";
+            response.Request.ClearStream();
+        }
+
+        public override void Write(PipeStream stream, HttpResponse response)
+        {
+            stream.Write(Message);
+        }
+    }
+
+
     public class NotFoundResult : ResultBase
     {
         public NotFoundResult(string message)
@@ -184,7 +212,7 @@ namespace BeetleX.FastHttpApi
         public override void Setting(HttpResponse response)
         {
             response.Code = "403";
-            response.CodeMsg = "not support";
+            response.CodeMsg = "No permission";
             response.Request.ClearStream();
         }
 

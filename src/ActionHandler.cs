@@ -67,7 +67,7 @@ namespace BeetleX.FastHttpApi
 
         public RouteTemplateAttribute Route { get; set; }
 
-        public DataConvertAttribute DataConvert { get; set; }
+        public DataConvertAttribute DataConverter { get; set; }
 
         public OptionsAttribute OptionsAttribute { get; set; }
 

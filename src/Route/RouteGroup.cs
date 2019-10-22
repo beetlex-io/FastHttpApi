@@ -4,6 +4,10 @@ using System.Text;
 
 namespace BeetleX.FastHttpApi
 {
+
+
+
+
     class RouteGroup
     {
 
@@ -12,7 +16,7 @@ namespace BeetleX.FastHttpApi
             mRoutes = new List<UrlRoute>();
         }
 
-        public string Ext { get; set; }
+        public int PathLevel { get; set; }
 
         private List<UrlRoute> mRoutes;
 
@@ -41,25 +45,24 @@ namespace BeetleX.FastHttpApi
             mMatchRoute = mRoutes.ToArray();
         }
 
-        public bool Match(string url, ref RouteMatchResult result, QueryString queryString)
+        public UrlRoute Match(string url, ref RouteMatchResult result, Dictionary<string, string> parameters, string ext, HttpRequest request)
         {
+
             var items = mMatchRoute;
             for (int i = 0; i < items.Length; i++)
             {
                 UrlRoute urlRoute = items[i];
-                Dictionary<string, string> ps = new Dictionary<string, string>();
-                if (urlRoute.Match(url, ps))
+                if (string.Compare(urlRoute.Ext, ext, true) == 0)
                 {
-                    if (ps.Count > 0)
-                        foreach (var item in ps)
-                            queryString.Add(item.Key, item.Value);
-                    result.Ext = urlRoute.ReExt;
-                    result.RewriteUrl = urlRoute.GetRewriteUrl(ps);
-                    result.RewriteUrlLower = HttpParse.CharToLower(result.RewriteUrl);
-                    return true;
+                    if (urlRoute.Match(url, parameters))
+                    {
+                        result.Ext = urlRoute.ReExt;
+                        result.RewriteUrl = urlRoute.GetRewriteUrl(parameters);
+                        return urlRoute;
+                    }
                 }
             }
-            return false;
+            return null;
         }
 
     }

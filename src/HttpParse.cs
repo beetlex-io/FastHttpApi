@@ -457,6 +457,8 @@ namespace BeetleX.FastHttpApi
                     qsdata = url.Slice(i + 1, url.Length - i - 1);
                     break;
                 }
+                if (url[i] == '/')
+                    request.PathLevel++;
             }
             if (queryString == null)
                 return result;
@@ -504,10 +506,10 @@ namespace BeetleX.FastHttpApi
             {
                 if (url[i] == '.' && request.Ext == null)
                 {
-                    if (urlIgnoreCase)
-                        request.Ext = CharToLower(url.Slice(i + 1, url.Length - i - 1));
-                    else
-                        request.Ext = new string(url.Slice(i + 1, url.Length - i - 1));
+                    //if (urlIgnoreCase)
+                    request.Ext = CharToLower(url.Slice(i + 1, url.Length - i - 1));
+                    //else
+                    //    request.Ext = new string(url.Slice(i + 1, url.Length - i - 1));
                     continue;
                 }
                 if (url[i] == '/')

@@ -9,5 +9,6 @@ namespace BeetleX.FastHttpApi
         public string RewriteUrl;
         public string RewriteUrlLower;
         public string Ext;
+        public bool HasQueryString = false;
     }
 }

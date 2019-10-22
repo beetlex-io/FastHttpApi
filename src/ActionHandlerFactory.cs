@@ -282,7 +282,7 @@ namespace BeetleX.FastHttpApi
                 }
                 string sourceUrl = rooturl + mi.Name;
                 string url = sourceUrl;
-                string method = HttpParse.GET_TAG;
+                string method = HttpParse.GET_TAG + "/" + HttpParse.POST_TAG;
                 string route = null;
                 GetAttribute get = mi.GetCustomAttribute<GetAttribute>(false);
                 if (get != null)
@@ -367,7 +367,7 @@ namespace BeetleX.FastHttpApi
                     handler.OptionsAttribute = handler.HttpApiServer.Options.CrossDomain;
                 handler.NoConvert = noconvert;
                 handler.SingleInstance = ca.SingleInstance;
-                handler.DataConvert = actionConvert;
+                handler.DataConverter = actionConvert;
                 handler.Route = ra;
                 handler.Method = method;
                 handler.SourceUrl = sourceUrl;
@@ -491,7 +491,7 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    if (request.Method != handler.Method)
+                    if (handler.Method.IndexOf(request.Method, StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         if (request.Method == HttpParse.OPTIONS_TAG && handler.OptionsAttribute != null)
                         {
@@ -503,19 +503,28 @@ namespace BeetleX.FastHttpApi
                         {
                             if (server.EnableLog(EventArgs.LogType.Warring))
                                 server.BaseServer.Log(EventArgs.LogType.Warring, null, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {request.Url} not support");
-                            NotSupportResult notSupportResult = new NotSupportResult($"{request.Method}{request.Url} not support");
+                            BadRequestResult notSupportResult = new BadRequestResult($"{request.Method}{request.Url} not support");
                             response.Result(notSupportResult);
                         }
                         return;
                     }
                     request.ActionHandler = handler;
-                    if (!handler.NoConvert && handler.DataConvert == null)
-                    {
-                        handler.DataConvert = DataContextBind.GetConvertAttribute(request.ContentType);
-                    }
-
+                    DataConvertAttribute dataConverter = null;
                     if (!handler.NoConvert)
-                        handler.DataConvert.Execute(request.Data, request);
+                    {
+                        if (Server.Options.FixedConverter)
+                        {
+                            if (handler.DataConverter == null)
+                                handler.DataConverter = DataContextBind.GetConvertAttribute(request.ContentType);
+                            dataConverter = handler.DataConverter;
+                        }
+                        else
+                        {
+                            dataConverter = DataContextBind.GetConvertAttribute(request.ContentType);
+                        }
+                    }
+                    if (dataConverter != null)
+                        dataConverter.Execute(request.Data, request);
                     HttpContext pc = new HttpContext(server, request, response, request.Data);
                     long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;

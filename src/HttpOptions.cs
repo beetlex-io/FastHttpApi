@@ -147,7 +147,13 @@ namespace BeetleX.FastHttpApi
 
         public bool Debug { get; set; }
 
+        public bool FixedConverter { get; set; } = false;
+
         public bool AgentRewrite { get; set; } = false;
+
+        public bool RewriteIgnoreCase { get; set; } = true;
+
+        public int RewriteCachedSize { get; set; } = 500000;
 
         public int Port { get; set; }
 

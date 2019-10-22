@@ -17,6 +17,12 @@ namespace BeetleX.FastHttpApi
 
     public class HttpRequest
     {
+        static HttpRequest()
+        {
+            mIDPrefix = (long)(DateTime.Now - DateTime.Parse("1970-1-1")).TotalSeconds;
+            mIDPrefix = mIDPrefix << 24;
+        }
+
         public HttpRequest()
         {
             Header = new Header();
@@ -28,11 +34,21 @@ namespace BeetleX.FastHttpApi
             KeepAlive = true;
         }
 
+        private static long mIDPrefix;
+
         private static long mID = 0;
 
         internal static long GetID()
         {
-            return System.Threading.Interlocked.Increment(ref mID);
+            var id = System.Threading.Interlocked.Increment(ref mID);
+            if (id > 10000000)
+            {
+                long prefix = (long)(DateTime.Now - DateTime.Parse("1970-1-1")).TotalSeconds;
+                prefix = prefix << 24;
+                System.Threading.Interlocked.Exchange(ref mID, 0);
+                System.Threading.Interlocked.Exchange(ref mIDPrefix, prefix);
+            }
+            return mIDPrefix | id;
         }
 
         public long ID { get; internal set; }
@@ -125,6 +141,8 @@ namespace BeetleX.FastHttpApi
         private PipeStream mStream;
 
         internal LoadedState State => mState;
+
+        internal int PathLevel { get; set; }
 
         public PipeStream Stream => mStream;
 
@@ -243,6 +261,7 @@ namespace BeetleX.FastHttpApi
                 {
                     return;
                 }
+                PathLevel = 0;
                 HttpParse.AnalyzeRequestLine(data, this);
                 HttpParse.ReadHttpVersionNumber(HttpVersion, mQueryString, this);
                 int len = HttpParse.ReadUrlQueryString(Url, mQueryString, this);
@@ -250,23 +269,20 @@ namespace BeetleX.FastHttpApi
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
                 else
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
-                RouteMatchResult routeMatchResult = new RouteMatchResult();
+                RouteMatchResult routeMatchResult;
                 this.IsRewrite = false;
-                if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, ref routeMatchResult, mQueryString))
+                if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, out routeMatchResult, mQueryString))
                 {
                     this.IsRewrite = true;
                     this.SourceUrl = Url;
                     this.SourceBaseUrl = BaseUrl;
                     this.SourcePath = Path;
-                    if (Server.Options.UrlIgnoreCase)
-                        Url = routeMatchResult.RewriteUrlLower;
-                    else
-                        Url = routeMatchResult.RewriteUrl;
+                    Url = routeMatchResult.RewriteUrl;
                     if (Server.Options.AgentRewrite)
                     {
                         if (len > 0 && this.SourceUrl.Length > len + 1)
                         {
-                            if (Url.IndexOf('?') > 0)
+                            if (routeMatchResult.HasQueryString)
                             {
                                 Url += "&";
                             }
