@@ -98,4 +98,14 @@ namespace BeetleX.FastHttpApi
 
         public HttpOptions HttpOptions { get; internal set; }
     }
+
+    public class EventActionRegistingArgs
+    {
+        public bool Cancel { get; set; } = false;
+
+        public ActionHandler Handler { get; internal set; }
+
+        public string Url { get; set; }
+    }
+
 }

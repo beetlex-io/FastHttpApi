@@ -18,7 +18,7 @@ namespace BeetleX.FastHttpApi
 
         public HttpApiServer Server { get; set; }
 
-        private System.Collections.Generic.Dictionary<string, ActionHandler> mMethods = new Dictionary<string, ActionHandler>();
+        private System.Collections.Generic.Dictionary<string, ActionHandler> mMethods = new Dictionary<string, ActionHandler>(StringComparer.OrdinalIgnoreCase);
 
         private Dictionary<Type, Type> mParameterBinders = new Dictionary<Type, Type>();
 
@@ -54,11 +54,11 @@ namespace BeetleX.FastHttpApi
                             OnControllerInstance(e);
                             if (e.Controller == null)
                             {
-                                Register(Server.Options, type, Activator.CreateInstance(type), ca.BaseUrl, Server, ca);
+                                Register(Server.Options, type, Activator.CreateInstance(type), ca.BaseUrl, Server, ca, null);
                             }
                             else
                             {
-                                Register(Server.Options, type, e.Controller, ca.BaseUrl, Server, ca);
+                                Register(Server.Options, type, e.Controller, ca.BaseUrl, Server, ca, null);
                             }
                         }
                         catch (Exception e_)
@@ -201,7 +201,37 @@ namespace BeetleX.FastHttpApi
             ControllerAttribute ca = type.GetCustomAttribute<ControllerAttribute>(false);
             if (ca != null)
             {
-                Register(this.Server.Options, type, controller, ca.BaseUrl, this.Server, ca);
+                Register(this.Server.Options, type, controller, ca.BaseUrl, this.Server, ca, null);
+            }
+        }
+        public void Register(object controller, ControllerAttribute ca, Action<EventActionRegistingArgs> callback = null)
+        {
+            Register(Server.Options, controller.GetType(), controller, ca.BaseUrl, Server, ca, callback);
+        }
+        public void Register(Type type, ControllerAttribute ca, Action<EventActionRegistingArgs> callback = null)
+        {
+
+            try
+            {
+                EventControllerInstanceArgs e = new EventControllerInstanceArgs();
+                e.Type = type;
+                OnControllerInstance(e);
+                if (e.Controller == null)
+                {
+                    Register(Server.Options, type, Activator.CreateInstance(type), ca.BaseUrl, Server, ca, callback);
+                }
+                else
+                {
+                    Register(Server.Options, type, e.Controller, ca.BaseUrl, Server, ca, callback);
+                }
+            }
+            catch (Exception e_)
+            {
+                if (Server.EnableLog(EventArgs.LogType.Error))
+                {
+                    string msg = $"{type} controller register error {e_.Message} {e_.StackTrace}";
+                    Server.Log(EventArgs.LogType.Error, msg);
+                }
             }
         }
 
@@ -223,7 +253,8 @@ namespace BeetleX.FastHttpApi
                 filters.Remove(item);
         }
 
-        private void Register(HttpOptions config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca)
+        private void Register(HttpOptions config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca,
+            Action<EventActionRegistingArgs> callback)
         {
             DataConvertAttribute controllerDataConvert = controllerType.GetCustomAttribute<DataConvertAttribute>(false);
             OptionsAttribute controllerOptionsAttribute = controllerType.GetCustomAttribute<OptionsAttribute>(false);
@@ -341,7 +372,7 @@ namespace BeetleX.FastHttpApi
                             reurl = rooturl + route;
                         }
                     }
-                    server.UrlRewrite.Add(reurl, url);
+                    server.UrlRewrite.Add(null, reurl, url);
                 }
                 ActionHandler handler = GetAction(url);
                 if (handler != null)
@@ -385,9 +416,21 @@ namespace BeetleX.FastHttpApi
                 {
                     RemoveFilter(handler.Filters, item.Types);
                 }
-                AddHandlers(url, handler);
-                server.ActionSettings(handler);
-                server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} to [{handler.Method}:{url}]");
+                EventActionRegistingArgs registing = new EventActionRegistingArgs();
+                registing.Url = url;
+                registing.Handler = handler;
+                registing.Cancel = false;
+                callback?.Invoke(registing);
+                if (!registing.Cancel)
+                {
+                    AddHandlers(url, handler);
+                    server.ActionSettings(handler);
+                    server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} to [{handler.Method}:{url}]");
+                }
+                else
+                {
+                    server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} cancel ");
+                }
             }
         }
 

@@ -38,7 +38,7 @@ namespace BeetleX.FastHttpApi
             PacketCombined = 0;
             UrlIgnoreCase = true;
             UseIPv6 = true;
-            SessionTimeOut = 60 * 60;
+            SessionTimeOut = 60 * 30;
             BufferPoolMaxMemory = 500;
             SSLPort = 443;
             StaticResurceCacheTime = 0;

@@ -6,11 +6,11 @@
     <Authors>henryfan</Authors>
     <Company>ikende.com</Company>
     <Description>high performance and lightweight web api and websocket server components for .NETCore,performance higher than asp.net core mvc api 200%.</Description>
-    <Version>1.7</Version>
+    <Version>1.7.4</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.7.0.0</AssemblyVersion>
-    <FileVersion>1.7.0.0</FileVersion>
+    <AssemblyVersion>1.7.4.0</AssemblyVersion>
+    <FileVersion>1.7.4.0</FileVersion>
     <LangVersion>7.3</LangVersion>
     <Product>BeetleX.FastHttpApi</Product>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

@@ -12,9 +12,21 @@ namespace BeetleX.FastHttpApi
 
         }
 
-        public bool HasQueryString { get; set; } = false;
 
-        public long ID { get; set; }
+        public string ID { get; set; }
+
+        public string Host { get; set; }
+
+        public int GetPrefixCode()
+        {
+            if (Prefix == null)
+                return 0;
+            return (int)Prefix.Type;
+        }
+
+        public UrlPrefix Prefix { get; set; }
+
+        public bool HasQueryString { get; set; } = false;
 
         public int PathLevel { get; set; }
 
@@ -22,7 +34,7 @@ namespace BeetleX.FastHttpApi
 
         private List<string> mItems = new List<string>();
 
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         public void Init()
         {
@@ -47,9 +59,17 @@ namespace BeetleX.FastHttpApi
                     break;
                 }
             }
-            Path = Url.Substring(0, index + 1);
+
+            if (!string.IsNullOrEmpty(Host))
+            {
+                this.Prefix = new UrlPrefix(Host);
+            }
+            // if (this.Prefix == null)
+            Path = $"{Url.Substring(0, index + 1)}";
+            ID = $"{Host}{Path}";
+            //else
+            //    Path = $"{this.Prefix.Value}{Url.Substring(0, index + 1)}";
             Valid = Regex.IsMatch(Url, parent);
-            ID = GetPathID(Path, PathLevel);
             //TemplateMatch = new RouteTemplateMatch(Url, Path.Length);
             TemplateMatch = new RouteTemplateMatch(Url, 0);
             if (!string.IsNullOrEmpty(Rewrite))
@@ -66,7 +86,6 @@ namespace BeetleX.FastHttpApi
 
             return ((long)path.ToLower().GetHashCode() << 16 | (long)path.Length) << 8 | level;
         }
-
 
         public string GetRewriteUrl(Dictionary<string, string> parameters)
         {
@@ -129,6 +148,52 @@ namespace BeetleX.FastHttpApi
         public bool Match(string url, Dictionary<string, string> parameters)
         {
             return TemplateMatch.Execute(url, parameters);
+        }
+
+
+    }
+
+    public class UrlPrefix
+    {
+        public UrlPrefix(string prefix)
+        {
+            var param = prefix.Split('=');
+            if (param.Length == 1)
+            {
+                Name = param[0];
+                Value = param[0];
+                Type = PrefixType.Host;
+            }
+            else
+            {
+                Type = PrefixType.Param;
+                Value = param[1];
+                Name = param[0];
+
+            }
+        }
+
+        public PrefixType Type { get; set; }
+
+        public string Name { get; set; }
+
+        public string Value { get; set; }
+
+        public string GetPrefix(HttpRequest request)
+        {
+            if (Type == PrefixType.Host)
+                return request.GetHostBase();
+            var value = request.Header[Name];
+            if (value == null)
+                value = request.Data[Name];
+            return value;
+
+        }
+
+        public enum PrefixType:int
+        {
+            Host = 2,
+            Param = 1
         }
     }
 }

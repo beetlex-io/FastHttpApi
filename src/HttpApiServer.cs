@@ -370,7 +370,7 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
-                Log(LogType.Info, $"{args.RequestingAssembly.FullName} load assembly {args.Name}");
+              //  Log(LogType.Info, $"{args.RequestingAssembly.FullName} load assembly {args.Name}");
                 string path = System.IO.Path.GetDirectoryName(args.RequestingAssembly.Location) + System.IO.Path.DirectorySeparatorChar;
                 string name = args.Name.Substring(0, args.Name.IndexOf(','));
                 string file = path + name + ".dll";
@@ -379,8 +379,8 @@ namespace BeetleX.FastHttpApi
             }
             catch (Exception e_)
             {
-                if (EnableLog(LogType.Error))
-                    Log(LogType.Error, $"{args.RequestingAssembly.FullName} load assembly {args.Name} error {e_.Message}");
+                if (EnableLog(LogType.Warring))
+                    Log(LogType.Warring, $"{args.RequestingAssembly.FullName} load assembly {args.Name} error {e_.Message}");
             }
             return null;
         }

@@ -13,6 +13,23 @@ namespace BeetleX.FastHttpApi
         void Write(PipeStream stream);
     }
 
+    public class ContentType : IHeaderItem
+    {
+
+        public ContentType(string type)
+        {
+            mData = Encoding.UTF8.GetBytes($"Content-Type: {type}\r\n");
+        }
+
+        private byte[] mData;
+
+        public void Write(PipeStream stream)
+        {
+            stream.Write(mData, 0, mData.Length);
+        }
+    }
+
+
     public class HeaderItem : IHeaderItem
     {
         public HeaderItem(string value)

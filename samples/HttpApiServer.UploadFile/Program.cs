@@ -21,16 +21,16 @@ namespace HttpApiServer.UploadFile
             Console.Read();
         }
 
-        [Post]
-        [MultiDataConvert]
-        public object UploadFile(string name, IHttpContext context)
+[Post]
+[MultiDataConvert]
+public object UploadFile(string name, IHttpContext context)
+{
+    foreach (var file in context.Request.Files)
+        using (System.IO.Stream stream = System.IO.File.Create(file.FileName))
         {
-            foreach (var file in context.Request.Files)
-                using (System.IO.Stream stream = System.IO.File.Create(file.FileName))
-                {
-                    file.Data.CopyTo(stream);
-                }
-            return $"{DateTime.Now} {name} {string.Join(",", (from fs in context.Request.Files select fs.FileName).ToArray())}";
+            file.Data.CopyTo(stream);
         }
+    return $"{DateTime.Now} {name} {string.Join(",", (from fs in context.Request.Files select fs.FileName).ToArray())}";
+}
     }
 }

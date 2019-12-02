@@ -63,6 +63,11 @@ namespace BeetleX.FastHttpApi
 
         internal void Reset()
         {
+            mHostBase = null;
+            this.SourceBaseUrl = null;
+            this.SourcePath = null;
+            this.SourceUrl = null;
+            ActionHandler = null;
             IsRewrite = false;
             mState = LoadedState.None;
             mWebSocket = false;
@@ -134,6 +139,8 @@ namespace BeetleX.FastHttpApi
 
         private int mLength;
 
+        private int mQueryStringIndex;
+
         private QueryString mQueryString;
 
         private Cookies mCookies;
@@ -173,8 +180,6 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        // public long UrlCode { get; internal set; }
-
         public string Method { get; internal set; }
 
         public bool IsRewrite { get; internal set; }
@@ -183,13 +188,14 @@ namespace BeetleX.FastHttpApi
 
         internal string SourceUrl { get; set; }
 
+        internal string SourceBaseUrl { get; set; }
+
         public string GetSourcePath()
         {
             if (IsRewrite)
                 return SourcePath;
             return Path;
         }
-
 
         public string GetSourceUrl()
         {
@@ -198,7 +204,6 @@ namespace BeetleX.FastHttpApi
             return Url;
         }
 
-        internal string SourceBaseUrl { get; set; }
 
         public string GetSourceBaseUrl()
         {
@@ -210,6 +215,7 @@ namespace BeetleX.FastHttpApi
         public string BaseUrl { get; internal set; }
 
         public string Url { get; internal set; }
+
 
         public string HttpVersion { get; internal set; }
 
@@ -264,45 +270,11 @@ namespace BeetleX.FastHttpApi
                 PathLevel = 0;
                 HttpParse.AnalyzeRequestLine(data, this);
                 HttpParse.ReadHttpVersionNumber(HttpVersion, mQueryString, this);
-                int len = HttpParse.ReadUrlQueryString(Url, mQueryString, this);
-                if (len > 0)
-                    HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
+                mQueryStringIndex = HttpParse.ReadUrlQueryString(Url, mQueryString, this);
+                if (mQueryStringIndex > 0)
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, mQueryStringIndex), mQueryString, this, this.Server.Options);
                 else
-                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
-                RouteMatchResult routeMatchResult;
-                this.IsRewrite = false;
-                if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, out routeMatchResult, mQueryString))
-                {
-                    this.IsRewrite = true;
-                    this.SourceUrl = Url;
-                    this.SourceBaseUrl = BaseUrl;
-                    this.SourcePath = Path;
-                    Url = routeMatchResult.RewriteUrl;
-                    if (Server.Options.AgentRewrite)
-                    {
-                        if (len > 0 && this.SourceUrl.Length > len + 1)
-                        {
-                            if (routeMatchResult.HasQueryString)
-                            {
-                                Url += "&";
-                            }
-                            else
-                            {
-                                Url += "?";
-                            }
-                            Url += new string(SourceUrl.AsSpan().Slice(len + 1));
-                        }
-                    }
-                    len = HttpParse.ReadUrlQueryString(Url, null, this);
-                    if (len > 0)
-                        HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, len), mQueryString, this, this.Server.Options);
-                    else
-                        HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
-                    if (Server.EnableLog(EventArgs.LogType.Info))
-                    {
-                        Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} {((IPEndPoint)Session.RemoteEndPoint).Address} request {SourceUrl} rewrite to {Url}");
-                    }
-                }
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);         
                 mState = LoadedState.Method;
             }
         }
@@ -321,6 +293,29 @@ namespace BeetleX.FastHttpApi
                     {
                         string connection = Header[HeaderTypeFactory.CONNECTION];
                         KeepAlive = string.Compare(connection, "keep-alive", true) == 0;
+                    }
+
+                    RouteMatchResult routeMatchResult;
+                    this.IsRewrite = false;
+                    if (Server.UrlRewrite.Count > 0 && Server.UrlRewrite.Match(this, out routeMatchResult, mQueryString))
+                    {
+                        var url = routeMatchResult.RewriteUrl;
+                        if (Server.Options.AgentRewrite)
+                        {
+                            if (mQueryStringIndex > 0 && this.Url.Length > mQueryStringIndex + 1)
+                            {
+                                if (routeMatchResult.HasQueryString)
+                                {
+                                    url += "&";
+                                }
+                                else
+                                {
+                                    url += "?";
+                                }
+                                url += new string(Url.AsSpan().Slice(mQueryStringIndex + 1));
+                            }
+                        }
+                        UrlRewriteTo(url);
                     }
                 }
             }
@@ -342,6 +337,50 @@ namespace BeetleX.FastHttpApi
                     }
                 }
             }
+        }
+
+        public void UrlRewriteTo(string url)
+        {
+            if (!this.IsRewrite)
+            {
+                this.IsRewrite = true;
+                this.SourceUrl = Url;
+                this.SourceBaseUrl = BaseUrl;
+                this.SourcePath = Path;
+            }
+            Url = url;
+            mQueryStringIndex = HttpParse.ReadUrlQueryString(Url, null, this);
+            if (mQueryStringIndex > 0)
+                HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, mQueryStringIndex), mQueryString, this, this.Server.Options);
+            else
+                HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
+            if (Server.EnableLog(EventArgs.LogType.Info))
+            {
+                Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} {((IPEndPoint)Session.RemoteEndPoint).Address} request {SourceUrl} rewrite to {Url}");
+            }
+        }
+
+        private string mHostBase = null;
+
+        public string GetHostBase()
+        {
+            if (mHostBase == null)
+            {
+                mHostBase = Host;
+                if (string.IsNullOrEmpty(mHostBase))
+                {
+                    mHostBase = "";
+                }
+                else
+                {
+                    var len = mHostBase.IndexOf(':');
+                    if (len > 0)
+                    {
+                        mHostBase = mHostBase.Substring(0, len);
+                    }
+                }
+            }
+            return mHostBase;
         }
 
         public override string ToString()
