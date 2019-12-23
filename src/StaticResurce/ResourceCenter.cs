@@ -55,9 +55,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
             }
         }
 
-        private ConcurrentDictionary<string, FileResource> mResources = new ConcurrentDictionary<string, FileResource>();
+        private ConcurrentDictionary<string, FileResource> mResources = new ConcurrentDictionary<string, FileResource>(StringComparer.OrdinalIgnoreCase);
 
-        private ConcurrentDictionary<string, FileContentType> mExts = new ConcurrentDictionary<string, FileContentType>();
+        private ConcurrentDictionary<string, FileContentType> mExts = new ConcurrentDictionary<string, FileContentType>(StringComparer.OrdinalIgnoreCase);
 
         private List<FileSystemWatcher> mFileWatch = new List<FileSystemWatcher>();
 
@@ -108,9 +108,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
             {
                 charname[indexs[i]] = '/';
             }
-            if (Server.Options.UrlIgnoreCase)
-                return HttpParse.CharToLower(charname);
-            else
+            //if (Server.Options.UrlIgnoreCase)
+            //    return HttpParse.CharToLower(charname);
+            //else
                 return new string(charname);
         }
 
@@ -264,8 +264,8 @@ namespace BeetleX.FastHttpApi.StaticResurce
         public void ProcessFile(HttpRequest request, HttpResponse response)
         {
             string url = request.BaseUrl;
-            if (Server.Options.UrlIgnoreCase)
-                url = HttpParse.CharToLower(request.BaseUrl);
+            //if (Server.Options.UrlIgnoreCase)
+            //    url = HttpParse.CharToLower(request.BaseUrl);
             if (url[url.Length - 1] == '/')
             {
                 for (int i = 0; i < mDefaultPages.Count; i++)
@@ -411,9 +411,9 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 }
                 else
                 {
-                    if (Server.Options.UrlIgnoreCase)
-                        charbuffer[i + offset] = Char.ToLower(filebuffer[i]);
-                    else
+                    //if (Server.Options.UrlIgnoreCase)
+                    //    charbuffer[i + offset] = Char.ToLower(filebuffer[i]);
+                    //else
                         charbuffer[i + offset] = filebuffer[i];
                 }
             }

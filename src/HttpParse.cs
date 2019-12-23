@@ -496,28 +496,17 @@ namespace BeetleX.FastHttpApi
 
         public static void ReadUrlPathAndExt(ReadOnlySpan<char> url, QueryString queryString, HttpRequest request, HttpOptions config)
         {
-            bool urlIgnoreCase = config.UrlIgnoreCase;
-
-            if (urlIgnoreCase)
-                request.BaseUrl = CharToLower(url);
-            else
-                request.BaseUrl = new string(url);
+            request.BaseUrl = new string(url);
             for (int i = url.Length - 1; i >= 0; i--)
             {
                 if (url[i] == '.' && request.Ext == null)
-                {
-                    //if (urlIgnoreCase)
+                {          
                     request.Ext = CharToLower(url.Slice(i + 1, url.Length - i - 1));
-                    //else
-                    //    request.Ext = new string(url.Slice(i + 1, url.Length - i - 1));
                     continue;
                 }
                 if (url[i] == '/')
                 {
-                    if (urlIgnoreCase)
-                        request.Path = CharToLower(url.Slice(0, i + 1));
-                    else
-                        request.Path = new string(url.Slice(0, i + 1));
+                    request.Path = new string(url.Slice(0, i + 1));
                     return;
                 }
             }

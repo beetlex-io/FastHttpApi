@@ -130,12 +130,19 @@ namespace BeetleX.FastHttpApi.WebSockets
             }
             if (mLoadStep == DataPacketLoadStep.Mask)
             {
-                if (this.Length > 0 && (ulong)stream.Length >= this.Length)
+                if (this.Length == 0)
                 {
-                    if (this.IsMask)
-                        ReadMask(stream);
-                    Body = this.DataPacketSerializer.FrameDeserialize(this, stream);
                     mLoadStep = DataPacketLoadStep.Completed;
+                }
+                else
+                {
+                    if ((ulong)stream.Length >= this.Length)
+                    {
+                        if (this.IsMask)
+                            ReadMask(stream);
+                        Body = this.DataPacketSerializer.FrameDeserialize(this, stream);
+                        mLoadStep = DataPacketLoadStep.Completed;
+                    }
                 }
             }
             return mLoadStep;

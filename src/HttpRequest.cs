@@ -38,17 +38,23 @@ namespace BeetleX.FastHttpApi
 
         private static long mID = 0;
 
+        private static object mLockID = new object();
+
         internal static long GetID()
         {
-            var id = System.Threading.Interlocked.Increment(ref mID);
-            if (id > 10000000)
+            lock (mLockID)
             {
-                long prefix = (long)(DateTime.Now - DateTime.Parse("1970-1-1")).TotalSeconds;
-                prefix = prefix << 24;
-                System.Threading.Interlocked.Exchange(ref mID, 0);
-                System.Threading.Interlocked.Exchange(ref mIDPrefix, prefix);
+                var id = ++mID;
+                long result = mIDPrefix | id;
+                if (id == 5000000)
+                {
+                    long prefix = (long)(DateTime.Now - DateTime.Parse("1970-1-1")).TotalSeconds;
+                    prefix = prefix << 24;
+                    mIDPrefix = prefix;
+                    mID = 0;
+                }
+                return result;
             }
-            return mIDPrefix | id;
         }
 
         public long ID { get; internal set; }
@@ -91,9 +97,9 @@ namespace BeetleX.FastHttpApi
             else
                 Response.Reset();
             HttpResponse response = Response;
-            response.HttpVersion = this.HttpVersion;
             response.Session = this.Session;
-            response.HttpVersion = this.HttpVersion;
+            if (this.HttpVersion != null)
+                response.HttpVersion = this.HttpVersion;
             response.Request = this;
             if (VersionNumber == "1.0" && this.KeepAlive)
                 response.Header[HeaderTypeFactory.CONNECTION] = "Keep-Alive";
@@ -274,7 +280,7 @@ namespace BeetleX.FastHttpApi
                 if (mQueryStringIndex > 0)
                     HttpParse.ReadUrlPathAndExt(Url.AsSpan().Slice(0, mQueryStringIndex), mQueryString, this, this.Server.Options);
                 else
-                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);         
+                    HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
                 mState = LoadedState.Method;
             }
         }

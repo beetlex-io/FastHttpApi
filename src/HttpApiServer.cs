@@ -214,7 +214,7 @@ namespace BeetleX.FastHttpApi
 
         public void Register(params System.Reflection.Assembly[] assemblies)
         {
-            mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
+            //mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
             mAssemblies.AddRange(assemblies);
             try
             {
@@ -252,7 +252,7 @@ namespace BeetleX.FastHttpApi
             var ct = ContentTypes.TEXT_UTF8;
             var a = HeaderTypeFactory.Find("Content-Length");
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
-            HttpPacket hp = new HttpPacket(this, this);
+            HttpPacket hp = new HttpPacket(this, this.FrameSerializer);
             var gtmdate = GMTDate.Default;
             string serverInfo = $"Server: BeetleX[{typeof(BeetleX.BXException).Assembly.GetName().Version}]/FastHttpApi[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
             HeaderTypeFactory.SERVAR_HEADER_BYTES = Encoding.ASCII.GetBytes(serverInfo);
@@ -310,7 +310,7 @@ namespace BeetleX.FastHttpApi
             StartTime = DateTime.Now;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
-            mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
+           // mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
             mUrlRewrite.Load();
             //mUrlRewrite.AddRegion(this.Options.Routes);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);

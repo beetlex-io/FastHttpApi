@@ -340,10 +340,10 @@ namespace BeetleX.FastHttpApi
                     route = put.Route;
                 }
 
-                if (server.Options.UrlIgnoreCase)
-                {
-                    url = sourceUrl.ToLower();
-                }
+                //if (server.Options.UrlIgnoreCase)
+                //{
+                //    url = sourceUrl.ToLower();
+                //}
                 RouteTemplateAttribute ra = null;
                 if (!string.IsNullOrEmpty(route))
                 {
@@ -457,8 +457,8 @@ namespace BeetleX.FastHttpApi
             }
             result.Url = url.Value<string>();
             string baseurl = result.Url;
-            if (server.Options.UrlIgnoreCase)
-                baseurl = HttpParse.CharToLower(result.Url);
+            //if (server.Options.UrlIgnoreCase)
+            //    baseurl = HttpParse.CharToLower(result.Url);
             if (baseurl[0] != '/')
                 baseurl = "/" + baseurl;
             result.Url = baseurl;

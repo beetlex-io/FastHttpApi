@@ -143,7 +143,7 @@ namespace BeetleX.FastHttpApi
             Header[HeaderTypeFactory.CONTENT_TYPE] = type;
         }
 
-        public string HttpVersion { get; set; }
+        public string HttpVersion { get; set; } = "HTTP/1.1";
 
         public void SetStatus(string code, string msg)
         {

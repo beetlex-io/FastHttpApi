@@ -36,7 +36,7 @@ namespace BeetleX.FastHttpApi
             FileManager = false;
             CacheFileSize = 500;
             PacketCombined = 0;
-            UrlIgnoreCase = true;
+           // UrlIgnoreCase = true;
             UseIPv6 = true;
             SessionTimeOut = 60 * 30;
             BufferPoolMaxMemory = 500;
@@ -105,7 +105,7 @@ namespace BeetleX.FastHttpApi
 
         public bool UseIPv6 { get; set; }
 
-        public bool UrlIgnoreCase { get; set; }
+       // public bool UrlIgnoreCase { get; set; }
 
         [JsonIgnore]
         public OptionsAttribute CrossDomain { get; set; }

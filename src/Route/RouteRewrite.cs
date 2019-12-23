@@ -17,14 +17,11 @@ namespace BeetleX.FastHttpApi
         public RouteRewrite(HttpApiServer server)
         {
             mServer = server;
-            this.UrlIgnoreCase = mServer.Options.UrlIgnoreCase;
             mRouteCached = new LRUCached(mServer.Options.RewriteIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
             mRouteCached.MaxSize = mServer.Options.RewriteCachedSize;
         }
 
         private long mVersion = 0;
-
-        public bool UrlIgnoreCase { get; set; }
 
         private LRUCached mRouteCached;
 
@@ -73,7 +70,6 @@ namespace BeetleX.FastHttpApi
         private void Add(UrlRoute item)
         {
             mServer.Log(EventArgs.LogType.Info, $"HTTP set rewrite url [{item.Host}{item.Url}] to [{item.Rewrite}]");
-            item.UrlIgnoreCase = this.UrlIgnoreCase;
             item.Init();
             RouteGroup rg = null;
             mRoutes.TryGetValue(item.Path, out rg);
