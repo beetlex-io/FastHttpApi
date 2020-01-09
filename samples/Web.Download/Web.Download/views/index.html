@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script src="js/beetlex4axios.js"></script>
+    <script src="js/component.js"></script>
+    <title>Beetlex samples</title>
+</head>
+<body>
+    <div id="page">
+        <page-header>
+
+        </page-header>
+        <div class="container" style="margin-top:60px;">
+            <div class="row">
+                <a href="/Download" target="_blank">下载</a>
+                <table class="table">
+                 
+                    <thead>
+                        <tr>
+                            <th>CustomerID</th>
+                            <th>CompanyName</th>
+                            <th>ContactName</th>
+                            <th>ContactTitle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in list.result">
+                            <th scope="row">{{item.CustomerID}}</th>
+                            <td>{{item.CompanyName}}</td>
+                            <td>{{item.ContactName}}</td>
+                            <td>{{item.ContactTitle}}</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        var model = {
+            list: new beetlexAction("/list", null, [])
+        };
+        var page = new Vue({
+            el: '#page',
+            data: model,
+            methods: {
+
+            }
+        });
+        page.list.get();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script src="js/beetlex4axios.js"></script>
+    <script src="js/component.js"></script>
+    <title>Beetlex samples</title>
+
+</head>
+<body>
+    <div id="page">
+        <page-header>
+
+        </page-header>
+        <div class="container" style="margin-top:60px;">
+            <div class="row">
+                <form>
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">用户名</label>
+                        <input type="text" class="form-control" v-model="register.data.name" placeholder="Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">邮件地址</label>
+                        <input type="email" class="form-control" v-model="register.data.email" placeholder="Email">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">密码</label>
+                        <input type="password" class="form-control" v-model="register.data.pwd" placeholder="Password">
+                    </div>
+
+                    <button type="button" @click="register.post()" class="btn btn-default">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        var register = new beetlexAction("/Register", { name: '', pwd: '', email: '' });
+        register.requested = function (r) {
+            alert('注册成功！');
+        };
+        var model = {
+            register: register,
+        };
+        var page = new Vue({
+            el: '#page',
+            data: model,
+            methods: {
+
+            }
+        });
+
+    </script>
+</body>
+
+</html>

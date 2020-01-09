@@ -1,0 +1,11 @@
+﻿body {
+    display: block;
+    margin: 0;
+    padding-bottom: 50px;
+    overflow-y: scroll;
+    background-size: cover;
+}
+
+#page {
+    min-height: 100%;
+}

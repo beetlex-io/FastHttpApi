@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script src="js/beetlex4axios.js"></script>
+    <script src="js/component.js"></script>
+    <title>Beetlex samples</title>
+
+</head>
+<body>
+    <div id="page">
+        <page-header>
+
+        </page-header>
+        <div class="container" style="margin-top:60px;">
+            <div class="row">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">上传文件</label>
+                    <input type="file" class="form-control" placeholder="name" multiple value="选择" @change="onSelectFile">
+                </div>
+                <ul>
+                    <li v-for="item in result">
+                        {{item.FileName}} {{item.Length}}bytes
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        var model = {
+            result: [],
+        };
+        var page = new Vue({
+            el: '#page',
+            data: model,
+            methods: {
+                onSelectFile: function (e) {
+                    var param = new FormData(); // 创建form对象
+                    for (i = 0; i < e.target.files.length; i++) {
+                        param.append(e.target.files[i].name, e.target.files[i])
+                    }
+                    var config = {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }
+                    var _this = this;
+                    axios.post('/Upload', param, config)
+                        .then(res => {
+                            
+                            _this.result = res.data.Data;
+                        }).catch(err => {
+
+                            console.log(err)
+                        })
+                },
+            }
+        });
+
+    </script>
+</body>
+
+</html>
