@@ -81,11 +81,13 @@ namespace BeetleX.FastHttpApi
             {
                 ParameterBinder parameterBinder = (ParameterBinder)Activator.CreateInstance(binderType);
                 mParameterBinders[type] = binderType;
-                Server.Log(EventArgs.LogType.Info, $"Register {type.Name}'s {binderType.Name} parameter binder success");
+                if (Server.EnableLog(EventArgs.LogType.Info))
+                    Server.Log(EventArgs.LogType.Info, $"Register {type.Name}'s {binderType.Name} parameter binder success");
             }
             catch (Exception e_)
             {
-                Server.Log(EventArgs.LogType.Error, $"Register {type.Name}'s {binderType.Name} parameter binder error {e_.Message} {e_.StackTrace}");
+                if (Server.EnableLog(EventArgs.LogType.Error))
+                    Server.Log(EventArgs.LogType.Error, $"Register {type.Name}'s {binderType.Name} parameter binder error {e_.Message} {e_.StackTrace}");
             }
         }
 
@@ -283,7 +285,8 @@ namespace BeetleX.FastHttpApi
             {
                 string path = System.IO.Path.GetDirectoryName(controllerType.Assembly.Location) + System.IO.Path.DirectorySeparatorChar;
                 ((IController)obj).Init(server, path);
-                server.Log(EventArgs.LogType.Info, $"init {controllerType} controller path {path}");
+                if (server.EnableLog(EventArgs.LogType.Info))
+                    server.Log(EventArgs.LogType.Info, $"init {controllerType} controller path {path}");
             }
             foreach (MethodInfo mi in controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
@@ -377,8 +380,11 @@ namespace BeetleX.FastHttpApi
                 ActionHandler handler = GetAction(url);
                 if (handler != null)
                 {
-                    server.Log(EventArgs.LogType.Warring, "{0} already exists! replaced with {1}.{2}!", url, controllerType.Name,
-                        mi.Name);
+                    if (server.EnableLog(EventArgs.LogType.Error))
+                    {
+                        server.Log(EventArgs.LogType.Error, "{0} already exists! replaced with {1}.{2}!", url, controllerType.Name,
+                            mi.Name);
+                    }
                 }
                 handler = new ActionHandler(obj, mi, this.Server);
                 if (mi.ReturnType == typeof(Task) || mi.ReturnType.BaseType == typeof(Task))
@@ -396,8 +402,12 @@ namespace BeetleX.FastHttpApi
                     handler.OptionsAttribute = methodOptionsAttribute;
                 if (handler.OptionsAttribute == null && !ca.SkipPublicFilter)
                     handler.OptionsAttribute = handler.HttpApiServer.Options.CrossDomain;
+                handler.ThreadQueue = controllerType.GetCustomAttribute<ThreadQueueAttribute>(false);
+                var queue = mi.GetCustomAttribute<ThreadQueueAttribute>(false);
+                if (queue != null)
+                    handler.ThreadQueue = queue;
                 handler.NoConvert = noconvert;
-                handler.SingleInstance = ca.SingleInstance;
+                handler.InstanceType = ca.InstanceType;
                 handler.DataConverter = actionConvert;
                 handler.Route = ra;
                 handler.Method = method;
@@ -425,11 +435,17 @@ namespace BeetleX.FastHttpApi
                 {
                     AddHandlers(url, handler);
                     server.ActionSettings(handler);
-                    server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} to [{handler.Method}:{url}]");
+                    if (server.EnableLog(EventArgs.LogType.Info))
+                    {
+                        server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} to [{handler.Method}:{url}]");
+                    }
                 }
                 else
                 {
-                    server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} cancel ");
+                    if (server.EnableLog(EventArgs.LogType.Info))
+                    {
+                        server.Log(EventArgs.LogType.Info, $"register { controllerType.Name}.{mi.Name} cancel ");
+                    }
                 }
             }
         }

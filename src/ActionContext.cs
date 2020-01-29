@@ -16,12 +16,29 @@ namespace BeetleX.FastHttpApi
             ActionHandlerFactory = actionHandlerFactory;
             Parameters = handler.GetParameters(context);
             Controller = handler.Controller;
-            if (!handler.SingleInstance)
+            if (handler.InstanceType != InstanceType.Single)
             {
-                Controller = actionHandlerFactory.GetController(handler.ControllerType, context);
-                if (Controller == null)
-                    Controller = handler.Controller;
+                if (handler.InstanceType == InstanceType.Session)
+                {
+                    var factory = SessionControllerFactory.GetFactory(context.Session);
+                    Controller = factory[handler.ControllerUID];
+                    if (Controller == null)
+                    {
+                        Controller = actionHandlerFactory.GetController(handler.ControllerType, context);
+                        if (Controller == null)
+                            Controller = Activator.CreateInstance(handler.ControllerType);
+                        factory[handler.ControllerUID] = Controller;
+                    }
+                }
+                else
+                {
+                    Controller = actionHandlerFactory.GetController(handler.ControllerType, context);
+                    if (Controller == null)
+                        Controller = Activator.CreateInstance(handler.ControllerType);
+                }
             }
+            if (Controller == null)
+                Controller = handler.Controller;
         }
 
         private List<FilterAttribute> mFilters;
@@ -77,6 +94,10 @@ namespace BeetleX.FastHttpApi
                 Handler.IncrementError();
                 resultHandler.Error(e_);
             }
+            finally
+            {
+                DisposedController();
+            }
         }
 
         private async Task OnAsyncExecute(IActionResultHandler resultHandler)
@@ -115,6 +136,31 @@ namespace BeetleX.FastHttpApi
             {
                 Handler.IncrementError();
                 resultHandler.Error(e_);
+            }
+            finally
+            {
+                DisposedController();
+            }
+        }
+
+        private void DisposedController()
+        {
+            if (Handler.InstanceType == InstanceType.None)
+            {
+                try
+                {
+                    if (Controller is IDisposable disposable)
+                        disposable?.Dispose();
+                }
+                catch (Exception e_)
+                {
+                    if (HttpContext.Server.EnableLog(EventArgs.LogType.Error))
+                    {
+                        var request = HttpContext.Request;
+                        HttpContext.Server.Log(EventArgs.LogType.Error,
+                            $"HTTP {request.RemoteIPAddress} {request.Method} {request.BaseUrl} controller disposed error {e_.Message}@{e_.StackTrace}");
+                    }
+                }
             }
         }
 
@@ -170,8 +216,16 @@ namespace BeetleX.FastHttpApi
                 {
                     ActionTask actionTask = new ActionTask(this, resultHandler);
                     var queue = Handler.ThreadQueue.GetQueue(this.HttpContext);
-                    this.HttpContext.Queue = queue;
-                    queue.Enqueue(actionTask);
+                    if (Handler.ThreadQueue.Enabled(queue))
+                    {
+                        this.HttpContext.Queue = queue;
+                        queue.Enqueue(actionTask);
+                    }
+                    else
+                    {
+                        Handler.IncrementError();
+                        resultHandler.Error(new Exception($"{Handler.SourceUrl} process error,out of queue limit!"), EventArgs.LogType.Warring, 500);
+                    }
                 }
             }
             else

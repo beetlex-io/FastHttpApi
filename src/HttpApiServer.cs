@@ -13,6 +13,7 @@ using System.Net;
 using BeetleX.Dispatchs;
 using System.Reflection;
 using System.Collections.Concurrent;
+using System.Runtime;
 
 namespace BeetleX.FastHttpApi
 {
@@ -67,6 +68,8 @@ namespace BeetleX.FastHttpApi
         public ServerCounter ServerCounter => mServerCounter;
 
         private FileLogWriter mFileLog;
+
+        private IPLimit mIPLimit;
 
         private long mRequestErrors;
 
@@ -254,7 +257,7 @@ namespace BeetleX.FastHttpApi
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this.FrameSerializer);
             var gtmdate = GMTDate.Default;
-            string serverInfo = $"Server: BeetleX[{typeof(BeetleX.BXException).Assembly.GetName().Version}]/FastHttpApi[{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
+            string serverInfo = $"Server: beetlex.io[{typeof(BeetleX.BXException).Assembly.GetName().Version}/{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
             HeaderTypeFactory.SERVAR_HEADER_BYTES = Encoding.ASCII.GetBytes(serverInfo);
             mServer = SocketFactory.CreateTcpServer(this, hp)
                 .Setting(o =>
@@ -308,9 +311,10 @@ namespace BeetleX.FastHttpApi
                 mActionFactory.Register(serverStatusController);
             }
             StartTime = DateTime.Now;
+            mServer.WriteLogo = WriteLogo ?? OutputLogo;
             mServer.Open();
             mServerCounter = new ServerCounter(this);
-           // mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
+            // mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
             mUrlRewrite.Load();
             //mUrlRewrite.AddRegion(this.Options.Routes);
             HeaderTypeFactory.Find(HeaderTypeFactory.HOST);
@@ -338,10 +342,46 @@ namespace BeetleX.FastHttpApi
                     writer.Flush();
                 }
             };
-
-            mServer.Log(LogType.Info, null, $"BeetleX FastHttpApi [IOQueue:{Options.IOQueueEnabled}|Threads:{Options.IOQueues}] [V:{typeof(HttpApiServer).Assembly.GetName().Version}]");
+            mIPLimit = new IPLimit(this);
             OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
             OnStrated(new EventHttpServerStartedArgs { HttpApiServer = this });
+
+        }
+
+        public void AddExts(string exts)
+        {
+            exts = exts.ToLower();
+            ResourceCenter.SetFileExts(exts);
+        }
+
+        public void ChangeExtContentType(string ext, string contentType)
+        {
+            ext = ext.ToLower();
+            AddExts(ext);
+            ResourceCenter.Exts[ext].ContentType = contentType;
+        }
+
+        public Action WriteLogo { get; set; }
+
+        private void OutputLogo()
+        {
+            AssemblyCopyrightAttribute productAttr = typeof(BeetleX.BXException).Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>();
+            var logo = "\r\n";
+            logo += "*******************************************************************************\r\n";
+            logo += " BeetleX fast http services framework \r\n";
+
+            logo += $" {productAttr.Copyright}\r\n";
+            logo += $" ServerGC    [{GCSettings.IsServerGC}]\r\n";
+            logo += $" BeetleX     Version [{typeof(BeetleX.BXException).Assembly.GetName().Version}]\r\n";
+            logo += $" FastHttpApi Version [{ typeof(HttpApiServer).Assembly.GetName().Version}] \r\n";
+            logo += " -----------------------------------------------------------------------------\r\n";
+            foreach (var item in mServer.Options.Listens)
+            {
+                logo += $" {item}\r\n";
+            }
+            logo += "*******************************************************************************\r\n";
+
+            Log(LogType.Info, logo);
 
 
         }
@@ -370,7 +410,7 @@ namespace BeetleX.FastHttpApi
         {
             try
             {
-              //  Log(LogType.Info, $"{args.RequestingAssembly.FullName} load assembly {args.Name}");
+                //  Log(LogType.Info, $"{args.RequestingAssembly.FullName} load assembly {args.Name}");
                 string path = System.IO.Path.GetDirectoryName(args.RequestingAssembly.Location) + System.IO.Path.DirectorySeparatorChar;
                 string name = args.Name.Substring(0, args.Name.IndexOf(','));
                 string file = path + name + ".dll";
@@ -459,6 +499,7 @@ namespace BeetleX.FastHttpApi
                 if (LogOutput == e.Session)
                     LogOutput = null;
                 HttpDisconnect?.Invoke(server, e);
+                SessionControllerFactory.DisposedFactory(e.Session);
                 base.Disconnect(server, e);
             }
             finally
@@ -498,6 +539,16 @@ namespace BeetleX.FastHttpApi
                 if (EnableLog(LogType.Warring))
                 {
                     Log(LogType.Warring, $"HTTP ${e.Socket.RemoteEndPoint} IPv4 tables verify no permission!");
+                }
+            }
+            if (Options.IPRpsLimit > 0)
+            {
+                string ip = ((IPEndPoint)e.Socket.RemoteEndPoint).Address.ToString();
+                var item = mIPLimit.GetItem(ip);
+                if (item != null)
+                {
+                    if (!item.Enabled)
+                        e.Cancel = true;
                 }
             }
             HttpConnecting?.Invoke(this, e);
@@ -598,7 +649,7 @@ namespace BeetleX.FastHttpApi
         protected virtual void OnWebSocketRequest(HttpRequest request, ISession session, DataFrame data)
         {
 
-            if (session.Count > Options.WebSocketMaxRPS)
+            if (Options.WebSocketMaxRPS > 0 && session.Count > Options.WebSocketMaxRPS)
             {
                 if (EnableLog(LogType.Error))
                 {
@@ -782,6 +833,7 @@ namespace BeetleX.FastHttpApi
                 else
                 {
                     HttpRequest request = (HttpRequest)e.Message;
+
                     if (EnableLog(LogType.Info))
                     {
                         mServer.Log(LogType.Info, null, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {request.Url}");
@@ -793,6 +845,13 @@ namespace BeetleX.FastHttpApi
                     request.Server = this;
                     HttpResponse response = request.CreateResponse();
                     token.KeepAlive = request.KeepAlive;
+                    if (!mIPLimit.ValidateRPS(request))
+                    {
+                        token.KeepAlive = false;
+                        InnerErrorResult innerErrorResult = new InnerErrorResult("400", $"{request.RemoteIPAddress} request limit!");
+                        response.Result(innerErrorResult);
+                        return;
+                    }
                     if (token.FirstRequest && string.Compare(request.Header[HeaderTypeFactory.UPGRADE], "websocket", true) == 0)
                     {
                         token.FirstRequest = false;
@@ -980,6 +1039,13 @@ namespace BeetleX.FastHttpApi
         public bool EnableLog(LogType logType)
         {
             return (int)(this.Options.LogLevel) <= (int)logType;
+        }
+
+        public HttpApiServer GetLog(LogType logType)
+        {
+            if (EnableLog(logType))
+                return this;
+            return null;
         }
 
         public Validations.IValidationOutputHandler ValidationOutputHandler { get; set; } = new Validations.ValidationOutputHandler();

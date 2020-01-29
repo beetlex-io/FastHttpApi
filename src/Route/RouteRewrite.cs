@@ -69,7 +69,7 @@ namespace BeetleX.FastHttpApi
 
         private void Add(UrlRoute item)
         {
-            mServer.Log(EventArgs.LogType.Info, $"HTTP set rewrite url [{item.Host}{item.Url}] to [{item.Rewrite}]");
+            mServer.GetLog(EventArgs.LogType.Info)?.Log(EventArgs.LogType.Info, $"HTTP set rewrite url [{item.Host}{item.Url}] to [{item.Rewrite}]");
             item.Init();
             RouteGroup rg = null;
             mRoutes.TryGetValue(item.Path, out rg);
@@ -90,7 +90,7 @@ namespace BeetleX.FastHttpApi
             item.Init();
             if (mRoutes.TryGetValue(item.Path, out RouteGroup rg))
             {
-                mServer.Log(EventArgs.LogType.Info, $"HTTP remove rewrite url {item.Url}");
+                mServer.GetLog(EventArgs.LogType.Info)?.Log(EventArgs.LogType.Info, $"HTTP remove rewrite url {item.Url}");
                 rg.Remove(item);
                 ChangeVersion();
             }

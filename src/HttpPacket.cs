@@ -71,7 +71,7 @@ namespace BeetleX.FastHttpApi
                     session.Server.Log(LogType.Info, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} request from multi receive");
                 if (mRequest.State == LoadedState.None)
                 {
-                    if (mReceives > 2 || pstream.FirstBuffer.Length < 32)
+                    if (mReceives > 3)
                     {
                         if (session.Server.EnableLog(LogType.Warring))
                         {
@@ -83,25 +83,28 @@ namespace BeetleX.FastHttpApi
                         response.Result(innerErrorResult);
                         return;
                     }
-                    var span = pstream.FirstBuffer.Memory.Slice(0, 10).Span;
-                    var method = Encoding.ASCII.GetString(span.ToArray());
-                    bool ismethod = method.IndexOf("GET") == 0 || method.IndexOf("POST") == 0 || method.IndexOf("HEAD") == 0 ||
-                        method.IndexOf("PUT") == 0 || method.IndexOf("DELETE") == 0 || method.IndexOf("CONNECT") == 0 || method.IndexOf("OPTIONS") == 0 ||
-                        method.IndexOf("TRACE") == 0;
-                    if (!ismethod)
+                    if (pstream.FirstBuffer.Length > 10)
                     {
-                        if (session.Server.EnableLog(LogType.Warring))
+                        var span = pstream.FirstBuffer.Memory.Slice(0, 10).Span;
+                        var method = Encoding.ASCII.GetString(span.ToArray());
+                        bool ismethod = method.IndexOf("GET") == 0 || method.IndexOf("POST") == 0 || method.IndexOf("HEAD") == 0 ||
+                            method.IndexOf("PUT") == 0 || method.IndexOf("DELETE") == 0 || method.IndexOf("CONNECT") == 0 || method.IndexOf("OPTIONS") == 0 ||
+                            method.IndexOf("TRACE") == 0;
+                        if (!ismethod)
                         {
-                            session.Server.Log(LogType.Warring, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} protocol data error!");
-                        }     
-                        token.KeepAlive = false;
-                        var response = mRequest.CreateResponse();
-                        InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request http protocol data error!");
-                        response.Result(innerErrorResult);
-                        return;
+                            if (session.Server.EnableLog(LogType.Warring))
+                            {
+                                session.Server.Log(LogType.Warring, session, $"HTTP {mRequest.ID} {session.RemoteEndPoint} protocol data error!");
+                            }
+                            token.KeepAlive = false;
+                            var response = mRequest.CreateResponse();
+                            InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request http protocol data error!");
+                            response.Result(innerErrorResult);
+                            return;
+                        }
                     }
                 }
-                if ((int)mRequest.State < (int)LoadedState.Header && (pstream.Length > 1024 * 4 || mReceives > 20))
+                if ((int)mRequest.State < (int)LoadedState.Header && (pstream.Length > 1024 * 4 || mReceives > 50))
                 {
                     if (session.Server.EnableLog(LogType.Warring))
                     {
@@ -152,7 +155,7 @@ namespace BeetleX.FastHttpApi
                         var error = new ActionResult(500, "session rps limit!");
                         var frame = mServer.CreateDataFrame(error);
                         frame.Send(session);
-                      //  session.Dispose();
+                        //  session.Dispose();
                     }
                 }
                 else

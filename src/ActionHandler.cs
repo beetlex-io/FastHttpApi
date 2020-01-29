@@ -30,20 +30,21 @@ namespace BeetleX.FastHttpApi
             LoadParameter();
             Filters = new List<FilterAttribute>();
             Method = "GET";
-            SingleInstance = true;
+            InstanceType = InstanceType.Single;
             ControllerType = Controller.GetType();
             NoConvert = false;
             var aname = controller.GetType().Assembly.GetName();
             this.AssmblyName = aname.Name;
             this.Version = aname.Version.ToString();
-            ThreadQueue = method.GetCustomAttribute<ThreadQueueAttribute>(false);
             Async = false;
-
+            ControllerUID = AssmblyName + "_" + ControllerType.Name;
         }
 
         public ThreadQueueAttribute ThreadQueue { get; set; }
 
         public HttpApiServer HttpApiServer { get; private set; }
+
+        public string ControllerUID { get; private set; }
 
         public string Path { get; set; }
 
@@ -63,7 +64,7 @@ namespace BeetleX.FastHttpApi
 
         public Type ControllerType { get; set; }
 
-        public bool SingleInstance { get; set; }
+        public InstanceType InstanceType { get; set; }
 
         public RouteTemplateAttribute Route { get; set; }
 

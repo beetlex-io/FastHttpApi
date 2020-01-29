@@ -49,8 +49,11 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 Server.Options.StaticResurceType = exts;
                 foreach (string item in exts.ToLower().Split(';'))
                 {
-                    FileContentType fct = new FileContentType(item);
-                    mExts[fct.Ext] = fct;
+                    if (!mExts.ContainsKey(item))
+                    {
+                        FileContentType fct = new FileContentType(item);
+                        mExts[fct.Ext] = fct;
+                    }
                 }
             }
         }
@@ -111,7 +114,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
             //if (Server.Options.UrlIgnoreCase)
             //    return HttpParse.CharToLower(charname);
             //else
-                return new string(charname);
+            return new string(charname);
         }
 
         private void SaveTempFile(System.Reflection.Assembly assembly, string recname, string filename)
@@ -178,7 +181,12 @@ namespace BeetleX.FastHttpApi.StaticResurce
                         }
                         mResources[urlname] = fr;
                         fr.Load();
-                        Server?.BaseServer?.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
+                        if (Server != null && Server.BaseServer != null)
+                        {
+                            if (Server.BaseServer.EnableLog(EventArgs.LogType.Info))
+                                Server.BaseServer.Log(EventArgs.LogType.Info, null, "load static resource " + urlname);
+                        }
+
                     }
                 }
             }
@@ -285,7 +293,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     }
                 }
                 if (Server.EnableLog(EventArgs.LogType.Warring))
-                    Server.BaseServer.Log(EventArgs.LogType.Warring,null, $"HTTP {request.ID} {request.RemoteIPAddress} get {request.Url} file not found");
+                    Server.BaseServer.Log(EventArgs.LogType.Warring, null, $"HTTP {request.ID} {request.RemoteIPAddress} get {request.Url} file not found");
                 if (!Server.OnHttpRequesNotfound(request, response).Cancel)
                 {
                     NotFoundResult notFound = new NotFoundResult("{0} file not found", request.Url);
@@ -414,7 +422,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     //if (Server.Options.UrlIgnoreCase)
                     //    charbuffer[i + offset] = Char.ToLower(filebuffer[i]);
                     //else
-                        charbuffer[i + offset] = filebuffer[i];
+                    charbuffer[i + offset] = filebuffer[i];
                 }
             }
             return new string(charbuffer, 0, filebuffer.Length + offset);

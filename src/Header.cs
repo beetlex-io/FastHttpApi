@@ -290,7 +290,7 @@ namespace BeetleX.FastHttpApi
 
         public IDictionary<string, string> Copy()
         {
-            Dictionary<string, string> result = new Dictionary<string, string>();
+            Dictionary<string, string> result = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
             foreach (var item in mValues)
                 result[item.Value.Type.Name] = item.Value.Value;
             return result;

@@ -30,7 +30,7 @@ namespace BeetleX.FastHttpApi
 
         private System.Collections.Concurrent.ConcurrentQueue<IEventWork> mQueue;
 
-        public int Count => System.Threading.Interlocked.Add(ref mCount, 0);
+        public int Count => mCount;
 
         public void Enqueue(IEventWork item)
         {
@@ -166,9 +166,13 @@ namespace BeetleX.FastHttpApi
             var index = System.Threading.Interlocked.Increment(ref mIndex);
             return mQueues[(int)(index % mQueues.Count)];
         }
+        public NextQueue Has(int code)
+        {
+            return mQueues[Math.Abs(code) % mQueues.Count];
+        }
     }
 
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class ThreadQueueAttribute : Attribute
     {
 
@@ -189,11 +193,16 @@ namespace BeetleX.FastHttpApi
             UniqueName = uniqueName;
         }
 
+        public int Limit { get; set; } = 100;
+
         public string UniqueName
         {
             get; set;
         }
-
+        public bool Enabled(NextQueue queue)
+        {
+            return queue.Count < Limit;
+        }
         public NextQueueGroup QueueGroup { get; private set; }
 
         public ThreadQueueType Type { get; private set; }
@@ -208,11 +217,25 @@ namespace BeetleX.FastHttpApi
             {
                 string value = null;
                 if (UniqueName != null)
-                    context.Data.TryGetString(UniqueName, out value);
+                {
+                    if (string.Compare(UniqueName, "$path", true) == 0)
+                    {
+                        value = context.Request.GetSourcePath();
+                    }
+                    else if(UniqueName.IndexOf("__")==0)
+                    {
+                        return mUniqueQueueGroup.Has(UniqueName.GetHashCode());
+                    }
+                    else
+                    {
+                        value = context.Request.Header[UniqueName];
+                        if (value == null)
+                            context.Data.TryGetString(UniqueName, out value);
+                    }
+                }
                 if (value == null)
-                    value = context.Request.Url;
-                int index = System.Math.Abs(value.GetHashCode() % mUniqueQueueGroup.Queues.Count);
-                return mUniqueQueueGroup.Queues[index];
+                    value = context.Request.GetSourceUrl();
+                return mUniqueQueueGroup.Has(value.GetHashCode());
             }
             return QueueGroup.Next();
         }

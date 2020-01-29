@@ -582,7 +582,7 @@ namespace BeetleX.FastHttpApi
 .sol,text/plain
 .spp,text/xml
 .stm,text/html
-.svg,text/xml
+.svg,image/svg+xml
 .tld,text/xml
 .txt,text/plain
 .uls,text/iuls
