@@ -2,22 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Copyright>Copyright © beetlex.io 2019-2020 email:henryfan@msn.com</Copyright>
+    <Copyright>Copyright © 2019-2020 beetlex.io</Copyright>
     <Authors>henryfan</Authors>
-    <Company>ikende.com</Company>
-    <Description>high performance and lightweight web api and websocket server components for .NETCore</Description>
-    <Version>1.7.8</Version>
+    <Company>beetlex.io</Company>
+    <Description>high performance and lightweight http and websocket server components for .NETCore</Description>
+    <Version>1.8.2.7</Version>
     <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.7.8.0</AssemblyVersion>
-    <FileVersion>1.7.8.0</FileVersion>
+    <AssemblyVersion>1.8.2.7</AssemblyVersion>
+    <FileVersion>1.8.2.7</FileVersion>
     <LangVersion>7.3</LangVersion>
     <Product>BeetleX.FastHttpApi</Product>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>high performance and lightweight web api and websocket server components for .NETCore</PackageReleaseNotes>
-    <SignAssembly>false</SignAssembly>
+    <PackageReleaseNotes>high performance and lightweight http and websocket server components for .NETCore</PackageReleaseNotes>
+    <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Beetlex.FastHttpApi.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
+    <PackageIconUrl></PackageIconUrl>
+    <PackageIcon>beetlex200.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -29,6 +31,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Clients\**" />
+    <EmbeddedResource Remove="Clients\**" />
+    <None Remove="Clients\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="WebSockets\WebSocketPacket.cs" />
     <Compile Remove="WebSockets\WebSocketServer.cs" />
     <Compile Remove="WebSockets\WebSocketToken.cs" />
@@ -36,6 +44,10 @@
 
   <ItemGroup>
     <None Remove="FastHttpApi.js" />
+    <None Include="..\..\..\..\beetlex200.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -43,7 +55,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.4.9.4" />
+    <PackageReference Include="BeetleX" Version="1.5.1.7" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

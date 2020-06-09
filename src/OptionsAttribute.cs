@@ -27,12 +27,17 @@ namespace BeetleX.FastHttpApi
 
         public string AllowMaxAge { get; set; }
 
+        public bool? AllowCredentials { get; set; }
+
+        public string Vary { get; set; } = "Origin";
 
         public virtual void Setting(HttpResponse response)
         {
             if (!string.IsNullOrEmpty(AllowOrigin))
             {
                 response.Header["Access-Control-Allow-Origin"] = AllowOrigin;
+                if (AllowOrigin != "*")
+                    response.Header["Vary"] = Vary;
             }
             if (!string.IsNullOrEmpty(AllowMethods))
             {
@@ -47,6 +52,17 @@ namespace BeetleX.FastHttpApi
             if (!string.IsNullOrEmpty(AllowMaxAge))
             {
                 response.Header["Access-Control-Max-Age"] = AllowMaxAge;
+            }
+            if (AllowCredentials != null)
+            {
+                if (AllowCredentials.Value)
+                {
+                    response.Header["Access-Control-Allow-Credentials"] = "true";
+                }
+                else
+                {
+                    response.Header["Access-Control-Allow-Credentials"] = "false";
+                }
             }
         }
 

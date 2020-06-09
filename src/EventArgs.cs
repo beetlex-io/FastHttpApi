@@ -1,4 +1,5 @@
 ﻿using BeetleX.Buffers;
+using BeetleX.EventArgs;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,6 +7,21 @@ using System.Text;
 namespace BeetleX.FastHttpApi
 {
     public delegate void EventHttpServerLog(IServer server, BeetleX.EventArgs.ServerLogEventArgs e);
+
+    public class HttpServerLogEventArgs : BeetleX.EventArgs.ServerLogEventArgs
+    {
+        public HttpServerLogEventArgs(object tag, string message, LogType type, ISession session = null)
+            : base(message, type, session)
+        {
+            Tag = tag;
+        }
+        public object Tag { get; private set; }
+
+        public bool OutputConsole { get; set; } = true;
+
+        public bool OutputFile { get; set; } = true;
+    }
+
 
     public struct EventHttpResponsedArgs
     {
@@ -72,6 +88,8 @@ namespace BeetleX.FastHttpApi
     {
 
 
+        public ActionHandler Handler { get; internal set; }
+
         public IHttpContext HttpContext { get; internal set; }
 
         public bool Cancel { get; set; }
@@ -102,6 +120,8 @@ namespace BeetleX.FastHttpApi
     public class EventActionRegistingArgs
     {
         public bool Cancel { get; set; } = false;
+
+        public HttpApiServer Server { get; internal set; }
 
         public ActionHandler Handler { get; internal set; }
 

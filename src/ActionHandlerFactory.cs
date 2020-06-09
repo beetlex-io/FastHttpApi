@@ -255,6 +255,16 @@ namespace BeetleX.FastHttpApi
                 filters.Remove(item);
         }
 
+        private void LoadBaseFilter(Type type, List<FilterAttribute> filters)
+        {
+            if (type.BaseType != typeof(object))
+            {
+                IEnumerable<FilterAttribute> fas = type.BaseType.GetCustomAttributes<FilterAttribute>(false);
+                filters.AddRange(fas);
+                LoadBaseFilter(type.BaseType, filters);
+            }
+        }
+
         private void Register(HttpOptions config, Type controllerType, object controller, string rooturl, HttpApiServer server, ControllerAttribute ca,
             Action<EventActionRegistingArgs> callback)
         {
@@ -275,6 +285,7 @@ namespace BeetleX.FastHttpApi
                 filters.AddRange(config.Filters);
             IEnumerable<FilterAttribute> fas = controllerType.GetCustomAttributes<FilterAttribute>(false);
             filters.AddRange(fas);
+            LoadBaseFilter(controllerType, filters);
             IEnumerable<SkipFilterAttribute> skipfilters = controllerType.GetCustomAttributes<SkipFilterAttribute>(false);
             foreach (SkipFilterAttribute item in skipfilters)
             {
@@ -382,11 +393,16 @@ namespace BeetleX.FastHttpApi
                 {
                     if (server.EnableLog(EventArgs.LogType.Error))
                     {
-                        server.Log(EventArgs.LogType.Error, "{0} already exists! replaced with {1}.{2}!", url, controllerType.Name,
-                            mi.Name);
+                        server.Log(EventArgs.LogType.Error, $"{url} already exists! replaced with {controllerType.Name}.{mi.Name}!");
                     }
                 }
                 handler = new ActionHandler(obj, mi, this.Server);
+                handler.AuthMark = controllerType.GetCustomAttribute<AuthMarkAttribute>(false);
+                var authmark = mi.GetCustomAttribute<AuthMarkAttribute>(false);
+                if (authmark != null)
+                    handler.AuthMark = authmark;
+                if (handler.AuthMark == null)
+                    handler.AuthMark = new AuthMarkAttribute(AuthMarkType.None);
                 if (mi.ReturnType == typeof(Task) || mi.ReturnType.BaseType == typeof(Task))
                 {
                     handler.Async = true;
@@ -430,7 +446,13 @@ namespace BeetleX.FastHttpApi
                 registing.Url = url;
                 registing.Handler = handler;
                 registing.Cancel = false;
+                registing.Server = this.Server;
                 callback?.Invoke(registing);
+                if (!registing.Cancel)
+                {
+                    Server.OnActionRegisting(registing);
+                }
+
                 if (!registing.Cancel)
                 {
                     AddHandlers(url, handler);
@@ -503,7 +525,7 @@ namespace BeetleX.FastHttpApi
                     WebsocketJsonContext dc = new WebsocketJsonContext(server, request, dataContxt);
                     dc.ActionUrl = baseurl;
                     dc.RequestID = result.ID;
-                    if (!Server.OnActionExecuting(dc))
+                    if (!Server.OnActionExecuting(dc,handler))
                         return;
                     ActionContext context = new ActionContext(handler, dc, this);
                     long startTime = server.BaseServer.GetRunTime();
@@ -587,7 +609,7 @@ namespace BeetleX.FastHttpApi
                     HttpContext pc = new HttpContext(server, request, response, request.Data);
                     long startTime = server.BaseServer.GetRunTime();
                     pc.ActionUrl = request.BaseUrl;
-                    if (!Server.OnActionExecuting(pc))
+                    if (!Server.OnActionExecuting(pc,handler))
                         return;
                     HttpActionResultHandler actionResult = new HttpActionResultHandler(Server, request, response, startTime);
                     ActionContext context = new ActionContext(handler, pc, this);

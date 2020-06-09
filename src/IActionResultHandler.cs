@@ -105,7 +105,14 @@ namespace BeetleX.FastHttpApi
             if (Server.EnableLog(EventArgs.LogType.Info))
                 Server.BaseServer.Log(EventArgs.LogType.Info, Request.Session,
                     $"HTTP {Request.ID} {Request.RemoteIPAddress} {Request.Method} {Request.BaseUrl} use time:{Server.BaseServer.GetRunTime() - StartTime}ms");
-            Response.Result(result);
+            if (result is FileResult fileResult)
+            {
+                Server.ResourceCenter.OutputFile(fileResult, Request, Response);
+            }
+            else
+            {
+                Response.Result(result);
+            }
         }
     }
 }

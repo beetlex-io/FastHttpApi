@@ -10,6 +10,15 @@ namespace BeetleX.FastHttpApi
     public class Utils
     {
 
+        public static string MD5Encrypt(Byte[] value)
+        {
+            using (MD5 md5Hash = MD5.Create())
+            {
+                byte[] hash = md5Hash.ComputeHash(value);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+        }
+
         public static string MD5Encrypt(string value)
         {
             using (MD5 md5Hash = MD5.Create())

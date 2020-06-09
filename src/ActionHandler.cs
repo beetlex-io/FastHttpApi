@@ -38,6 +38,7 @@ namespace BeetleX.FastHttpApi
             this.Version = aname.Version.ToString();
             Async = false;
             ControllerUID = AssmblyName + "_" + ControllerType.Name;
+           
         }
 
         public ThreadQueueAttribute ThreadQueue { get; set; }
@@ -59,6 +60,8 @@ namespace BeetleX.FastHttpApi
         public bool NoConvert { get; set; }
 
         public bool Async { get; set; }
+
+        public AuthMarkAttribute AuthMark { get; set; }
 
         internal PropertyHandler PropertyHandler { get; set; }
 

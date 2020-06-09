@@ -1,7 +1,7 @@
 {
   "HttpConfig": {
     "Host": "",
-    "Port": 9090,
+    "Port": 80,
     "SSL": false,
     "CertificateFile": "",
     "CertificatePassword": "",

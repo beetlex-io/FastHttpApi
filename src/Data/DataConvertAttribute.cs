@@ -107,7 +107,7 @@ namespace BeetleX.FastHttpApi.Data
         public const string ContentType = "Content-Type";
 
         private void CreateParameter(IDataContext context, HttpRequest request, string name, string filename, string contentType
-            , System.IO.MemoryStream stream)
+            , System.IO.MemoryStream stream,string charSet)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -120,6 +120,8 @@ namespace BeetleX.FastHttpApi.Data
                 stream.Position = 0;
                 stream.SetLength(stream.Length - 2);
                 postFile.Data = stream;
+                postFile.CharSet = charSet;
+                postFile.ContentType = contentType;
                 postFile.FileName = filename;
                 context.SetValue(name, postFile);
                 request.Files.Add(postFile);
@@ -133,7 +135,7 @@ namespace BeetleX.FastHttpApi.Data
                 var stream = request.Stream;
                 if (stream.ReadLine() == mStartBoundary)
                 {
-                    string name = null, filename = null, contentType = null;
+                    string name = null, filename = null, contentType = null, charSet=null;
                     while (stream.TryReadWith(HeaderTypeFactory.LINE_BYTES, out string headerLine))
                     {
                         if (string.IsNullOrEmpty(headerLine))
@@ -154,7 +156,7 @@ namespace BeetleX.FastHttpApi.Data
                                     if (line == mEndBoundary)
                                     {
 
-                                        CreateParameter(dataContext, request, name, filename, contentType, memoryStream);
+                                        CreateParameter(dataContext, request, name, filename, contentType, memoryStream,charSet);
                                         name = filename = contentType = null;
                                         return;
                                     }
@@ -170,8 +172,8 @@ namespace BeetleX.FastHttpApi.Data
                                     string line = Encoding.UTF8.GetString(buffer, 0, indexOf.Length - 2);
                                     if (line == mStartBoundary)
                                     {
-                                        CreateParameter(dataContext, request, name, filename, contentType, memoryStream);
-                                        name = filename = contentType = null;
+                                        CreateParameter(dataContext, request, name, filename, contentType, memoryStream,charSet);
+                                        //name = filename = contentType = null;
                                         break;
                                     }
                                     else
@@ -207,26 +209,36 @@ namespace BeetleX.FastHttpApi.Data
                         else
                         {
                             var result = HttpParse.AnalyzeContentHeader(headerLine);
-                            if (result.Name == ContentDisposition)
+                            if (string.Compare(result.Name, ContentDisposition, true) == 0)
                             {
                                 if (result.Properties != null)
                                 {
                                     for (int i = 0; i < result.Properties.Length; i++)
                                     {
-                                        if (result.Properties[i].Name == "name")
+                                        if (result.Properties[i].Name.ToLower() == "name")
                                         {
-                                            name = result.Properties[i].Value;
+                                            name = result.Properties[i].Value.Replace("\"","");
                                         }
-                                        else if (result.Properties[i].Name == "filename")
+                                        else if (result.Properties[i].Name.ToLower() == "filename")
                                         {
-                                            filename = result.Properties[i].Value;
+                                            filename = result.Properties[i].Value.Replace("\"", "");
                                         }
                                     }
                                 }
                             }
-                            else if (result.Name == ContentType)
+                            else if (string.Compare(result.Name, ContentType, true) == 0)
                             {
                                 contentType = result.Value;
+                                if (result.Properties != null)
+                                {
+                                    for (int i = 0; i < result.Properties.Length; i++)
+                                    {
+                                        if (result.Properties[i].Name.ToLower() == "charset")
+                                        {
+                                            charSet = result.Properties[i].Value;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

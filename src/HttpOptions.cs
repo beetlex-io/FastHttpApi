@@ -38,7 +38,7 @@ namespace BeetleX.FastHttpApi
             PacketCombined = 0;
             // UrlIgnoreCase = true;
             UseIPv6 = true;
-            SessionTimeOut = 60 * 30;
+            SessionTimeOut = 60 * 10;
             BufferPoolMaxMemory = 500;
             SSLPort = 443;
             StaticResurceCacheTime = 0;
@@ -51,9 +51,8 @@ namespace BeetleX.FastHttpApi
             if (threads == 0)
                 threads = 1;
             IOQueues = Math.Min(threads, 16);
-            BufferPoolGroups = Environment.ProcessorCount;
+            BufferPoolGroups = 4;
         }
-
 
         [Conditional("DEBUG")]
         public void SetDebug(string viewpath = null)
@@ -77,8 +76,6 @@ namespace BeetleX.FastHttpApi
 
         public int MaxWaitQueue { get; set; } = 50;
 
-        public bool PrivateBufferPool { get; set; } = false;
-
         public int BufferPoolSize { get; set; } = 10;
 
         public int BufferPoolGroups { get; set; }
@@ -101,6 +98,8 @@ namespace BeetleX.FastHttpApi
 
         public string AccessKey { get; set; }
 
+        public bool AutoGzip { get; set; } = false;
+
         public int StaticResurceCacheTime { get; set; }
 
         public int BufferPoolMaxMemory { get; set; }
@@ -108,6 +107,8 @@ namespace BeetleX.FastHttpApi
         public int SessionTimeOut { get; set; }
 
         public bool UseIPv6 { get; set; }
+
+        public List<VirtualFolder> Virtuals { get; set; } = new List<VirtualFolder>();
 
         // public bool UrlIgnoreCase { get; set; }
 

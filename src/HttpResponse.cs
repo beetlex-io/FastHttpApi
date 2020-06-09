@@ -118,7 +118,7 @@ namespace BeetleX.FastHttpApi
                     actionResult.Url = Request.BaseUrl;
                     actionResult.ID = RequestID;
                 }
-                result = new JsonResult(actionResult);
+                result = new JsonResult(actionResult, Request.Server.Options.AutoGzip);
                 Completed(result);
             }
         }

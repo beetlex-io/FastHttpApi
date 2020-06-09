@@ -206,6 +206,8 @@ namespace BeetleX.FastHttpApi
                         context.SetValue(name, System.Net.WebUtility.UrlDecode(value));
                         offset = i + 1;
                     }
+                    else
+                        offset = i + 1;
                     name = null;
 
                 }
@@ -279,7 +281,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (!string.IsNullOrEmpty(name))
                     {
-                        value = new string(line.Slice(offset + 1, i - offset - 2));
+                        value = new string(line.Slice(offset, i - offset));
                         proerties.Add(new ContentHeaderProperty() { Name = name, Value = value });
                         offset = i + 1;
                         name = null;
@@ -288,7 +290,7 @@ namespace BeetleX.FastHttpApi
             }
             if (name != null)
             {
-                value = new string(line.Slice(offset + 1, line.Length - offset - 2));
+                value = new string(line.Slice(offset, line.Length - offset));
                 proerties.Add(new ContentHeaderProperty() { Name = name, Value = value });
             }
             return proerties.ToArray();
@@ -394,30 +396,30 @@ namespace BeetleX.FastHttpApi
             return new Tuple<string, int, string>(httpversion, code, codemsg);
         }
 
-        public static void AnalyzeResponseLine(ReadOnlySpan<char> line, Clients.Response response)
-        {
-            int offset = 0;
-            int count = 0;
-            for (int i = 0; i < line.Length; i++)
-            {
-                if (line[i] == ' ')
-                {
-                    if (count == 0)
-                    {
-                        response.HttpVersion = new string(line.Slice(offset, i - offset));
-                        offset = i + 1;
-                    }
-                    else
-                    {
-                        response.Code = new string(line.Slice(offset, i - offset));
-                        offset = i + 1;
-                        response.CodeMsg = new string(line.Slice(offset, line.Length - offset));
-                        return;
-                    }
-                    count++;
-                }
-            }
-        }
+        //public static void AnalyzeResponseLine(ReadOnlySpan<char> line, Clients.Response response)
+        //{
+        //    int offset = 0;
+        //    int count = 0;
+        //    for (int i = 0; i < line.Length; i++)
+        //    {
+        //        if (line[i] == ' ')
+        //        {
+        //            if (count == 0)
+        //            {
+        //                response.HttpVersion = new string(line.Slice(offset, i - offset));
+        //                offset = i + 1;
+        //            }
+        //            else
+        //            {
+        //                response.Code = new string(line.Slice(offset, i - offset));
+        //                offset = i + 1;
+        //                response.CodeMsg = new string(line.Slice(offset, line.Length - offset));
+        //                return;
+        //            }
+        //            count++;
+        //        }
+        //    }
+        //}
 
         public static void AnalyzeRequestLine(ReadOnlySpan<char> line, HttpRequest request)
         {
@@ -500,7 +502,7 @@ namespace BeetleX.FastHttpApi
             for (int i = url.Length - 1; i >= 0; i--)
             {
                 if (url[i] == '.' && request.Ext == null)
-                {          
+                {
                     request.Ext = CharToLower(url.Slice(i + 1, url.Length - i - 1));
                     continue;
                 }

@@ -100,7 +100,7 @@ namespace BeetleX.FastHttpApi
 
         public StaticResurce.ResourceCenter ResourceCenter => mResourceCenter;
 
-        public EventHttpServerLog ServerLog { get; set; }
+        public event EventHttpServerLog ServerLog;
 
         public IServer BaseServer => mServer;
 
@@ -191,6 +191,8 @@ namespace BeetleX.FastHttpApi
 
         public event EventHandler<ConnectingEventArgs> HttpConnecting;
 
+        public event EventHandler<EventActionRegistingArgs> ActionRegisting;
+
         public event EventHandler<ConnectedEventArgs> HttpConnected;
 
         public event EventHandler<EventHttpRequestArgs> HttpRequesting;
@@ -210,6 +212,8 @@ namespace BeetleX.FastHttpApi
         public EventHandler<WebSocketConnectArgs> WebSocketConnect { get; set; }
 
         private List<System.Reflection.Assembly> mAssemblies = new List<System.Reflection.Assembly>();
+
+        public List<System.Reflection.Assembly> Assemblies => mAssemblies;
 
         private DispatchCenter<IOQueueProcessArgs> mRequestIOQueues;
 
@@ -249,6 +253,32 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        private void InitFromCommandLineArgs(IServer server)
+        {
+            string[] lines = System.Environment.GetCommandLineArgs();
+            if (lines != null)
+            {
+                foreach (var item in lines)
+                {
+                    var values = item.Split('=');
+                    if (values.Length == 2)
+                    {
+                        if (string.Compare(values[0], "host", true) == 0)
+                        {
+                            server.Options.DefaultListen.Host = values[1];
+                        }
+                        if (string.Compare(values[0], "port", true) == 0)
+                        {
+                            if (int.TryParse(values[1], out int port))
+                            {
+                                server.Options.DefaultListen.Port = port
+;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         public void Open()
         {
             var date = GMTDate.Default.DATE;
@@ -257,7 +287,7 @@ namespace BeetleX.FastHttpApi
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHandler;
             HttpPacket hp = new HttpPacket(this, this.FrameSerializer);
             var gtmdate = GMTDate.Default;
-            string serverInfo = $"Server: beetlex.io[{typeof(BeetleX.BXException).Assembly.GetName().Version}/{typeof(HttpApiServer).Assembly.GetName().Version}]\r\n";
+            string serverInfo = $"Server: beetlex.io\r\n";
             HeaderTypeFactory.SERVAR_HEADER_BYTES = Encoding.ASCII.GetBytes(serverInfo);
             mServer = SocketFactory.CreateTcpServer(this, hp)
                 .Setting(o =>
@@ -277,7 +307,6 @@ namespace BeetleX.FastHttpApi
                     o.Statistical = Options.Statistical;
                     o.BufferPoolGroups = Options.BufferPoolGroups;
                     o.BufferPoolSize = Options.BufferPoolSize;
-                    o.PrivateBufferPool = Options.PrivateBufferPool;
                     o.PrivateBufferPoolSize = Options.MaxBodyLength;
                     o.MaxWaitMessages = Options.MaxWaitQueue;
                 });
@@ -312,6 +341,7 @@ namespace BeetleX.FastHttpApi
             }
             StartTime = DateTime.Now;
             mServer.WriteLogo = WriteLogo ?? OutputLogo;
+            InitFromCommandLineArgs(mServer);
             mServer.Open();
             mServerCounter = new ServerCounter(this);
             // mUrlRewrite.UrlIgnoreCase = Options.UrlIgnoreCase;
@@ -345,6 +375,15 @@ namespace BeetleX.FastHttpApi
             mIPLimit = new IPLimit(this);
             OnOptionLoad(new EventOptionsReloadArgs { HttpApiServer = this, HttpOptions = this.Options });
             OnStrated(new EventHttpServerStartedArgs { HttpApiServer = this });
+            if (Options.Virtuals != null)
+            {
+                foreach (var item in Options.Virtuals)
+                {
+                    item.Verify();
+                    if (EnableLog(LogType.Info))
+                        Log(LogType.Info, $"Set virtual folder {item.Folder} to {item.Path}");
+                }
+            }
 
         }
 
@@ -352,6 +391,24 @@ namespace BeetleX.FastHttpApi
         {
             exts = exts.ToLower();
             ResourceCenter.SetFileExts(exts);
+        }
+
+        public void AddVirtualFolder(string folder, string path)
+        {
+            if (Options.Virtuals == null)
+                Options.Virtuals = new List<VirtualFolder>();
+            VirtualFolder vf = new VirtualFolder { Folder = folder, Path = path };
+            vf.Verify();
+            var has = Options.Virtuals.FirstOrDefault(p => string.Compare(p.Folder, vf.Folder, true) == 0);
+            if (has == null)
+            {
+                Options.Virtuals.Add(vf);
+            }
+            else
+            {
+                has.Path = vf.Path;
+            }
+            SaveOptions();
         }
 
         public void ChangeExtContentType(string ext, string contentType)
@@ -365,11 +422,21 @@ namespace BeetleX.FastHttpApi
 
         private void OutputLogo()
         {
-            AssemblyCopyrightAttribute productAttr = typeof(BeetleX.BXException).Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>();
+            AssemblyCopyrightAttribute productAttr = typeof(BeetleX.FastHttpApi.HttpApiServer).Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>();
             var logo = "\r\n";
-            logo += "*******************************************************************************\r\n";
-            logo += " BeetleX fast http services framework \r\n";
+            logo += " -----------------------------------------------------------------------------\r\n";
+            logo +=
+@"          ____                  _     _         __   __
+         |  _ \                | |   | |        \ \ / /
+         | |_) |   ___    ___  | |_  | |   ___   \ V / 
+         |  _ <   / _ \  / _ \ | __| | |  / _ \   > <  
+         | |_) | |  __/ |  __/ | |_  | | |  __/  / . \ 
+         |____/   \___|  \___|  \__| |_|  \___| /_/ \_\ 
 
+                            http and websocket framework   
+
+";
+            logo += " -----------------------------------------------------------------------------\r\n";
             logo += $" {productAttr.Copyright}\r\n";
             logo += $" ServerGC    [{GCSettings.IsServerGC}]\r\n";
             logo += $" BeetleX     Version [{typeof(BeetleX.BXException).Assembly.GetName().Version}]\r\n";
@@ -379,7 +446,7 @@ namespace BeetleX.FastHttpApi
             {
                 logo += $" {item}\r\n";
             }
-            logo += "*******************************************************************************\r\n";
+            logo += " -----------------------------------------------------------------------------\r\n";
 
             Log(LogType.Info, logo);
 
@@ -508,18 +575,28 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public void Log(LogType type, string message, params object[] parameters)
+        //public void Log(LogType type, string message, params object[] parameters)
+        //{
+        //    Log(type, null, string.Format(message, parameters));
+        //}
+
+        //public void Log(LogType type, string tag, string message, params object[] parameters)
+        //{
+        //    Log(type, tag, string.Format(message, parameters));
+        //}
+
+        public void Log(LogType type, object tag, string message)
         {
-            Log(type, string.Format(message, parameters));
+            try
+            {
+                Log(null, new HttpServerLogEventArgs(tag, message, type));
+            }
+            catch { }
         }
 
         public void Log(LogType type, string message)
         {
-            try
-            {
-                Log(null, new ServerLogEventArgs(message, type));
-            }
-            catch { }
+            Log(type, null, message);
         }
 
         public override void Connecting(IServer server, ConnectingEventArgs e)
@@ -728,16 +805,13 @@ namespace BeetleX.FastHttpApi
 
         public override void Log(IServer server, ServerLogEventArgs e)
         {
+            var httpLog = e as HttpServerLogEventArgs;
             CacheLog(e);
-            if (ServerLog == null)
-            {
-                if (Options.LogToConsole)
-                    base.Log(server, e);
-                if (Options.WriteLog)
-                    mFileLog.Add(e.Type, e.Message);
-            }
-            else
-                ServerLog(server, e);
+            ServerLog?.Invoke(server, e);
+            if (Options.LogToConsole && (httpLog == null || httpLog.OutputConsole))
+                base.Log(server, e);
+            if (Options.WriteLog && (httpLog == null || httpLog.OutputFile))
+                mFileLog.Add(e.Type, e.Message);
             ISession output = LogOutput;
             if (output != null && e.Session != output)
             {
@@ -894,12 +968,18 @@ namespace BeetleX.FastHttpApi
             OnRequestHandler(e);
         }
 
-        internal bool OnActionExecuting(IHttpContext context)
+        internal void OnActionRegisting(EventActionRegistingArgs e)
+        {
+            ActionRegisting?.Invoke(this, e);
+        }
+
+        internal bool OnActionExecuting(IHttpContext context,ActionHandler handler)
         {
             if (ActionExecuting != null)
             {
                 EventActionExecutingArgs e = new EventActionExecutingArgs();
                 e.HttpContext = context;
+                e.Handler = handler;
                 ActionExecuting(this, e);
                 return !e.Cancel;
             }
@@ -936,28 +1016,6 @@ namespace BeetleX.FastHttpApi
             return new ServerCounter.ServerStatus();
         }
 
-        //public void RequestError()
-        //{
-        //    if (Options.Statistical)
-        //        System.Threading.Interlocked.Increment(ref mRequestErrors);
-        //}
-
-        //public void RequestExecting()
-        //{
-        //    if (Options.Statistical)
-        //        System.Threading.Interlocked.Increment(ref mCurrentHttpRequests);
-        //}
-
-        //public void RequestExecuted()
-        //{
-        //    if (Options.Statistical)
-        //    {
-        //        System.Threading.Interlocked.Decrement(ref mCurrentHttpRequests);
-        //        System.Threading.Interlocked.Increment(ref mTotalRequests);
-
-        //    }
-        //}
-
         protected virtual void OnHttpRequest(HttpRequest request, HttpResponse response)
         {
             if (!OnHttpRequesting(request, response).Cancel)
@@ -979,6 +1037,8 @@ namespace BeetleX.FastHttpApi
         {
 
         }
+
+
 
         public virtual void SendCompleted(ISession session, SocketAsyncEventArgs e)
         {

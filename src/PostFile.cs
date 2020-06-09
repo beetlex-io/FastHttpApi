@@ -10,6 +10,8 @@ namespace BeetleX.FastHttpApi
 
         public string ContentType { get; internal set; }
 
+        public string CharSet { get; set; }
+
         public System.IO.Stream Data { get; internal set; }
     }
 }

@@ -354,6 +354,7 @@ namespace BeetleX.FastHttpApi
                 this.SourceBaseUrl = BaseUrl;
                 this.SourcePath = Path;
             }
+            Ext = null;
             Url = url;
             mQueryStringIndex = HttpParse.ReadUrlQueryString(Url, null, this);
             if (mQueryStringIndex > 0)

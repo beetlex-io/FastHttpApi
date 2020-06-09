@@ -117,7 +117,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     Length = (int)stream.Length;
                 }
             }
-            if (Length < 1024 * 1024 && !string.IsNullOrEmpty(UrlName))
+            if (Length < 1024 * 1024*5 && !string.IsNullOrEmpty(UrlName))
             {
                 FileMD5 = FMD5(FullName, this.Assembly);
             }
