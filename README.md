@@ -6,7 +6,7 @@
 							  </a>
                               
 ## samples
-[**[https://github.com/IKende/BeetleX-Samples](https://github.com/IKende/BeetleX-Samples)**]
+[**[https://github.com/beetlex-io/BeetleX-Samples](https://github.com/beetlex-io/BeetleX-Samples)**]
 
 ## Framework benchmarks 
 [Benchmarks for .net (2020-11-12)](https://www.techempower.com/benchmarks/#section=test&runid=032630e0-3a86-4eac-ae2d-517e8b9586ac&hw=ph&test=json&p=zik0zi-zik0zj-zik0zj-zik0zj-3j&a=2)
