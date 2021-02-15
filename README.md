@@ -8,30 +8,10 @@
 ## samples
 [**[https://github.com/beetlex-io/BeetleX-Samples](https://github.com/beetlex-io/BeetleX-Samples)**]
 
-## Framework benchmarks 
-[Benchmarks for .net (2020-11-12)](https://www.techempower.com/benchmarks/#section=test&runid=032630e0-3a86-4eac-ae2d-517e8b9586ac&hw=ph&test=json&p=zik0zi-zik0zj-zik0zj-zik0zj-3j&a=2)
 
-### Json
-![image](https://user-images.githubusercontent.com/2564178/99486848-f90f4b00-299f-11eb-8aae-15e92223c693.png)
-
-
-### Single
-![image](https://user-images.githubusercontent.com/2564178/99486499-4343fc80-299f-11eb-8fb0-d9b4e34edbb0.png)
-
-### Multiple
-![image](https://user-images.githubusercontent.com/2564178/99486524-4f2fbe80-299f-11eb-891f-3f89745abe13.png)
-
-### Fortunes
-![image](https://user-images.githubusercontent.com/2564178/99486553-5ce54400-299f-11eb-9e3a-2b04326ea760.png)
-
-### Data
-![image](https://user-images.githubusercontent.com/2564178/99486579-69699c80-299f-11eb-9452-14dd0f63e50d.png)
-
-### Cached
-![image](https://user-images.githubusercontent.com/2564178/99486597-71c1d780-299f-11eb-81bd-25a2462379d6.png)
-
-### Plaintext
-![image](https://user-images.githubusercontent.com/2564178/99486608-7ab2a900-299f-11eb-8606-b53fa5b709d8.png)
+## Web Framework Benchmarks
+[Round 20](https://www.techempower.com/benchmarks/#section=data-r20&hw=ph&test=composite)
+![benchmarks-round20](https://user-images.githubusercontent.com/2564178/107942248-eec41380-6fc5-11eb-94e4-410cadc8ae13.png)
 
 ## Using
 
