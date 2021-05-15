@@ -51,8 +51,21 @@
         }
     }
 ```
+### Url Map
+```
+mApiServer.Map("/", (ctx) =>
+{
+    ctx.Result(new TextResult("map /"));
+});
+
+mApiServer.Map("/user/{id}", async (ctx) =>
+{
+    ctx.Result(new TextResult((string)ctx.Data["id"]));
+});
+```
+
 ### Hosting service
-`Install-Package BeetleX.FastHttpApi.Hosting -Version 0.8.2`
+`Install-Package BeetleX.FastHttpApi.Hosting`
 ``` csharp
      var builder = new HostBuilder()
      .ConfigureServices((hostContext, services) =>
@@ -98,6 +111,15 @@ mApiServer.ServerConfig.CertificatePassword="******";
             stream.Write(Text);
         }
     }
+```
+## Download result
+``` csharp
+        public object DownloadImport(string id)
+        {
+           
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            return new DownLoadResult(Newtonsoft.Json.JsonConvert.SerializeObject(result), $"test.json");
+        }
 ```
 - Use result
 ``` csharp
@@ -291,6 +313,7 @@ public bool Register(
             return DateTime.Now.ToShortDateString();
         }
 ```
+
 ## Websocket
 - Server
 ``` csharp
