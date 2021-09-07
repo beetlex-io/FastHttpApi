@@ -52,7 +52,7 @@
     }
 ```
 ### Url Map
-```
+``` csharp
 mApiServer.Map("/", (ctx) =>
 {
     ctx.Result(new TextResult("map /"));
@@ -62,6 +62,23 @@ mApiServer.Map("/user/{id}", async (ctx) =>
 {
     ctx.Result(new TextResult((string)ctx.Data["id"]));
 });
+```
+
+### Url rewrite
+``` csharp
+mApiServer.UrlRewrite.Add("/api/PostStream/{code}/{datacode}", "/api/PostStream");
+mApiServer.UrlRewrite.Add("/api/PostStream/{code}", "/api/PostStream");
+mApiServer.UrlRewrite.Add(null, "/gettime", "/time", null);
+```
+
+### Action route
+``` csharp
+[RouteMap("/map/{code}")]
+[RouteMap("/map/{code}/{customer}")]
+public object Map(string code, string customer)
+{
+    return new { code, customer };
+}
 ```
 
 ### Hosting service
@@ -121,7 +138,7 @@ mApiServer.ServerConfig.CertificatePassword="******";
             return new DownLoadResult(Newtonsoft.Json.JsonConvert.SerializeObject(result), $"test.json");
         }
 ```
-- Use result
+- Use
 ``` csharp
         public object plaintext()
         {
