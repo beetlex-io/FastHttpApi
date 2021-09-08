@@ -98,6 +98,54 @@ public object Map(string code, string customer)
         });
        builder.Build().Run();
 ```
+### EntityFrameworkCore extensions
+`BeetleX.FastHttpApi.EFCore.Extension `
+``` csharp
+class Program
+{
+    static void Main(string[] args)
+    {
+        HttpApiServer server = new HttpApiServer();
+        server.AddEFCoreDB<NorthwindEFCoreSqlite.NorthwindContext>();
+        server.Options.Port = 80;
+        server.Options.LogToConsole = true;
+        server.Options.LogLevel = EventArgs.LogType.Info;
+        server.Options.SetDebug();
+        server.Register(typeof(Program).Assembly);
+        server.AddExts("woff");
+        server.Open();
+        Console.Read();
+    }
+}
+[Controller]
+public class Webapi
+{
+    public DBObjectList<Customer> Customers(string name, string country, EFCoreDB<NorthwindContext> db)
+    {
+        Select<Customer> select = new Select<Customer>();
+        if (!string.IsNullOrEmpty(name))
+            select &= c => c.CompanyName.StartsWith(name);
+        if (!string.IsNullOrEmpty(country))
+            select &= c => c.Country == country;
+        select.OrderBy(c => c.CompanyName.ASC());
+        return (db.DBContext, select);
+    }
+
+    [Transaction]
+    public void DeleteCustomer(string customer, EFCoreDB<NorthwindContext> db)
+    {
+        db.DBContext.Orders.Where(o => o.CustomerID == customer).Delete();
+        db.DBContext.Customers.Where(c => c.CustomerID == customer).Delete();
+    }
+
+    public DBValueList<string> CustomerCountry(EFCoreDB<NorthwindContext> db)
+    {
+        SQL sql = "select distinct country from customers";
+        return (db.DBContext, sql);
+    }
+}
+```
+
 
 ## Setting https
 - HttpConfig.json
