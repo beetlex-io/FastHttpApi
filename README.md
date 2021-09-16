@@ -81,22 +81,50 @@ public object Map(string code, string customer)
 }
 ```
 
-### Hosting service
+### Hosting and DI services
 `Install-Package BeetleX.FastHttpApi.Hosting`
 ``` csharp
-     var builder = new HostBuilder()
-     .ConfigureServices((hostContext, services) =>
-      {
-              services
-               .AddSingleton<UserService>()
-               .UseBeetlexHttp(o => {
-                        o.Port = 8080;
-                        o.LogToConsole = true;
-                        o.LogLevel = BeetleX.EventArgs.LogType.Debug;
-                        o.SetDebug();
-               }, typeof(Program).Assembly);
-        });
-       builder.Build().Run();
+    public class Program
+    {
+        static void Main(string[] args)
+        {
+            HttpServer host = new HttpServer(80);
+            host.UseTLS("test.pfx", "123456");
+            host.Setting((service, option) =>
+            {
+                service.AddTransient<UserInfo>();
+                option.LogToConsole = true;
+                option.LogLevel = BeetleX.EventArgs.LogType.Info;
+            });
+            host.Completed(server =>
+            {
+
+            });
+            host.RegisterComponent<Program>();
+            host.Run();
+        }
+    }
+
+    [Controller]
+    public class Home
+    {
+        public Home(UserInfo user)
+        {
+            mUser = user;
+        }
+
+        public object Hello()
+        {
+            return mUser.Name;
+        }
+
+        private UserInfo mUser;
+    }
+
+    public class UserInfo
+    {
+        public string Name { get; set; } = "admin";
+    }
 ```
 ### EntityFrameworkCore extensions
 `BeetleX.FastHttpApi.EFCore.Extension `
