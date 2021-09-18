@@ -126,6 +126,35 @@ public object Map(string code, string customer)
         public string Name { get; set; } = "admin";
     }
 ```
+### Windows service
+``` csharp
+class Program
+{
+    private static HttpServer mServer;
+
+    static void Main(string[] args)
+    {
+        mServer = new HttpServer(80);
+        mServer.IsWindowsServices = true;
+        mServer.Setting((service, option) =>
+        {
+            option.LogToConsole = true;
+            option.WriteLog = true;
+            option.LogLevel = BeetleX.EventArgs.LogType.Info;
+        });
+        mServer.RegisterComponent<Home>();
+        mServer.Run();
+    }
+}
+[Controller]
+public class Home
+{
+    public object Hello(string name)
+    {
+        return $"hello {name}";
+    }
+}
+```
 ### EntityFrameworkCore extensions
 `BeetleX.FastHttpApi.EFCore.Extension `
 ``` csharp
