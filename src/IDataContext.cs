@@ -140,10 +140,6 @@ namespace BeetleX.FastHttpApi
             Response.Result(data);
         }
 
-        public void Async()
-        {
-            Response.Async();
-        }
 
         public void SendToWebSocket(WebSockets.DataFrame data, HttpRequest request)
         {

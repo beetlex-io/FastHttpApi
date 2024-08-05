@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Copyright>Copyright © 2019-2020 beetlex.io</Copyright>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <Copyright>Copyright © beetlex-io.com 2019-2022 email: admin@beetlex-io.com or henryfan@msn.com</Copyright>
     <Authors>henryfan</Authors>
     <Company>beetlex.io</Company>
     <Description>high performance and lightweight http and websocket server components for .NETCore</Description>
-    <Version>1.8.2.7</Version>
-    <PackageProjectUrl>https://github.com/IKende/FastHttpApi</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/IKende/FastHttpApi/blob/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.8.2.7</AssemblyVersion>
-    <FileVersion>1.8.2.7</FileVersion>
+    <Version>2.2.24.0425</Version>
+    <PackageProjectUrl>https://github.com/beetlex-io/FastHttpApi</PackageProjectUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <AssemblyVersion>2.2.24.0425</AssemblyVersion>
+    <FileVersion>2.2.24.0425</FileVersion>
     <LangVersion>7.3</LangVersion>
     <Product>BeetleX.FastHttpApi</Product>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes>high performance and lightweight http and websocket server components for .NETCore</PackageReleaseNotes>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>False</SignAssembly>
     <AssemblyOriginatorKeyFile>Beetlex.FastHttpApi.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
     <PackageIconUrl></PackageIconUrl>
-    <PackageIcon>beetlex200.png</PackageIcon>
+    <PackageIcon></PackageIcon>
+    <PackageOutputPath>E:\public</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,8 +31,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Actors\**" />
     <Compile Remove="Clients\**" />
+    <EmbeddedResource Remove="Actors\**" />
     <EmbeddedResource Remove="Clients\**" />
+    <None Remove="Actors\**" />
     <None Remove="Clients\**" />
   </ItemGroup>
 
@@ -44,10 +47,6 @@
 
   <ItemGroup>
     <None Remove="FastHttpApi.js" />
-    <None Include="..\..\..\..\beetlex200.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -55,8 +54,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeetleX" Version="1.5.1.7" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BeetleX.Tracks\BeetleX.Tracks.csproj" />
+    <ProjectReference Include="..\src\BeetleX\BeetleX.csproj" />
   </ItemGroup>
 
 </Project>

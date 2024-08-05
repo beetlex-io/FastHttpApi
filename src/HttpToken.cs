@@ -1,6 +1,10 @@
-﻿using BeetleX.EventArgs;
+﻿using BeetleX.Buffers;
+using BeetleX.EventArgs;
+using BeetleX.FastHttpApi.WebSockets;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -29,5 +33,15 @@ namespace BeetleX.FastHttpApi
         internal bool FirstRequest { get; set; }
 
         public DateTime CreateTime { get; internal set; }
+
+        public PipeStream WebSocketData { get; set; }
+
+        public Newtonsoft.Json.JsonSerializer WebSocketJsonSerializer { get; set; }
+
+        internal RpsLimit WSRpsLimit { get; set; }
+
+        internal RpsLimit HttpRpsLimit { get; set; }
+
+        internal DataPacketType WSLastPacketType { get; set; }
     }
 }

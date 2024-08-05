@@ -15,6 +15,8 @@ namespace BeetleX.FastHttpApi
 
         public InstanceType InstanceType { get; set; }
 
+        public string ActorTag { get; set; }
+
         public bool SkipPublicFilter { get; set; } = false;
     }
 

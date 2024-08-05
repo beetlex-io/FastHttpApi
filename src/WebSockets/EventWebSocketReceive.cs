@@ -1,5 +1,7 @@
-﻿using System;
+﻿using BeetleX.Buffers;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace BeetleX.FastHttpApi.WebSockets
@@ -19,6 +21,20 @@ namespace BeetleX.FastHttpApi.WebSockets
         public void Response(DataFrame data)
         {
             Sesson.Send(data);
+        }
+
+        public void ResponseBinary(object data)
+        {
+            var frame = CreateFrame(data);
+            frame.Type = DataPacketType.binary;
+            Response(frame);
+        }
+
+        public void ResponseText(object data)
+        {
+            var frame = CreateFrame(data);
+            frame.Type = DataPacketType.text;
+            Response(frame);
         }
 
         public DataFrame CreateFrame(object body = null)

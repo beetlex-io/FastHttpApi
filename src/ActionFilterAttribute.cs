@@ -7,12 +7,22 @@ namespace BeetleX.FastHttpApi
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class FilterAttribute : Attribute
     {
+        public virtual void Init(IHttpContext context, ActionHandler handler)
+        {
+
+        }
+
         public virtual bool Executing(ActionContext context)
         {
             return true;
         }
 
         public virtual void Executed(ActionContext context)
+        {
+
+        }
+
+        public virtual void Disposed(ActionContext context)
         {
 
         }
@@ -23,7 +33,7 @@ namespace BeetleX.FastHttpApi
         public override void Executed(ActionContext context)
         {
             base.Executed(context);
-            if (!(context.Result is JsonResult))
+            if (!(context.Result is IResult))
                 context.Result = new JsonResult(context.Result);
         }
     }

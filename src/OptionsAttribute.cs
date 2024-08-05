@@ -27,7 +27,7 @@ namespace BeetleX.FastHttpApi
 
         public string AllowMaxAge { get; set; }
 
-        public bool? AllowCredentials { get; set; }
+        public string AllowCredentials { get; set; }
 
         public string Vary { get; set; } = "Origin";
 
@@ -53,16 +53,9 @@ namespace BeetleX.FastHttpApi
             {
                 response.Header["Access-Control-Max-Age"] = AllowMaxAge;
             }
-            if (AllowCredentials != null)
+            if (!string.IsNullOrEmpty(AllowCredentials))
             {
-                if (AllowCredentials.Value)
-                {
-                    response.Header["Access-Control-Allow-Credentials"] = "true";
-                }
-                else
-                {
-                    response.Header["Access-Control-Allow-Credentials"] = "false";
-                }
+                response.Header["Access-Control-Allow-Credentials"] = AllowCredentials;
             }
         }
 
@@ -75,7 +68,7 @@ namespace BeetleX.FastHttpApi
         {
             HttpApiServer server = request.Server;
             if (server.EnableLog(EventArgs.LogType.Debug))
-                server.Log(EventArgs.LogType.Debug, $"{request.RemoteIPAddress} {request.Method} {request.Url} set options");
+                server.Log(EventArgs.LogType.Debug, request.Session, $"{request.RemoteIPAddress} {request.Method} {request.Url} set options");
             response.Header["Access-Control-Allow-Origin"] = AllowOrigin;
         }
     }

@@ -9,9 +9,11 @@ namespace BeetleX.FastHttpApi
     {
         void Success(object result);
         void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500);
+
     }
 
-    struct WSActionResultHandler : IActionResultHandler
+
+    class WSActionResultHandler : IActionResultHandler
     {
         public WSActionResultHandler(WebsocketJsonContext jsonContext, HttpApiServer server, HttpRequest request,
              ActionResult result, WebSockets.DataFrame dataFrame, long startTime)
@@ -23,6 +25,8 @@ namespace BeetleX.FastHttpApi
             DataFrame = dataFrame;
             StartTime = startTime;
         }
+
+        public ActionHandler ActionHandler { get; set; }
 
         public WebsocketJsonContext DataContext;
 
@@ -36,8 +40,10 @@ namespace BeetleX.FastHttpApi
 
         public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500)
         {
+
+            Server.OnActionExecutedError(DataContext, ActionHandler, e_, code, StartTime);
             if (Server.EnableLog(logType))
-                Server.Log(logType, $"Websocket {Request.ID} {Request.RemoteIPAddress} execute {DataContext.ActionUrl} inner error {e_.Message}@{e_.StackTrace}");
+                Server.Log(logType, Request.Session, $"Websocket {Request.ID} {Request.RemoteIPAddress} execute {DataContext.ActionUrl} inner error {e_.Message}@{e_.StackTrace}");
             Result.Code = code;
             Result.Error = e_.Message;
             if (Server.Options.OutputStackTrace)
@@ -51,36 +57,48 @@ namespace BeetleX.FastHttpApi
 
         public void Success(object result)
         {
-            if (result is ActionResult)
+            Server.OnActionExecutedSuccess(DataContext, ActionHandler, StartTime);
+            var data = Request.Server.WSActionResultHandler?.Invoke(Request, ActionHandler, result);
+            if (data != null)
             {
-                Result = (ActionResult)result;
-                Result.ID = DataContext.RequestID;
-                if (Result.Url == null)
-                    Result.Url = DataContext.ActionUrl;
-                DataFrame.Body = Result;
+                DataFrame.Body = data;
             }
             else
             {
-                Result.Data = result;
+                if (result is ActionResult)
+                {
+                    Result = (ActionResult)result;
+                    Result.ID = DataContext.RequestID;
+                    if (Result.Url == null)
+                        Result.Url = DataContext.ActionUrl;
+                    DataFrame.Body = Result;
+                }
+                else
+                {
+                    Result.Data = result;
+                }
             }
             DataFrame.Send(Request.Session, false);
             if (Server.EnableLog(EventArgs.LogType.Info))
-                Server.Log(EventArgs.LogType.Info, $"Websocket {Request.ID} {Request.RemoteIPAddress} execute {DataContext.ActionUrl} action use time:{ Server.BaseServer.GetRunTime() - StartTime}ms");
+                Server.Log(EventArgs.LogType.Info, Request.Session, $"Websocket {Request.ID} {Request.RemoteIPAddress} execute {DataContext.ActionUrl} action use time:{ Server.BaseServer.GetRunTime() - StartTime}ms");
         }
 
 
     }
 
-    struct HttpActionResultHandler : IActionResultHandler
+    class HttpActionResultHandler : IActionResultHandler
     {
 
-        public HttpActionResultHandler(HttpApiServer server, HttpRequest request, HttpResponse response, long startTime)
+        public HttpActionResultHandler(HttpContext context, HttpApiServer server, HttpRequest request, HttpResponse response, long startTime)
         {
             Server = server;
             Request = request;
             Response = response;
             StartTime = startTime;
+            Context = context;
         }
+
+        public HttpContext Context;
 
         public HttpApiServer Server;
 
@@ -92,16 +110,16 @@ namespace BeetleX.FastHttpApi
 
         public void Error(Exception e_, EventArgs.LogType logType = EventArgs.LogType.Error, int code = 500)
         {
+            Server.OnActionExecutedError(Context, Request.ActionHandler, e_, code, StartTime);
             if (Server.EnableLog(logType))
-                Server.Log(logType,
+                Server.Log(logType, Request.Session,
                     $"HTTP {Request.ID} {Request.RemoteIPAddress} {Request.Method} { Request.Url} inner error {e_.Message}@{e_.StackTrace}");
-            InnerErrorResult result = new InnerErrorResult($"http execute {Request.BaseUrl} error ", e_, Server.Options.OutputStackTrace);
-            result.Code = code.ToString();
-            Response.Result(result);
+            Response.InnerError(code.ToString(), $"http execute {Request.BaseUrl} inner error!", e_, Server.Options.OutputStackTrace);
         }
 
         public void Success(object result)
         {
+            Server.OnActionExecutedSuccess(Context, Request.ActionHandler, StartTime);
             if (Server.EnableLog(EventArgs.LogType.Info))
                 Server.BaseServer.Log(EventArgs.LogType.Info, Request.Session,
                     $"HTTP {Request.ID} {Request.RemoteIPAddress} {Request.Method} {Request.BaseUrl} use time:{Server.BaseServer.GetRunTime() - StartTime}ms");

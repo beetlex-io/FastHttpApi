@@ -77,20 +77,40 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 byte[] buffer = HttpParse.GetByteBuffer();
                 if (length > 0)
                 {
-                    using (System.IO.MemoryStream memory = new MemoryStream())
+                    if (GZIP)
                     {
-                        using (GZipStream gstream = new GZipStream(memory, CompressionMode.Compress))
+                        using (System.IO.MemoryStream memory = new MemoryStream())
                         {
+                            using (GZipStream gstream = new GZipStream(memory, CompressionMode.Compress))
+                            {
+                                while (length > 0)
+                                {
+                                    int len = fsstream.Read(buffer, 0, buffer.Length);
+                                    length -= len;
+                                    gstream.Write(buffer, 0, len);
+                                    gstream.Flush();
+                                    if (length == 0)
+                                        Data = memory.ToArray();
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        using (System.IO.MemoryStream memory = new MemoryStream())
+                        {
+
                             while (length > 0)
                             {
                                 int len = fsstream.Read(buffer, 0, buffer.Length);
                                 length -= len;
-                                gstream.Write(buffer, 0, len);
-                                gstream.Flush();
+                                memory.Write(buffer, 0, len);
+                                memory.Flush();
                                 if (length == 0)
                                     Data = memory.ToArray();
                             }
                         }
+
                     }
                 }
                 else
@@ -117,7 +137,7 @@ namespace BeetleX.FastHttpApi.StaticResurce
                     Length = (int)stream.Length;
                 }
             }
-            if (Length < 1024 * 1024*5 && !string.IsNullOrEmpty(UrlName))
+            if (Length < 1024 * 1024 * 5 && !string.IsNullOrEmpty(UrlName))
             {
                 FileMD5 = FMD5(FullName, this.Assembly);
             }

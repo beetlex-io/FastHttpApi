@@ -14,7 +14,6 @@ namespace BeetleX.FastHttpApi
             {
 
             }
-
             public ActionInfo(ActionHandler handler)
             {
                 Url = handler.Url;
@@ -24,7 +23,6 @@ namespace BeetleX.FastHttpApi
                 else
                     ThreadInfo = new ThreadInfo();
             }
-
             public string Url { get; set; }
 
             public int MaxRps { get; set; }
@@ -43,7 +41,6 @@ namespace BeetleX.FastHttpApi
                         handler.ThreadQueue = ThreadInfo?.GetThreadQueue();
                 }
             }
-
             public override string ToString()
             {
                 return $"{Url} {MaxRps} {ThreadInfo}";

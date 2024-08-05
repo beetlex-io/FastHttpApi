@@ -101,6 +101,8 @@ namespace BeetleX.FastHttpApi
 
         public const string CLIENT_IPADDRESS = "X-Real-IP";
 
+        public const string CLIENT_ENDPOINT = "X-Real-ENDPOINT";
+
         public const string SEC_WEBSOCKET_VERSION = "Sec_WebSocket_Version";
 
         public const string SEC_WEBSOCKET_EXTENSIONS = "Sec-WebSocket-Extensions";
@@ -361,7 +363,7 @@ namespace BeetleX.FastHttpApi
                     ReadOnlySpan<Char> line = lineData;
                     Tuple<string, string> result = HttpParse.AnalyzeHeader(line);
                     this[result.Item1] = result.Item2;
-                    if (line[0] == 'C' && line[5] == 'e' && line[1] == 'o' && line[2] == 'o' && line[3] == 'k' && line[4] == 'i')
+                    if ((line[0] == 'C' || line[0] == 'c') && line[5] == 'e' && line[1] == 'o' && line[2] == 'o' && line[3] == 'k' && line[4] == 'i')
                     {
                         HttpParse.AnalyzeCookie(line.Slice(8, line.Length - 8), cookies);
                     }

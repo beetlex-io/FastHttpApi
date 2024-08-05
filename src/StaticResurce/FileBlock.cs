@@ -65,15 +65,17 @@ namespace BeetleX.FastHttpApi.StaticResurce
                 int len = stream.CacheLength;
                 if (gZipStream == null)
                     gZipStream = new GZipStream(stream, CompressionMode.Compress, true);
-                gZipStream.Write(Data.Array, Data.Offset, Data.Count);
-                gZipStream.Flush();
-                if (Offset == mFileResource.Length)
+                using (stream.LockFree())
                 {
-                    if (gZipStream != null)
+                    gZipStream.Write(Data.Array, Data.Offset, Data.Count);
+                    gZipStream.Flush();
+                    if (Offset == mFileResource.Length)
                     {
-                        using (stream.LockFree())
+                        if (gZipStream != null)
                         {
+
                             gZipStream.Dispose();
+
                         }
                     }
                 }

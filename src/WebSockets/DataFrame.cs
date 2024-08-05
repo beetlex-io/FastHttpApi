@@ -70,6 +70,8 @@ namespace BeetleX.FastHttpApi.WebSockets
 
         private DataPacketLoadStep mLoadStep = DataPacketLoadStep.None;
 
+        internal HttpRequest Request { get; set; }
+
         internal DataPacketLoadStep Read(PipeStream stream)
         {
             if (mLoadStep == DataPacketLoadStep.None)
@@ -140,7 +142,7 @@ namespace BeetleX.FastHttpApi.WebSockets
                     {
                         if (this.IsMask)
                             ReadMask(stream);
-                        Body = this.DataPacketSerializer.FrameDeserialize(this, stream);
+                        Body = this.DataPacketSerializer.FrameDeserialize(this, stream, Request);
                         mLoadStep = DataPacketLoadStep.Completed;
                     }
                 }
@@ -176,6 +178,8 @@ namespace BeetleX.FastHttpApi.WebSockets
             }
         }
 
+
+
         private ulong MarkBytes(Span<byte> bytes, int start, int end, ulong index)
         {
             for (int i = start; i <= end; i++)
@@ -203,7 +207,7 @@ namespace BeetleX.FastHttpApi.WebSockets
                 header[0] |= (byte)Type;
                 if (Body != null)
                 {
-                    ArraySegment<byte> data = this.DataPacketSerializer.FrameSerialize(this, Body);
+                    ArraySegment<byte> data = this.DataPacketSerializer.FrameSerialize(this, Body, Request);
                     try
                     {
                         if (MaskKey == null || MaskKey.Length != 4)
@@ -270,10 +274,6 @@ namespace BeetleX.FastHttpApi.WebSockets
                     mServer.IncrementResponsed(token.Request, null, 0, HttpApiServer.WEBSOCKET_SUCCESS, null);
                 }
                 session.Send(this);
-                if (session.Server.EnableLog(EventArgs.LogType.Info))
-                {
-                    session.Server.Log(EventArgs.LogType.Info, session, $"Websocket {token?.Request?.ID} {token?.Request?.RemoteIPAddress} websocket send data {this.Type.ToString()}");
-                }
             }
         }
     }

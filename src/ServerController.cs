@@ -101,7 +101,7 @@ namespace BeetleX.FastHttpApi
                 server.Options.SessionTimeOut,
                 server.Options.MaxBodyLength,
                 server.Options.LogLevel,
-                server.Options.WebSocketMaxRPS,
+                server.Options.WebSocketSessionMaxRps,
                 server.Options.MaxConnections,
                 server.Options.WriteLog,
                 server.Options.LogToConsole,
@@ -155,7 +155,7 @@ namespace BeetleX.FastHttpApi
             server.Options.SessionTimeOut = body.SessionTimeOut;
             server.Options.MaxBodyLength = body.MaxBodyLength;
             server.Options.LogLevel = body.LogLevel;
-            server.Options.WebSocketMaxRPS = body.WebSocketMaxRPS;
+            server.Options.WebSocketSessionMaxRps = body.WebSocketMaxRPS;
             server.Options.MaxConnections = body.MaxConnections;
             server.Options.WriteLog = body.WriteLog;
             server.Options.LogToConsole = body.LogToConsole;

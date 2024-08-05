@@ -66,7 +66,7 @@ namespace BeetleX.FastHttpApi
             }
             // if (this.Prefix == null)
             Path = $"{Url.Substring(0, index + 1)}";
-            ID = $"{Host}{Path}";
+            ID = $"{Host}{Url}";
             //else
             //    Path = $"{this.Prefix.Value}{Url.Substring(0, index + 1)}";
             Valid = Regex.IsMatch(Url, parent);

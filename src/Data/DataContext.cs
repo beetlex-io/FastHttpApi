@@ -61,7 +61,7 @@ namespace BeetleX.FastHttpApi.Data
         public bool TryGetDateTime(string name, out DateTime value)
         {
             object data;
-            value = DateTime.Now;
+            value = DateTime.MinValue;
             if (GetProperty(name, out data))
             {
                 if (data is JProperty token)

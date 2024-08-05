@@ -69,11 +69,11 @@ namespace BeetleX.FastHttpApi
                             try
                             {
                                 Load(item.Module);
-                                Server.Log(EventArgs.LogType.Info, $"{item.Module} upgrades success");
+                                Server.Log(EventArgs.LogType.Info,null, $"{item.Module} upgrades success");
                             }
                             catch (Exception e_)
                             {
-                                Server.Log(EventArgs.LogType.Error, $"{item.Module} upgrades error {e_.Message} {e_.StackTrace}");
+                                Server.Log(EventArgs.LogType.Error,null, $"{item.Module} upgrades error {e_.Message} {e_.StackTrace}");
                             }
                             finally
                             {
@@ -85,7 +85,7 @@ namespace BeetleX.FastHttpApi
             }
             catch (Exception e_)
             {
-                Server.Log(EventArgs.LogType.Error, $"upgrades module error {e_.Message} {e_.StackTrace}");
+                Server.Log(EventArgs.LogType.Error,null, $"upgrades module error {e_.Message} {e_.StackTrace}");
             }
             finally
             {
@@ -108,7 +108,7 @@ namespace BeetleX.FastHttpApi
                 item.FullName = e.FullPath;
                 item.Time = Server.BaseServer.GetRunTime();
                 mUpdateItems[e.Name] = item;
-                Server.Log(EventArgs.LogType.Info, $"upload {e.Name} module");
+                Server.Log(EventArgs.LogType.Info,null, $"upload {e.Name} module");
             }
         }
 
@@ -137,7 +137,7 @@ namespace BeetleX.FastHttpApi
             }
             catch (Exception e_)
             {
-                Server.Log(EventArgs.LogType.Error, $"clear files error {e_.Message}");
+                Server.Log(EventArgs.LogType.Error,null, $"clear files error {e_.Message}");
             }
         }
 
@@ -163,14 +163,14 @@ namespace BeetleX.FastHttpApi
                     System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFile(file);
                     Server.ResourceCenter.LoadManifestResource(assembly);
                     Server.ActionFactory.Register(assembly);
-                    Server.Log(EventArgs.LogType.Info, $"loaded {aname} assembly success");
+                    Server.Log(EventArgs.LogType.Info,null, $"loaded {aname} assembly success");
                     OnAssemblyLoding(new EventAssemblyLoadingArgs(assembly));
                     success.Add(file);
 
                 }
                 catch (Exception e_)
                 {
-                    Server.Log(EventArgs.LogType.Error, $"load {aname} assembly error {e_.Message} {e_.StackTrace}");
+                    Server.Log(EventArgs.LogType.Error,null, $"load {aname} assembly error {e_.Message} {e_.StackTrace}");
                 }
             }
         }
@@ -210,7 +210,7 @@ namespace BeetleX.FastHttpApi
                 mUpdateCount++;
                 if (mUpdateCount >= 1000)
                     mUpdateCount = 0;
-                Server.Log(EventArgs.LogType.Info, $"loding {module} module ...");
+                Server.Log(EventArgs.LogType.Info,null, $"loding {module} module ...");
                 string zipfile = mPath + module + ".zip";
                 string target = mRunningPath + module + mUpdateCount.ToString("000") + System.IO.Path.DirectorySeparatorChar;
                 if (System.IO.Directory.Exists(target))
@@ -232,16 +232,16 @@ namespace BeetleX.FastHttpApi
                         files.Add(assemblyFile);
                     }
                     OnLoadAssembly(files, 0);
-                    Server.Log(EventArgs.LogType.Info, $"loaded {module} module success");
+                    Server.Log(EventArgs.LogType.Info,null, $"loaded {module} module success");
                 }
                 else
                 {
-                    Server.Log(EventArgs.LogType.Warring, $"{module} not found!");
+                    Server.Log(EventArgs.LogType.Warring,null, $"{module} not found!");
                 }
             }
             catch (Exception e_)
             {
-                Server.Log(EventArgs.LogType.Error, $"load {module} error {e_.Message} {e_.StackTrace}");
+                Server.Log(EventArgs.LogType.Error,null, $"load {module} error {e_.Message} {e_.StackTrace}");
             }
         }
 

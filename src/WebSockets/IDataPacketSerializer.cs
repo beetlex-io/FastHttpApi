@@ -7,9 +7,9 @@ namespace BeetleX.FastHttpApi.WebSockets
 {
     public interface IDataFrameSerializer
     {
-        object FrameDeserialize(DataFrame data, PipeStream stream);
+        object FrameDeserialize(DataFrame data, PipeStream stream,HttpRequest request);
 
-        ArraySegment<byte> FrameSerialize(DataFrame packet, object body);
+        ArraySegment<byte> FrameSerialize(DataFrame packet, object body,HttpRequest request);
 
         void FrameRecovery(byte[] buffer);
 

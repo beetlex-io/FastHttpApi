@@ -15,7 +15,7 @@ namespace BeetleX.FastHttpApi
             if (Folder[Folder.Length - 1] != '/')
                 Folder += "/";
             if (Folder[0] != '/')
-                Folder += "/";
+                Folder = "/"+Folder;
             if (Path[Path.Length - 1] != System.IO.Path.DirectorySeparatorChar)
             {
                 Path += System.IO.Path.DirectorySeparatorChar;

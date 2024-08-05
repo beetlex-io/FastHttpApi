@@ -27,6 +27,8 @@ namespace BeetleX.FastHttpApi
 
         private ConcurrentDictionary<string, RouteGroup> mRoutes = new ConcurrentDictionary<string, RouteGroup>(StringComparer.OrdinalIgnoreCase);
 
+        public ConcurrentDictionary<string, RouteGroup> Routes => mRoutes;
+
         private RouteGroup[] mMatchRoutes = new RouteGroup[0];
 
         private HttpApiServer mServer;
@@ -69,7 +71,7 @@ namespace BeetleX.FastHttpApi
 
         private void Add(UrlRoute item)
         {
-            mServer.GetLog(EventArgs.LogType.Info)?.Log(EventArgs.LogType.Info, $"HTTP set rewrite url [{item.Host}{item.Url}] to [{item.Rewrite}]");
+            mServer.GetLog(EventArgs.LogType.Info)?.Log(EventArgs.LogType.Info, null, $"HTTP set rewrite url [{item.Host}{item.Url}] to [{item.Rewrite}]");
             item.Init();
             RouteGroup rg = null;
             mRoutes.TryGetValue(item.Path, out rg);
@@ -90,7 +92,7 @@ namespace BeetleX.FastHttpApi
             item.Init();
             if (mRoutes.TryGetValue(item.Path, out RouteGroup rg))
             {
-                mServer.GetLog(EventArgs.LogType.Info)?.Log(EventArgs.LogType.Info, $"HTTP remove rewrite url {item.Url}");
+                mServer.GetLog(EventArgs.LogType.Info)?.Log(EventArgs.LogType.Info, null, $"HTTP remove rewrite url {item.Url}");
                 rg.Remove(item);
                 ChangeVersion();
             }
@@ -108,7 +110,9 @@ namespace BeetleX.FastHttpApi
 
         public RouteRewrite Add(string host, string url, string rewriteurl, string ext)
         {
-            var extTag = url.IndexOf(".");
+            if (rewriteurl[0] != '/')
+                rewriteurl = '/' + rewriteurl;
+            var extTag = url.LastIndexOf(".");
             if (extTag > 0)
                 ext = url.Substring(extTag + 1, url.Length - extTag - 1);
             UrlRoute route = new UrlRoute { Rewrite = rewriteurl, Url = url, Ext = ext, Host = host };
@@ -134,7 +138,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (request.Server.EnableLog(EventArgs.LogType.Info))
                     {
-                        request.Server.Log(EventArgs.LogType.Info, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {key} rewrite cached miss");
+                        request.Server.Log(EventArgs.LogType.Info, request.Session, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {key} rewrite cached miss");
                     }
                     return false;
                 }
@@ -146,7 +150,7 @@ namespace BeetleX.FastHttpApi
                     result = cached.MatchResult;
                     if (request.Server.EnableLog(EventArgs.LogType.Info))
                     {
-                        request.Server.Log(EventArgs.LogType.Info, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {key} rewrite cached hit");
+                        request.Server.Log(EventArgs.LogType.Info, request.Session, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {key} rewrite cached hit");
                     }
                     return true;
 
@@ -194,7 +198,7 @@ namespace BeetleX.FastHttpApi
                 UrlRouteAgent exits = (UrlRouteAgent)mRouteCached.ExistOrAdd(key, agent);
                 if (request.Server.EnableLog(EventArgs.LogType.Info))
                 {
-                    request.Server.Log(EventArgs.LogType.Info, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {key} rewrite save to cached");
+                    request.Server.Log(EventArgs.LogType.Info, request.Session, $"HTTP {request.ID} {request.RemoteIPAddress} {request.Method} {key} rewrite save to cached");
                 }
                 if (exits != null)
                 {

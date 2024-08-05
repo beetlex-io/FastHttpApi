@@ -10,6 +10,8 @@ namespace BeetleX.FastHttpApi
     public class Utils
     {
 
+        public static IDGenerator IDGenerator { get; private set; } = new IDGenerator();
+
         public static string MD5Encrypt(Byte[] value)
         {
             using (MD5 md5Hash = MD5.Create())

@@ -59,11 +59,12 @@ namespace BeetleX.FastHttpApi
         {
             mWriteCount++;
             System.IO.StreamWriter writer = GetWriter();
-            writer.Write("[");
             writer.Write(DateTime.Now);
-            writer.Write("] [");
+            writer.Write("\t");
             writer.Write(e.Type.ToString());
-            writer.Write("] ");
+            writer.Write("\t");
+            writer.Write(e.RemoveIP!=null? e.RemoveIP:"SYSTEM");
+            writer.Write("\t");
             writer.WriteLine(e.Message);
             if (mWriteCount > 200 || mDispatcher.Count == 0)
             {
@@ -72,9 +73,9 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public void Add(LogType type, string message)
+        public void Add(string removeIP,LogType type, string message)
         {
-            Add(new LogItem(type, message));
+            Add(new LogItem(removeIP, type, message));
         }
 
         public void Add(LogItem e)
@@ -84,11 +85,13 @@ namespace BeetleX.FastHttpApi
 
         public class LogItem
         {
-            public LogItem(LogType type, string message)
+            public LogItem(string removeIP, LogType type, string message)
             {
+                RemoveIP = removeIP;
                 Type = type;
                 Message = message;
             }
+            public string RemoveIP;
             public LogType Type;
             public string Message;
         }
@@ -106,5 +109,6 @@ namespace BeetleX.FastHttpApi
         public string Time { get; set; }
 
         public string Message { get; set; }
+        public string RemoveIP { get; set; }
     }
 }

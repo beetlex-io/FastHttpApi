@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -40,7 +41,8 @@ namespace BeetleX.FastHttpApi
                 var item = IPv4Match.GetIpMatch(ip);
                 if (item != null)
                 {
-                    mWhiteList.Add(item);
+                    if (!mWhiteList.Contains(item))
+                        mWhiteList.Add(item);
                 }
             }
             Reload();
@@ -53,7 +55,8 @@ namespace BeetleX.FastHttpApi
                 var item = IPv4Match.GetIpMatch(ip);
                 if (item != null)
                 {
-                    mBlackList.Add(item);
+                    if (!mBlackList.Contains(item))
+                        mBlackList.Add(item);
                 }
             }
             Reload();
@@ -122,32 +125,39 @@ namespace BeetleX.FastHttpApi
             }
         }
 
-        public bool Verify(System.Net.IPAddress ipaddress)
+        public bool Verify(string ipvalue)
         {
             if (Type == VerifyType.None)
                 return true;
-            if (!ipaddress.IsIPv4MappedToIPv6)
+            if (Type == VerifyType.Black)
             {
-                if (ipaddress.GetAddressBytes().Length > 4)
+                if (IPAddress.TryParse(ipvalue, out IPAddress ipaddress))
+                {
+                    IPv4Match[] items = mBlackMatchs;
+                    foreach (var item in items)
+                        if (item.Match(ipaddress, false))
+                            return false;
+                    return true;
+                }
+                else
                 {
                     return true;
                 }
             }
-            if (Type == VerifyType.Black)
-            {
-                IPv4Match[] items = mBlackMatchs;
-                foreach (var item in items)
-                    if (item.Match(ipaddress))
-                        return false;
-                return true;
-            }
             else
             {
-                IPv4Match[] items = mWhiteMatchs;
-                foreach (var item in items)
-                    if (item.Match(ipaddress))
-                        return true;
-                return false;
+                if (IPAddress.TryParse(ipvalue, out IPAddress ipaddress))
+                {
+                    IPv4Match[] items = mWhiteMatchs;
+                    foreach (var item in items)
+                        if (item.Match(ipaddress))
+                            return true;
+                    return false;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -185,6 +195,11 @@ namespace BeetleX.FastHttpApi
 
         public string Source { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            return this.Source == ((IPv4Match)obj).Source;
+        }
+
         public static IPv4Match GetIpMatch(string ip)
         {
             string[] values = ip.Split('/');
@@ -221,21 +236,13 @@ namespace BeetleX.FastHttpApi
 
         private uint? Mark;
 
-        public bool Match(System.Net.IPAddress remote)
+        public bool Match(System.Net.IPAddress remote, bool whiteList = true)
         {
-            var bytes = remote.GetAddressBytes();
+            var bytes = remote.MapToIPv4().GetAddressBytes();
             int ipdata;
-
-            if (remote.IsIPv4MappedToIPv6)
-            {
-                ipdata = GetIP(bytes.AsSpan().Slice(bytes.Length - 4));
-            }
-            else
-            {
-                ipdata = GetIP(bytes);
-            }
+            ipdata = GetIP(bytes);
             if (ipdata == 1 || ipdata == 0)
-                return true;
+                return whiteList;
             if (Mark == null)
                 return IPValue == ipdata;
             else

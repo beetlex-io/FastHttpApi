@@ -59,7 +59,12 @@ namespace BeetleX.FastHttpApi
                     result.WebApiVersion = mServer.GetType().Assembly.GetName().Version.ToString();
                     result.ServerName = mServer.Name;
                     result.Host = mServer.Options.Host;
-                    result.Port = mServer.Options.Port;
+                    if(!mServer.Options.SSLOnly)
+                        result.Port = mServer.Options.Port.ToString();
+                    if(mServer.Options.SSL)
+                    {
+                        result.TLSPort = mServer.Options.SSLPort.ToString();
+                    }
                     TimeSpan ts = (DateTime.Now - mServer.StartTime);
                     result.RunTime = $"{(long)ts.Days}:{(long)ts.Hours}:{(long)ts.Minutes}:{(long)ts.Seconds}";
 
@@ -143,7 +148,9 @@ namespace BeetleX.FastHttpApi
 
             public string Host { get; set; }
 
-            public int Port { get; set; }
+            public string Port { get; set; }
+
+            public string TLSPort { get; set; }
 
             public string RunTime { get; set; }
 

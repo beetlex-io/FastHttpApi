@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -90,7 +91,7 @@ namespace BeetleX.FastHttpApi
             if (Response == null)
             {
                 Response = new HttpResponse();
-                Response.JsonSerializer = new Newtonsoft.Json.JsonSerializer();
+                Response.JsonSerializer = Newtonsoft.Json.JsonSerializer.Create(Server.Options.JsonSerializerSettings);
                 Response.StreamWriter = new StreamWriter(Session.Stream.ToPipeStream());
                 Response.JsonWriter = new Newtonsoft.Json.JsonTextWriter(Response.StreamWriter);
             }
@@ -169,16 +170,56 @@ namespace BeetleX.FastHttpApi
 
         public int Length => mLength;
 
-        public string RemoteIPAddress
+        public string TrackParentID
         {
             get
             {
-                string value = Header[HeaderTypeFactory.CLIENT_IPADDRESS];
+                string value = Header[HttpApiServer.CODE_TREAK_PARENTID];
+                return value;
+            }
+        }
+
+        public string RemoteEndPoint
+        {
+            get
+            {
+                string value = Header[HeaderTypeFactory.CLIENT_ENDPOINT];
                 if (value == null)
                 {
                     if (Session.RemoteEndPoint is IPEndPoint IP)
                     {
-                        value = IP.Address.ToString();
+                        value = IP.ToString();
+                        Header[HeaderTypeFactory.CLIENT_ENDPOINT] = value;
+                    }
+                }
+                return value;
+            }
+        }
+
+        public string RemoteIPAddress
+        {
+            get
+            {
+                string value = null;
+                if (Server.Options.DisableXRealIP)
+                {
+                    value = Header[HeaderTypeFactory.CLIENT_IPADDRESS];
+                    if (value == null)
+                    {
+                        if (Session.RemoteEndPoint is IPEndPoint IP)
+                        {
+                            value= IP.Address.MapToIPv4().ToString();
+                            Header[HeaderTypeFactory.CLIENT_IPADDRESS] = value;
+                        }
+                    }
+                    return value;
+                }
+                value = Header[HeaderTypeFactory.CLIENT_IPADDRESS];
+                if (value == null)
+                {
+                    if (Session.RemoteEndPoint is IPEndPoint IP)
+                    {
+                        value = IP.Address.MapToIPv4().ToString();
                         Header[HeaderTypeFactory.CLIENT_IPADDRESS] = value;
                     }
                 }
@@ -363,7 +404,14 @@ namespace BeetleX.FastHttpApi
                 HttpParse.ReadUrlPathAndExt(Url.AsSpan(), mQueryString, this, this.Server.Options);
             if (Server.EnableLog(EventArgs.LogType.Info))
             {
-                Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} {((IPEndPoint)Session.RemoteEndPoint).Address} request {SourceUrl} rewrite to {Url}");
+                if (Session.RemoteEndPoint is IPEndPoint ipPoint)
+                {
+                    Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} {ipPoint.Address} request {SourceUrl} rewrite to {Url}");
+                }
+                else
+                {
+                    Server.BaseServer.Log(EventArgs.LogType.Info, Session, $"HTTP {ID} {Session.RemoteEndPoint} request {SourceUrl} rewrite to {Url}");
+                }
             }
         }
 

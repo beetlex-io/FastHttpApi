@@ -1,10 +1,12 @@
 ﻿using BeetleX.EventArgs;
 using BeetleX.FastHttpApi;
+using BeetleX.FastHttpApi.WebSockets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Authentication;
 using System.Text;
 
 namespace BeetleX.FastHttpApi
@@ -29,7 +31,7 @@ namespace BeetleX.FastHttpApi
             NoGzipFiles = "jpg;jpeg;png;gif;png;ico;zip;rar";
             CacheFiles = "html;htm;js;css";
             BufferSize = 1024 * 4;
-            WebSocketMaxRPS = 30;
+            WebSocketSessionMaxRps = 0;
             LogLevel = EventArgs.LogType.Warring;
             LogToConsole = false;
             NotLoadFolder = @"\Files;\Images";
@@ -52,7 +54,13 @@ namespace BeetleX.FastHttpApi
                 threads = 1;
             IOQueues = Math.Min(threads, 16);
             BufferPoolGroups = 4;
+
+
         }
+        [JsonIgnore]
+        public JsonSerializerSettings JsonSerializerSettings { get; set; } = new JsonSerializerSettings();
+
+        public string SockFile { get; set; }
 
         [Conditional("DEBUG")]
         public void SetDebug(string viewpath = null)
@@ -70,9 +78,34 @@ namespace BeetleX.FastHttpApi
             }
         }
 
+        //当IP被限制请求后，是否禁止IP连接
+        public bool DisableIPAccept { get; set; } = false;
+
+        public string BindDomains { get; set; }
+
+        public string InvalidDomainUrl { get; set; }
+
+        public bool DisableXRealIP { get; set; } = false;
+
+        public SslProtocols SslProtocols { get; set; } = SslProtocols.Tls11 | SslProtocols.Tls12;
+
+        public string ActionExt { get; set; }
+
+        public int MaxRps { get; set; } = 0;
+
+        public int SessionMaxRps { get; set; } = 0;
+
+        public SameSiteType? SameSite { get; set; }
+
+        public bool CookieSecure { get; set; }
+
+        public string ServerTag { get; set; } = "beetlex.io";
+
+        public bool OutputServerTag { get; set; } = true;
+
         public int IPRpsLimit { get; set; } = 0;
 
-        public int IPRpsLimitDisableTime { get; set; } = 1000 * 1800;
+        public int IPRpsLimitDisableTime { get; set; } =0;
 
         public int MaxWaitQueue { get; set; } = 50;
 
@@ -82,7 +115,7 @@ namespace BeetleX.FastHttpApi
 
         public int IOQueues { get; set; }
 
-        public bool SyncAccept { get; set; } = true;
+        public bool SyncAccept { get; set; } = false;
 
         public bool ManageApiEnabled { get; set; } = true;
 
@@ -91,6 +124,10 @@ namespace BeetleX.FastHttpApi
         public bool IOQueueEnabled { get; set; }
 
         public int CacheLogMaxSize { get; set; }
+
+        public string CacheLogFilter { get; set; }
+
+        public IDataFrameSerializer WebSocketFrameSerializer { get; set; }
 
         public List<ActionMaxrps> MaxrpsSettings { get; set; }
 
@@ -126,6 +163,8 @@ namespace BeetleX.FastHttpApi
 
         public bool LogToConsole { get; set; }
 
+
+
         public string NotLoadFolder { get; set; }
 
         public string CacheFiles { get; set; }
@@ -134,7 +173,7 @@ namespace BeetleX.FastHttpApi
 
         public LogType LogLevel { get; set; }
 
-        public int WebSocketMaxRPS { get; set; }
+        public int WebSocketSessionMaxRps { get; set; }
 
         public int BufferSize { get; set; }
 
@@ -161,6 +200,8 @@ namespace BeetleX.FastHttpApi
         public int RewriteCachedSize { get; set; } = 500000;
 
         public int Port { get; set; }
+
+        public bool SSLOnly { get; set; } = false;
 
         public bool SSL { get; set; }
 

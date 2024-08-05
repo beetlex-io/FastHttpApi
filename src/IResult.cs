@@ -132,7 +132,16 @@ namespace BeetleX.FastHttpApi
         {
             Code = code;
             Message = message;
-            Error = e.Message;
+            if (e != null)
+            {
+                if (e.InnerException == null)
+                    Error = e.Message;
+                else
+                {
+                    Error = $"{e.Message} ({e.InnerException.Message})";
+                }
+            }
+
             if (outputStackTrace)
                 SourceCode = e.StackTrace;
             else
@@ -159,7 +168,7 @@ namespace BeetleX.FastHttpApi
 
         public override void Write(PipeStream stream, HttpResponse response)
         {
-            stream.WriteLine(Message);
+            // stream.WriteLine(Message);
             if (!string.IsNullOrEmpty(Error))
             {
                 stream.WriteLine(Error);
@@ -221,9 +230,33 @@ namespace BeetleX.FastHttpApi
         }
     }
 
-    public class UpgradeWebsocketResult : ResultBase
+
+    public class UpgradeWebsocketError : ResultBase
     {
-        public UpgradeWebsocketResult(string websocketKey)
+
+        public UpgradeWebsocketError(int code, string msg)
+        {
+            Code = code;
+            CodeMsg = msg;
+        }
+
+        public override void Setting(HttpResponse response)
+        {
+            response.Code = Code.ToString();
+            response.CodeMsg = CodeMsg;
+        }
+
+        public int Code { get; set; }
+
+        public string CodeMsg { get; set; }
+
+        public override bool HasBody => false;
+    }
+
+
+    public class UpgradeWebsocketSuccess : ResultBase
+    {
+        public UpgradeWebsocketSuccess(string websocketKey)
         {
             WebsocketKey = websocketKey;
         }
@@ -250,18 +283,56 @@ namespace BeetleX.FastHttpApi
 
     public class TextResult : ResultBase
     {
-        public TextResult(string text)
+        public TextResult(string text, bool autoGzip = false)
         {
             Text = text == null ? "" : text;
+            mAutoGzip = autoGzip;
         }
+
+        private bool mAutoGzip = false;
 
         public string Text { get; set; }
 
         public override bool HasBody => true;
 
+        private ArraySegment<byte>? mGzipData;
+
+        public override void Setting(HttpResponse response)
+        {
+            base.Setting(response);
+            if (mAutoGzip && Text.Length > 1024)
+            {
+                var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(Text.Length * 6);
+                var len = Encoding.UTF8.GetBytes(Text, buffer);
+                mGzipData = new ArraySegment<byte>(buffer, 0, len);
+                response.Header.Add("Content-Encoding", "gzip");
+            }
+        }
+
         public override void Write(PipeStream stream, HttpResponse response)
         {
-            stream.Write(Text);
+            if (mGzipData != null)
+            {
+                try
+                {
+                    using (stream.LockFree())
+                    {
+                        using (var gzipStream = new GZipStream(stream, CompressionMode.Compress, true))
+                        {
+                            gzipStream.Write(mGzipData.Value.Array, mGzipData.Value.Offset, mGzipData.Value.Count);
+                            gzipStream.Flush();
+                        }
+                    }
+                }
+                finally
+                {
+                    System.Buffers.ArrayPool<byte>.Shared.Return(mGzipData.Value.Array);
+                }
+            }
+            else
+            {
+                stream.Write(Text);
+            }
         }
     }
 
@@ -271,8 +342,7 @@ namespace BeetleX.FastHttpApi
         {
             Data = data;
             mAutoGzip = autoGzip;
-            if (autoGzip)
-                OnSerialize();
+
         }
 
         public object Data { get; set; }
@@ -284,12 +354,12 @@ namespace BeetleX.FastHttpApi
         [ThreadStatic]
         private static System.Text.StringBuilder mJsonText;
 
-        private void OnSerialize()
+        private void OnSerialize(HttpResponse response)
         {
             if (mJsonText == null)
                 mJsonText = new System.Text.StringBuilder();
             mJsonText.Clear();
-            JsonSerializer serializer = new JsonSerializer();
+            JsonSerializer serializer = response.JsonSerializer;
             System.IO.StringWriter writer = new System.IO.StringWriter(mJsonText);
             JsonTextWriter jsonTextWriter = new JsonTextWriter(writer);
             serializer.Serialize(jsonTextWriter, Data);
@@ -310,6 +380,8 @@ namespace BeetleX.FastHttpApi
         public override void Setting(HttpResponse response)
         {
             base.Setting(response);
+            if (this.mAutoGzip)
+                OnSerialize(response);
             if (mAutoGzip && mJsonData.Count > 1024 * 2)
             {
                 response.Header.Add("Content-Encoding", "gzip");
@@ -452,6 +524,60 @@ namespace BeetleX.FastHttpApi
 
         public bool GZip { get; set; } = false;
     }
+
+
+    public class BinaryResult : BeetleX.FastHttpApi.IResult
+    {
+        public BinaryResult(ArraySegment<byte> data, string contentType = null)
+        {
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                mContentType = new ContentType(contentType);
+            }
+            Data = data;
+        }
+
+        private IHeaderItem mContentType = ContentTypes.OCTET_STREAM;
+
+        public IHeaderItem ContentType => mContentType;
+
+        public int Length { get; set; }
+
+        public bool AutoGZIP { get; set; } = false;
+
+        public bool HasBody => true;
+
+        public ArraySegment<byte> Data { get; private set; }
+
+        public Action<HttpResponse, BinaryResult> Completed { get; set; }
+
+        public virtual void Setting(HttpResponse response)
+        {
+
+        }
+
+        public virtual void Write(PipeStream stream, HttpResponse response)
+        {
+            if (AutoGZIP)
+            {
+                using (stream.LockFree())
+                {
+                    using (var gzipStream = new GZipStream(stream, CompressionMode.Compress, true))
+                    {
+                        gzipStream.Write(Data.Array, Data.Offset, Data.Count);
+                        gzipStream.Flush();
+                    }
+                }
+            }
+            else
+            {
+                stream.Write(Data.Array, Data.Offset, Data.Count);
+            }
+            Completed?.Invoke(response, this);
+        }
+    }
+
+
 
     public class DownLoadResult : BeetleX.FastHttpApi.IResult
     {

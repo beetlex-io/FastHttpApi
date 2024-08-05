@@ -20,6 +20,8 @@ namespace BeetleX.FastHttpApi
 
         public EventHandler<PacketDecodeCompletedEventArgs> Completed { get; set; }
 
+        public string Name => "HTTP-SERVER";
+
         public IPacket Clone()
         {
             return new HttpPacket(mServer, this.mDataPacketSerializer);
@@ -79,8 +81,9 @@ namespace BeetleX.FastHttpApi
                         }
                         token.KeepAlive = false;
                         var response = mRequest.CreateResponse();
-                        InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request http receive data error!");
-                        response.Result(innerErrorResult);
+                        //InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request http receive data error!");
+                        //response.Result(innerErrorResult);
+                        response.InnerError("400", "request http receive data error!");
                         return;
                     }
                     if (pstream.FirstBuffer.Length > 10)
@@ -98,8 +101,9 @@ namespace BeetleX.FastHttpApi
                             }
                             token.KeepAlive = false;
                             var response = mRequest.CreateResponse();
-                            InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request http protocol data error!");
-                            response.Result(innerErrorResult);
+                            //InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request http protocol data error!");
+                            //response.Result(innerErrorResult);
+                            response.InnerError("400", "request http protocol data error!");
                             return;
                         }
                     }
@@ -112,8 +116,9 @@ namespace BeetleX.FastHttpApi
                     }
                     token.KeepAlive = false;
                     var response = mRequest.CreateResponse();
-                    InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request header too large");
-                    response.Result(innerErrorResult);
+                    //InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request header too large");
+                    //response.Result(innerErrorResult);
+                    response.InnerError("400", "request header too large");
                 }
                 else if (mRequest.Length > mServerConfig.MaxBodyLength)
                 {
@@ -123,11 +128,12 @@ namespace BeetleX.FastHttpApi
                     }
                     token.KeepAlive = false;
                     var response = mRequest.CreateResponse();
-                    InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request entity too large");
-                    response.Result(innerErrorResult);
+                    //InnerErrorResult innerErrorResult = new InnerErrorResult("400", "Request entity too large");
+                    //response.Result(innerErrorResult);
+                    response.InnerError("400", "request entity too large");
                     return;
                 }
-                if (mReceives > 10 & pstream.Length < mReceives * 256)
+                if (mReceives > 10 && pstream.Length < mReceives * 256)
                 {
                     if (session.Server.EnableLog(LogType.Warring))
                     {
@@ -135,34 +141,36 @@ namespace BeetleX.FastHttpApi
                     }
                     token.KeepAlive = false;
                     var response = mRequest.CreateResponse();
-                    InnerErrorResult innerErrorResult = new InnerErrorResult("400", "protocol data commit exception");
-                    response.Result(innerErrorResult);
+                    //InnerErrorResult innerErrorResult = new InnerErrorResult("400", "protocol data commit exception");
+                    //response.Result(innerErrorResult);
+                    response.InnerError("400", "protocol data commit exception");
                 }
                 return;
             }
         }
         private void OnWebSocketDecode(ISession session, PipeStream pstream)
         {
-        START:
+            START:
             if (mDataPacket == null)
             {
                 mDataPacket = new DataFrame(mServer);
                 mDataPacket.DataPacketSerializer = this.mDataPacketSerializer;
             }
             mReceives++;
+            HttpToken token = (HttpToken)session.Tag;
+            mDataPacket.Request = token.Request;
             if (mDataPacket.Read(pstream) == DataPacketLoadStep.Completed)
             {
                 mWebSocketRequest++;
                 long now = session.Server.GetRunTime();
                 if (now - mLastTime < 1000)
                 {
-                    if (mServerConfig.WebSocketMaxRPS > 0 && mWebSocketRequest > mServerConfig.WebSocketMaxRPS)
+                    if (mServerConfig.WebSocketSessionMaxRps > 0 && mWebSocketRequest > mServerConfig.WebSocketSessionMaxRps)
                     {
                         if (session.Server.EnableLog(LogType.Warring))
                         {
                             session.Server.Log(LogType.Warring, session, $"Websocket {mRequest?.ID} {session.RemoteEndPoint} session rps limit!");
                         }
-                        HttpToken token = (HttpToken)session.Tag;
                         token.KeepAlive = false;
                         var error = new ActionResult(500, "session rps limit!");
                         var frame = mServer.CreateDataFrame(error);
@@ -261,6 +269,9 @@ namespace BeetleX.FastHttpApi
         {
             PipeStream pstream = stream.ToPipeStream();
             IDataResponse dataResponse = data as IDataResponse;
+            HttpToken token = (HttpToken)session.Tag;
+            if (data is DataFrame df)
+                df.Request = token.Request;
             if (dataResponse != null)
             {
                 dataResponse.Write(pstream);

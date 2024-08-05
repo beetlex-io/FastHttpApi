@@ -1,11 +1,12 @@
-﻿using System;
+﻿using BeetleX.Tracks;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BeetleX.FastHttpApi
 {
-    public class ActionContext
+    public class ActionContext : IDisposable
     {
 
         internal ActionContext(ActionHandler handler, IHttpContext context, ActionHandlerFactory actionHandlerFactory)
@@ -14,32 +15,48 @@ namespace BeetleX.FastHttpApi
             mFilters = handler.Filters;
             HttpContext = context;
             ActionHandlerFactory = actionHandlerFactory;
-            Parameters = handler.GetParameters(context);
             Controller = handler.Controller;
-            if (handler.InstanceType != InstanceType.Single)
+            if (HttpContext.WebSocket)
             {
-                if (handler.InstanceType == InstanceType.Session)
+                ActionType = "WS";
+            }
+            else
+            {
+                ActionType = "HTTP";
+            }
+
+        }
+
+        public void Init()
+        {
+            FilterInit();
+            Parameters = Handler.GetParameters(HttpContext, this);
+            if (Handler.InstanceType != InstanceType.Single)
+            {
+                if (Handler.InstanceType == InstanceType.Session)
                 {
-                    var factory = SessionControllerFactory.GetFactory(context.Session);
-                    Controller = factory[handler.ControllerUID];
+                    var factory = SessionControllerFactory.GetFactory(HttpContext.Session);
+                    Controller = factory[Handler.ControllerUID];
                     if (Controller == null)
                     {
-                        Controller = actionHandlerFactory.GetController(handler.ControllerType, context);
+                        Controller = ActionHandlerFactory.GetController(Handler.ControllerType, HttpContext);
                         if (Controller == null)
-                            Controller = Activator.CreateInstance(handler.ControllerType);
-                        factory[handler.ControllerUID] = Controller;
+                            Controller = Activator.CreateInstance(Handler.ControllerType);
+                        factory[Handler.ControllerUID] = Controller;
                     }
                 }
                 else
                 {
-                    Controller = actionHandlerFactory.GetController(handler.ControllerType, context);
+                    Controller = ActionHandlerFactory.GetController(Handler.ControllerType, HttpContext);
                     if (Controller == null)
-                        Controller = Activator.CreateInstance(handler.ControllerType);
+                        Controller = Activator.CreateInstance(Handler.ControllerType);
                 }
             }
             if (Controller == null)
-                Controller = handler.Controller;
+                Controller = Handler.Controller;
         }
+
+        private string ActionType = "";
 
         private List<FilterAttribute> mFilters;
 
@@ -54,6 +71,8 @@ namespace BeetleX.FastHttpApi
         public Object Result { get; set; }
 
         public Exception Exception { get; set; }
+
+        public bool HasError { get; private set; }
 
         public object Controller { get; set; }
 
@@ -70,15 +89,21 @@ namespace BeetleX.FastHttpApi
                 {
                     try
                     {
-                        Result = Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
+                        using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null, "Execute"))
+                        {
+                            Result = Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
+                        }
+
                     }
                     catch (Exception error)
                     {
                         Exception = error;
+                        HasError = true;
                     }
                     finally
                     {
                         FilterExecuted();
+                        ParametersDisposed();
                     }
                 }
                 if (Exception != null)
@@ -87,7 +112,12 @@ namespace BeetleX.FastHttpApi
                     resultHandler.Error(Exception);
                 }
                 else
-                    resultHandler.Success(Result);
+                {
+                    using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null, "Responsed"))
+                    {
+                        resultHandler.Success(Result);
+                    }
+                }
             }
             catch (Exception e_)
             {
@@ -96,7 +126,11 @@ namespace BeetleX.FastHttpApi
             }
             finally
             {
-                DisposedController();
+                using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null, "Disposed"))
+                {
+                    DisposedController();
+                    Dispose();
+                }
             }
         }
 
@@ -108,20 +142,26 @@ namespace BeetleX.FastHttpApi
                 {
                     try
                     {
-                        var task = (Task)Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
-                        await task;
-                        if (Handler.PropertyHandler != null)
-                            Result = Handler.PropertyHandler.Get(task);
-                        else
-                            Result = null;
+
+                        using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null, "Execute"))
+                        {
+                            var task = (Task)Handler.Invoke(Controller, HttpContext, ActionHandlerFactory, Parameters);
+                            await task;
+                            if (Handler.PropertyHandler != null)
+                                Result = Handler.PropertyHandler.Get(task);
+                            else
+                                Result = null;
+                        }
                     }
                     catch (Exception error)
                     {
                         Exception = error;
+                        HasError = true;
                     }
                     finally
                     {
                         FilterExecuted();
+                        ParametersDisposed();
                     }
                 }
                 if (Exception != null)
@@ -130,7 +170,12 @@ namespace BeetleX.FastHttpApi
                     resultHandler.Error(Exception);
                 }
                 else
-                    resultHandler.Success(Result);
+                {
+                    using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null, "Response"))
+                    {
+                        resultHandler.Success(Result);
+                    }
+                }
             }
             catch (Exception e_)
             {
@@ -139,7 +184,11 @@ namespace BeetleX.FastHttpApi
             }
             finally
             {
-                DisposedController();
+                using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null, "Disposed"))
+                {
+                    DisposedController();
+                    Dispose();
+                }
             }
         }
 
@@ -157,7 +206,7 @@ namespace BeetleX.FastHttpApi
                     if (HttpContext.Server.EnableLog(EventArgs.LogType.Error))
                     {
                         var request = HttpContext.Request;
-                        HttpContext.Server.Log(EventArgs.LogType.Error,
+                        HttpContext.Server.Log(EventArgs.LogType.Error, request.Session,
                             $"HTTP {request.RemoteIPAddress} {request.Method} {request.BaseUrl} controller disposed error {e_.Message}@{e_.StackTrace}");
                     }
                 }
@@ -166,12 +215,14 @@ namespace BeetleX.FastHttpApi
 
         struct ActionTask : IEventWork
         {
-            public ActionTask(ActionContext context, IActionResultHandler resultHandler)
+            public ActionTask(ActionContext context, IActionResultHandler resultHandler, TaskCompletionSource<object> completionSource)
             {
                 Context = context;
                 ResultHandler = resultHandler;
-
+                CompletionSource = completionSource;
             }
+
+            public TaskCompletionSource<object> CompletionSource { get; set; }
 
             public ActionContext Context { get; set; }
 
@@ -184,19 +235,27 @@ namespace BeetleX.FastHttpApi
 
             public async Task Execute()
             {
-                if (Context.Handler.Async)
+                try
                 {
-                    await Context.OnAsyncExecute(ResultHandler);
+                    if (Context.Handler.Async)
+                    {
+                        await Context.OnAsyncExecute(ResultHandler);
+                    }
+                    else
+                    {
+                        Context.OnExecute(ResultHandler);
+                    }
                 }
-                else
+                finally
                 {
-                    Context.OnExecute(ResultHandler);
+
+                    CompletionSource?.TrySetResult(new object());
                 }
             }
         }
 
 
-        internal void Execute(IActionResultHandler resultHandler)
+        internal async Task Execute(IActionResultHandler resultHandler)
         {
             if (Handler.ValidateRPS())
             {
@@ -205,7 +264,7 @@ namespace BeetleX.FastHttpApi
                 {
                     if (Handler.Async)
                     {
-                        OnAsyncExecute(resultHandler);
+                        await OnAsyncExecute(resultHandler);
                     }
                     else
                     {
@@ -214,12 +273,13 @@ namespace BeetleX.FastHttpApi
                 }
                 else
                 {
-                    ActionTask actionTask = new ActionTask(this, resultHandler);
+                    ActionTask actionTask = new ActionTask(this, resultHandler, new TaskCompletionSource<object>());
                     var queue = Handler.ThreadQueue.GetQueue(this.HttpContext);
                     if (Handler.ThreadQueue.Enabled(queue))
                     {
                         this.HttpContext.Queue = queue;
                         queue.Enqueue(actionTask);
+                        await actionTask.CompletionSource.Task;
                     }
                     else
                     {
@@ -238,16 +298,81 @@ namespace BeetleX.FastHttpApi
 
         private int mFilterIndex;
 
+        private void FilterInit()
+        {
+            if (mFilters.Count > 0)
+            {
+                for (int i = 0; i < mFilters.Count; i++)
+                {
+                    mFilters[i].Init(HttpContext, Handler);
+                }
+            }
+        }
+
+        private void FilterDisposed()
+        {
+            if (mFilters.Count > 0)
+            {
+                for (int i = 0; i < mFilters.Count; i++)
+                {
+                    try
+                    {
+                        mFilters[i].Disposed(this);
+                    }
+                    catch (Exception e_)
+                    {
+                        if (HttpContext.Server.EnableLog(EventArgs.LogType.Error))
+                        {
+                            var request = HttpContext.Request;
+                            HttpContext.Server.Log(EventArgs.LogType.Error, request.Session,
+                                $"HTTP {request.RemoteIPAddress} {request.Method} {request.BaseUrl} {mFilters[i]} filter disposed error {e_.Message}@{e_.StackTrace}");
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ParametersDisposed()
+        {
+            if (Parameters != null)
+            {
+                for (int i = 0; i < Parameters.Length; i++)
+                {
+                    try
+                    {
+                        if (Parameters[i] != null && Parameters[i] is IActionParameter parameter)
+                        {
+                            parameter.Dispose();
+                        }
+                    }
+                    catch (Exception e_)
+                    {
+                        this.Exception = e_;
+                        if (HttpContext.Server.EnableLog(EventArgs.LogType.Error))
+                        {
+                            var request = HttpContext.Request;
+                            HttpContext.Server.Log(EventArgs.LogType.Error, request.Session,
+                                $"HTTP {request.RemoteIPAddress} {request.Method} {request.BaseUrl} {Parameters[i]} parameter disposed error {e_.Message}@{e_.StackTrace} inner error:{e_.InnerException?.Message}");
+                        }
+                    }
+                }
+            }
+        }
+
         private bool FilterExecuting()
         {
             if (mFilters.Count > 0)
             {
                 for (int i = 0; i < mFilters.Count; i++)
                 {
-                    bool result = mFilters[i].Executing(this);
-                    mFilterIndex++;
-                    if (!result)
-                        return false;
+                    using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null,
+                        "Filter", mFilters[i].GetType().Name, "Executing"))
+                    {
+                        bool result = mFilters[i].Executing(this);
+                        mFilterIndex++;
+                        if (!result)
+                            return false;
+                    }
                 }
             }
             return true;
@@ -260,8 +385,25 @@ namespace BeetleX.FastHttpApi
                 int start = mFilterIndex - 1;
                 for (int i = start; i >= 0; i--)
                 {
-                    mFilters[i].Executed(this);
+                    using (CodeTrackFactory.Track(Handler.SourceUrl, CodeTrackLevel.Function, null,
+                        "Filter", mFilters[i].GetType().Name, "Executed"))
+                    {
+                        mFilters[i].Executed(this);
+                    }
                 }
+            }
+        }
+
+        private bool mIsDisposed = false;
+
+        public void Dispose()
+        {
+            if (!mIsDisposed)
+            {
+                mIsDisposed = true;
+
+                FilterDisposed();
+                // ParametersDisposed();
             }
         }
     }

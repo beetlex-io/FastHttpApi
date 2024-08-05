@@ -38,7 +38,7 @@ namespace BeetleX.FastHttpApi
             this.Version = aname.Version.ToString();
             Async = false;
             ControllerUID = AssmblyName + "_" + ControllerType.Name;
-           
+
         }
 
         public ThreadQueueAttribute ThreadQueue { get; set; }
@@ -153,12 +153,7 @@ namespace BeetleX.FastHttpApi
             {
 
                 ParameterBinder pb = new DefaultParameter();
-                ParameterBinder[] customPB = (ParameterBinder[])pi.GetCustomAttributes(typeof(ParameterBinder), false);
-                if (customPB != null && customPB.Length > 0)
-                {
-                    pb = customPB[0];
-                }
-                else if (pi.ParameterType == typeof(Boolean))
+                if (pi.ParameterType == typeof(Boolean))
                 {
                     pb = new BooleanParameter();
                 }
@@ -261,7 +256,7 @@ namespace BeetleX.FastHttpApi
 
         public List<ParameterBinder> Parameters { get; private set; }
 
-        public object[] GetParameters(IHttpContext context)
+        public object[] GetParameters(IHttpContext context, ActionContext actionContext)
         {
             int count = this.Parameters.Count;
             object[] parameters = new object[count];
@@ -269,7 +264,21 @@ namespace BeetleX.FastHttpApi
             {
                 try
                 {
-                    parameters[i] = Parameters[i].GetValue(context);
+                    object data = null;
+                    if (this.Parameters[i].Type == typeof(ActionContext))
+                    {
+                        data = actionContext;
+                    }
+                    else
+                    {
+                        data = Parameters[i].GetValue(context);
+                    }
+                    if (data != null && data is IActionParameter actionContextParameter)
+                    {
+                        actionContextParameter.Context = actionContext;
+                        actionContextParameter.Init(context);
+                    }
+                    parameters[i] = data;
                 }
                 catch (Exception e_)
                 {
@@ -356,9 +365,9 @@ namespace BeetleX.FastHttpApi
 
 
     [AttributeUsage(AttributeTargets.Class)]
-    public class PMapper : Attribute
+    public class ParameterObjectMapper : Attribute
     {
-        public PMapper(Type type)
+        public ParameterObjectMapper(Type type)
         {
             ParameterType = type;
         }
@@ -372,8 +381,7 @@ namespace BeetleX.FastHttpApi
         object GetValue(IHttpContext context);
     }
 
-    [AttributeUsage(AttributeTargets.Parameter)]
-    public abstract class ParameterBinder : Attribute, IParameterBinder
+    public abstract class ParameterBinder :IParameterBinder
     {
         public Type Type { get; internal set; }
 

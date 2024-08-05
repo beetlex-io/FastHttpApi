@@ -29,7 +29,7 @@ namespace BeetleX.FastHttpApi
 
         void SendToWebSocket(WebSockets.DataFrame data, Func<ISession, HttpRequest, bool> filter = null);
 
-        void Async();
+        //  void Async();
 
         bool WebSocket { get; }
 

@@ -13,7 +13,6 @@ namespace BeetleX.FastHttpApi
         public HttpResponse()
         {
             Header = new Header();
-            AsyncResult = false;
         }
 
         internal Newtonsoft.Json.JsonSerializer JsonSerializer { get; set; }
@@ -40,45 +39,52 @@ namespace BeetleX.FastHttpApi
 
         public string RequestID { get; set; }
 
-        internal bool AsyncResult { get; set; }
-
         private byte[] mLengthBuffer = new byte[10];
+
+        public SameSiteType? SameSite { get; set; }
+
+        public bool CookieSecure { get; set; } = false;
+
+        public IList<string> SetCookies => mSetCookies;
 
         internal void Reset()
         {
-            AsyncResult = false;
             Header.Clear();
             mSetCookies.Clear();
-            //Header = new Header();
-            //mSetCookies = new List<string>();
             mCompletedStatus = 0;
             mBody = null;
             Code = "200";
             CodeMsg = "OK";
+            if (Request.Server.Options.SameSite != null)
+                this.SameSite = Request.Server.Options.SameSite;
+            else
+                this.SameSite = null;
+            this.CookieSecure = Request.Server.Options.CookieSecure;
         }
 
-        public void Async()
+        public void SetCookie(string name, string value, string path,  DateTime? expires = null)
         {
-            AsyncResult = true;
+            SetCookie(name, value, path, null,  expires);
         }
 
-        public void SetCookie(string name, string value, string path, DateTime? expires = null)
+        public void SetCookie(string name, string value,  DateTime? expires = null)
         {
-            SetCookie(name, value, path, null, expires);
+            SetCookie(name, value, "/", null,  expires);
         }
 
-        public void SetCookie(string name, string value, DateTime? expires = null)
-        {
-            SetCookie(name, value, "/", null, expires);
-        }
+        [ThreadStatic]
+        static StringBuilder mCookerSB;
 
-        public void SetCookie(string name, string value, string path, string domain, DateTime? expires = null)
+        public void SetCookie(string name, string value, string path, string domain,  DateTime? expires = null)
         {
             if (string.IsNullOrEmpty(name))
                 return;
             name = System.Web.HttpUtility.UrlEncode(name);
             value = System.Web.HttpUtility.UrlEncode(value);
-            StringBuilder sb = new StringBuilder();
+            if (mCookerSB == null)
+                mCookerSB = new StringBuilder();
+            mCookerSB.Clear();
+            StringBuilder sb = mCookerSB;
             sb.Append(name).Append("=").Append(value);
 
             if (!string.IsNullOrEmpty(path))
@@ -95,6 +101,10 @@ namespace BeetleX.FastHttpApi
             }
 
             sb.Append(";HttpOnly");
+            if (SameSite != null)
+                sb.Append(";SameSite=" + Enum.GetName(typeof(SameSiteType), this.SameSite.Value));
+            if (CookieSecure)
+                sb.Append(";Secure");
             mSetCookies.Add(sb.ToString());
         }
 
@@ -103,6 +113,15 @@ namespace BeetleX.FastHttpApi
             if (data is StaticResurce.FileBlock)
             {
                 Completed(data);
+            }
+            else if (data is ValueTuple<byte[], string> dataBuff)
+            {
+                Completed(new BinaryResult(new ArraySegment<byte>(dataBuff.Item1, 0, dataBuff.Item1.Length), dataBuff.Item2));
+            }
+            else if (data is ValueTuple<ArraySegment<byte>, string> dataBuff1)
+            {
+                Completed(new BinaryResult(dataBuff1.Item1, dataBuff1.Item2));
+
             }
             else if (data is IResult)
             {
@@ -185,7 +204,8 @@ namespace BeetleX.FastHttpApi
             hlen++;
 
             stream.Write(buffer, 0, hlen);
-            stream.Write(HeaderTypeFactory.SERVAR_HEADER_BYTES, 0, HeaderTypeFactory.SERVAR_HEADER_BYTES.Length);
+            if (Request.Server.Options.OutputServerTag)
+                stream.Write(HeaderTypeFactory.SERVAR_HEADER_BYTES, 0, HeaderTypeFactory.SERVAR_HEADER_BYTES.Length);
             Header.Write(stream);
             if (result != null)
             {
@@ -266,7 +286,7 @@ namespace BeetleX.FastHttpApi
                 HttpApiServer server = Request.Server;
                 if (server.EnableLog(EventArgs.LogType.Error))
                 {
-                    server.Log(EventArgs.LogType.Error, $"{Request.RemoteIPAddress} {Request.Method} {Request.Url} response write data error {e_.Message}@{e_.StackTrace}");
+                    server.Log(EventArgs.LogType.Error, Request.Session, $"{Request.RemoteIPAddress} {Request.Method} {Request.Url} response write data error {e_.Message}@{e_.StackTrace}");
                     Request.Session.Dispose();
                 }
             }
@@ -290,5 +310,17 @@ namespace BeetleX.FastHttpApi
             return sb.ToString();
         }
 
+        public void InnerError(string code, string message, bool outputStackTrace = false)
+        {
+            InnerError(code, message, null, outputStackTrace);
+        }
+        public void InnerError(string message, Exception e, bool outputStackTrace)
+        {
+            InnerError("500", message, e, outputStackTrace);
+        }
+        public void InnerError(string code, string message, Exception e, bool outputStackTrace)
+        {
+            Request?.Server?.OnInnerError(this, code, message, e, outputStackTrace);
+        }
     }
 }

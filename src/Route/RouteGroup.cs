@@ -5,10 +5,7 @@ using System.Linq;
 namespace BeetleX.FastHttpApi
 {
 
-
-
-
-    class RouteGroup
+    public class RouteGroup
     {
 
         public RouteGroup()

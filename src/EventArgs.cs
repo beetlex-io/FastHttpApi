@@ -8,6 +8,28 @@ namespace BeetleX.FastHttpApi
 {
     public delegate void EventHttpServerLog(IServer server, BeetleX.EventArgs.ServerLogEventArgs e);
 
+    public class ActionExecutedArgs
+    {
+        public string ServerType { get; set; }
+
+        public string Url { get; set; }
+
+        public string HTTPMethod { get; set; }
+
+        public ActionHandler ActionHandler { get; set; }
+
+        public IDictionary<string, string> Headers { get; set; }
+
+        public long UseTime { get; set; }
+
+        public DateTime Time { get; set; }
+
+        public int Code { get; set; } = 200;
+
+        public Exception Exception { get; set; }
+
+    }
+
     public class HttpServerLogEventArgs : BeetleX.EventArgs.ServerLogEventArgs
     {
         public HttpServerLogEventArgs(object tag, string message, LogType type, ISession session = null)
@@ -50,12 +72,19 @@ namespace BeetleX.FastHttpApi
 
     public class WebSocketConnectArgs : System.EventArgs
     {
-        public WebSocketConnectArgs(HttpRequest request)
+        public WebSocketConnectArgs(HttpRequest request, HttpResponse response)
         {
             Request = request;
+            Response = response;
             Cancel = false;
 
         }
+
+        public UpgradeWebsocketError Error { get; set; }
+
+        public IResult UpgradeSuccess { get; set; }
+
+        public HttpResponse Response { get; internal set; }
 
         public HttpRequest Request { get; internal set; }
 
@@ -103,6 +132,16 @@ namespace BeetleX.FastHttpApi
         public HttpResponse Response { get; internal set; }
 
         public bool Cancel { get; set; }
+    }
+
+    public class EventHttpInnerErrorArgs : EventHttpRequestArgs
+    {
+        public string Code { get; internal set; }
+
+        public string Message { get; internal set; }
+
+        public Exception Error { get; internal set; }
+
     }
 
     public class EventHttpServerStartedArgs : System.EventArgs

@@ -80,4 +80,16 @@ namespace BeetleX.FastHttpApi
 
         public int Value { get; set; }
     }
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class RouteMapAttribute : Attribute
+    {
+
+        public RouteMapAttribute(string url)
+        {
+            Url = url;
+        }
+
+        public string Url { get; set; }
+    }
+
 }
